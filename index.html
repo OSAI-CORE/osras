@@ -2798,7 +2798,7 @@ class="group relative overflow-visible
                     <span>密碼驗證成功！目前已處於對應權限模式。</span>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="lockAdmin(); closeAdminModal();"
+                    <button onclick="toggleAdmin()"
                             class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-semibold shadow transition">
                         安全鎖定（登出）
                     </button>
@@ -2853,10 +2853,17 @@ class="group relative overflow-visible
        class="permission-password-input">
                 </div>
 
-                <label class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 cursor-pointer">
-                    <input type="checkbox" id="editorEnabledCheckbox" class="w-4 h-4 accent-indigo-600">
-                    <span class="text-sm font-bold text-slate-700">啟用使用者共用權限</span>
-                </label>
+<label class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+    <input
+        type="checkbox"
+        id="editorEnabledCheckbox"
+        class="w-4 h-4 accent-indigo-600"
+        disabled
+    >
+    <span class="text-sm font-bold text-slate-700">
+        啟用使用者共用權限
+    </span>
+</label>
 
                 <p class="text-[11px] text-slate-400 leading-snug">
                     使用者權限可編輯、上傳附件、儲存、載入與匯出資料；刪除與權限設定仍限管理者。
@@ -3443,6 +3450,8 @@ const STORE_NAME = 'osra_store';
 
 const DEFAULT_ADMIN_PASSWORD = "SamCore@1068";
 const DEFAULT_EDITOR_PASSWORD = "TeamUser001";
+const DEFAULT_EDITOR_ENABLED = true;
+
 const MASTER_RECOVERY_CODE = "SAM-SUN-CORE-RECOVERY";
 
         function openDB() {
@@ -3459,17 +3468,65 @@ const MASTER_RECOVERY_CODE = "SAM-SUN-CORE-RECOVERY";
             });
         }
 
-        function setDBValue(key, value) {
-            return openDB().then(db => {
-                return new Promise((resolve, reject) => {
-                    const transaction = db.transaction([STORE_NAME], 'readwrite');
-                    const store = transaction.objectStore(STORE_NAME);
-                    const request = store.put(value, key);
-                    request.onsuccess = () => resolve();
-                    request.onerror = (event) => reject(event.target.error);
-                });
-            });
-        }
+function setDBValue(key, value) {
+    /*
+     * 正式風險資料及權限資料
+     * 不允許永久寫入 IndexedDB。
+     *
+     * 保留函式名稱供舊程式相容使用。
+     */
+    const nonPersistentKeys =
+        new Set([
+            'workbook',
+            'assessment_rows',
+            'row_counter',
+            'admin_password',
+            'editor_password',
+            'editor_enabled'
+        ]);
+
+    if (
+        nonPersistentKeys.has(key)
+    ) {
+        return Promise.resolve();
+    }
+
+    /*
+     * 其他既有設定，例如 AI config，
+     * 維持原本儲存邏輯。
+     */
+    return openDB().then(db => {
+        return new Promise(
+            (resolve, reject) => {
+                const transaction =
+                    db.transaction(
+                        [STORE_NAME],
+                        'readwrite'
+                    );
+
+                const store =
+                    transaction.objectStore(
+                        STORE_NAME
+                    );
+
+                const request =
+                    store.put(
+                        value,
+                        key
+                    );
+
+                request.onsuccess =
+                    () => resolve();
+
+                request.onerror =
+                    event =>
+                        reject(
+                            event.target.error
+                        );
+            }
+        );
+    });
+}
 
         function getDBValue(key) {
             return openDB().then(db => {
@@ -3482,6 +3539,66 @@ const MASTER_RECOVERY_CODE = "SAM-SUN-CORE-RECOVERY";
                 });
             });
         }
+
+/*
+ * 清除舊版本可能殘留於 IndexedDB 的
+ * 風險評估正式資料與權限設定。
+ *
+ * 注意：
+ * config / API Key 設定不在本次清除範圍，
+ * 避免影響既有 AI 設定與運作邏輯。
+ */
+async function clearPersistedRiskSystemData() {
+    const keysToDelete = [
+        'workbook',
+        'assessment_rows',
+        'row_counter',
+        'admin_password',
+        'editor_password',
+        'editor_enabled'
+    ];
+
+    const db = await openDB();
+
+    return new Promise((resolve, reject) => {
+        const transaction =
+            db.transaction(
+                [STORE_NAME],
+                'readwrite'
+            );
+
+        const store =
+            transaction.objectStore(
+                STORE_NAME
+            );
+
+        keysToDelete.forEach(key => {
+            store.delete(key);
+        });
+
+        transaction.oncomplete = () => {
+            resolve();
+        };
+
+        transaction.onerror = () => {
+            reject(
+                transaction.error ||
+                new Error(
+                    '清除舊版本本機資料失敗'
+                )
+            );
+        };
+
+        transaction.onabort = () => {
+            reject(
+                transaction.error ||
+                new Error(
+                    '清除舊版本本機資料已中止'
+                )
+            );
+        };
+    });
+}        
 
         // ----------------------------------------------------
         // A. 本地強大、高擬真的職業安全資料庫與語義匹配引擎
@@ -3756,7 +3873,7 @@ let isRiskEditMode = false;
 
 let systemPassword = DEFAULT_ADMIN_PASSWORD;
 let editorPassword = DEFAULT_EDITOR_PASSWORD;
-let editorEnabled = true;
+let editorEnabled = DEFAULT_EDITOR_ENABLED;
 
 function getCurrentRole() {
     if (isAdminAuthenticated) return 'admin';
@@ -3829,24 +3946,35 @@ function canUseBulkGenerate() {
 }
         
 function syncWorkbook() {
-    const sheet = getActiveSheet();
+    const sheet =
+        getActiveSheet();
 
     if (sheet) {
         normalizeSheet(sheet);
-        sheet.meta = getSheetMetaFromForm();
-        sheet.data = JSON.parse(JSON.stringify(osraData));
-        sheet.rowCounter = rowCounter;
+
+        sheet.meta =
+            getSheetMetaFromForm();
+
+        sheet.data =
+            JSON.parse(
+                JSON.stringify(
+                    osraData
+                )
+            );
+
+        sheet.rowCounter =
+            rowCounter;
     }
 
     /*
-     * 預覽載入模式只更新目前頁面記憶體，
-     * 不寫入 IndexedDB，避免預覽資料覆蓋正式資料。
+     * 新版正式工作資料只存在
+     * 目前頁面工作階段記憶體。
+     *
+     * 不論管理者或使用者，
+     * 都不再將 workbook
+     * 永久寫入 IndexedDB。
      */
-    if (isPreviewDataMode) {
-        return Promise.resolve();
-    }
-
-    return setDBValue('workbook', workbook);
+    return Promise.resolve();
 }
 
         // 4x4 風險判定矩陣定義
@@ -3909,38 +4037,32 @@ const RISK_METADATA = {
                     };
                 }
 
-let savedAdminPassword = await getDBValue('admin_password');
-let savedEditorPassword = await getDBValue('editor_password');
-let savedEditorEnabled = await getDBValue('editor_enabled');
+/*
+ * 正式權限一律以目前 GitHub HTML
+ * 的 DEFAULT_* 設定為準。
+ */
+systemPassword =
+    DEFAULT_ADMIN_PASSWORD;
 
-/* 舊版單一管理員密碼 1068 自動升級 */
-if (!savedAdminPassword || savedAdminPassword === "1068") {
-    savedAdminPassword = DEFAULT_ADMIN_PASSWORD;
-    await setDBValue('admin_password', savedAdminPassword);
-}
+editorPassword =
+    DEFAULT_EDITOR_PASSWORD;
 
-if (!savedEditorPassword) {
-    savedEditorPassword = DEFAULT_EDITOR_PASSWORD;
-    await setDBValue('editor_password', savedEditorPassword);
-}
-
-if (savedEditorEnabled === null || savedEditorEnabled === undefined) {
-    savedEditorEnabled = true;
-    await setDBValue('editor_enabled', savedEditorEnabled);
-}
-
-systemPassword = savedAdminPassword;
-editorPassword = savedEditorPassword;
-editorEnabled = Boolean(savedEditorEnabled);
+editorEnabled =
+    DEFAULT_EDITOR_ENABLED;
 
 /*
- * 預覽者開啟系統時，
- * 不直接呈現 IndexedDB 正式資料。
- *
- * 正式資料改由管理者或使用者
- * 登入成功後才讀取。
+ * 每次開啟 / F5，
+ * 自動清除舊版瀏覽器可能殘留的
+ * 正式風險資料與權限設定。
+ */
+await clearPersistedRiskSystemData();
+
+/*
+ * 建立乾淨預覽者工作區。
  */
 clearViewerWorkspace();
+
+
 } catch (err) {
     console.error(
         'IndexedDB 初始化失敗：',
@@ -3954,8 +4076,8 @@ clearViewerWorkspace();
             const banner = document.getElementById('api-status-banner');
             if (banner && config.apiKey) {
                 banner.className = "bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3";
-                banner.querySelector('h4').innerText = "系統正在使用：Gemini 智慧聯網雲端生成引擎 (已啟用 IndexedDB 離線安全存儲)";
-                banner.querySelector('p').innerText = "系統已加載本機 API Key，將即時呼叫雲端職安語意大模型進行智慧型危害分析與複評，並同步保存於 IndexedDB。";
+                banner.querySelector('h4').innerText = "系統正在使用：智慧聯網雲端生成引擎";
+                banner.querySelector('p').innerText = "系統將即時呼叫雲端職安語意大模型進行智慧型危害分析與複評；評估資料僅保留於目前工作階段，請使用 JSON 匯出保存正式資料。";
                 banner.querySelector('i').className = "fa-solid fa-cloud-bolt text-emerald-600 text-xl mt-0.5";
             }
 
@@ -3979,10 +4101,10 @@ window.addEventListener('keydown', function(event) {
    預覽者空白工作區
 ========================================================= */
 function clearViewerWorkspace() {
-    /*
-     * 只清除目前畫面，
-     * 不刪除 IndexedDB 正式資料。
-     */
+/*
+ * 清除目前工作階段資料，
+ * 正式可延續資料僅以匯出的 JSON 為準。
+ */
     isPreviewDataMode = false;
     isRiskEditMode = false;
 
@@ -4021,78 +4143,21 @@ function clearViewerWorkspace() {
 }
 
 /* =========================================================
-   登入後讀取正式 IndexedDB 資料
+   登入後建立乾淨工作階段
+   正式資料由使用者自行載入最新 JSON
 ========================================================= */
 async function loadFormalWorkbookIntoWorkspace() {
-    const savedWorkbook =
-        await getDBValue(
-            'workbook'
-        );
+    /*
+     * 再次確認舊版 IndexedDB
+     * 沒有留下正式資料。
+     */
+    await clearPersistedRiskSystemData();
 
-    const savedCounter =
-        await getDBValue(
-            'row_counter'
-        );
+    workbook =
+        createBlankRiskWorkbook();
 
-    const savedData =
-        await getDBValue(
-            'assessment_rows'
-        );
-
-    if (
-        savedWorkbook &&
-        Array.isArray(
-            savedWorkbook.sheets
-        ) &&
-        savedWorkbook.sheets.length > 0
-    ) {
-        workbook =
-            JSON.parse(
-                JSON.stringify(
-                    savedWorkbook
-                )
-            );
-
-    } else {
-        workbook =
-            createBlankRiskWorkbook();
-
-        /*
-         * 保留舊版資料遷移功能。
-         */
-        if (
-            Array.isArray(savedData) &&
-            savedData.length > 0
-        ) {
-            workbook.sheets[0].data =
-                savedData;
-
-            workbook.sheets[0]
-                .rowCounter =
-                savedCounter || 0;
-
-            await setDBValue(
-                'workbook',
-                workbook
-            );
-        }
-    }
-
-    workbook.sheets.forEach(
-        sheet => normalizeSheet(sheet)
-    );
-
-    const hasActiveSheet =
-        workbook.sheets.some(
-            sheet =>
-                sheet.id ===
-                workbook.activeSheetId
-        );
-
-    if (!hasActiveSheet) {
-        workbook.activeSheetId =
-            workbook.sheets[0].id;
-    }
+    osraData = [];
+    rowCounter = 0;
 
     isPreviewDataMode = false;
     isRiskEditMode = false;
@@ -4830,7 +4895,7 @@ await syncWorkbook();
     
 if (showNotification) {
     showToast(
-        '風險評估矩陣表已成功儲存！',
+        '風險評估矩陣表已套用至目前工作階段！',
         'success'
     );
 }
@@ -4912,7 +4977,7 @@ if (!isRenderingSheet) {
 }
 
         // ----------------------------------------------------
-        // G. 資料持久與同步 (IndexedDB Auto Sync)
+        // G. 本次工作階段資料同步
         // ----------------------------------------------------
         function saveRowState(rowId) {
             const data = getRowData(rowId);
@@ -5989,30 +6054,51 @@ async function toggleAdmin() {
      * 已登入時維持原本的
      * 儲存並登出流程。
      */
-    if (canEditData()) {
-        if (
-            confirm(
-                '是否儲存並登出系統？'
-            )
-        ) {
-            /*
- * 登出流程會在後面顯示整合通知，
- * 所以這裡不另外顯示儲存完成訊息。
- */
-await manualSaveRecords(false);
+if (canEditData()) {
+    const confirmed =
+        confirm(
+            '確定要登出目前模式嗎？\n\n' +
+            '尚未匯出的變更將在登出後清除，' +
+            '請確認已先匯出最新 JSON。'
+        );
 
-            lockAdmin();
-            closeAdminModal();
-            closePermissionSettingsModal();
+    if (!confirmed) {
+        return;
+    }
 
-showToast(
-    '已儲存並登出系統。',
-    'success'
-);
-        }
+    try {
+        /*
+         * 登出前再次確認
+         * 舊 IndexedDB 沒有正式資料。
+         */
+        await clearPersistedRiskSystemData();
+
+    } catch (error) {
+        console.error(
+            '清除本機暫存資料失敗：',
+            error
+        );
+
+        showToast(
+            '清除本機暫存資料失敗，請重新整理後再試。',
+            'error'
+        );
 
         return;
     }
+
+    lockAdmin();
+
+    closeAdminModal();
+    closePermissionSettingsModal();
+
+    showToast(
+        '已完成登出。',
+        'success'
+    );
+
+    return;
+}
 
     /*
      * 比照績效管理系統：
@@ -6081,9 +6167,10 @@ function openPermissionSettingsModal() {
     const modal = document.getElementById('permissionSettingsModal');
     const editorEnabledCheckbox = document.getElementById('editorEnabledCheckbox');
 
-    if (editorEnabledCheckbox) {
-        editorEnabledCheckbox.checked = editorEnabled;
-    }
+if (editorEnabledCheckbox) {
+    editorEnabledCheckbox.checked =
+        DEFAULT_EDITOR_ENABLED;
+}
 
     document.getElementById('oldPasswordInput').value = '';
     document.getElementById('newPasswordInput').value = '';
@@ -6506,161 +6593,244 @@ updateAiAuditButtonState();
 }
 
 async function verifyAdminPassword() {
-    const input = document.getElementById('adminPasswordInput').value;
-let savedAdminPassword = await getDBValue('admin_password');
-let savedEditorPassword = await getDBValue('editor_password');
-let savedEditorEnabled = await getDBValue('editor_enabled');
+    const input =
+        document.getElementById(
+            'adminPasswordInput'
+        ).value;
 
-if (!savedAdminPassword) {
-    savedAdminPassword = DEFAULT_ADMIN_PASSWORD;
-    await setDBValue('admin_password', savedAdminPassword);
-}
+    /*
+     * MASTER RECOVERY：
+     * 恢復目前 GitHub HTML
+     * 的正式 DEFAULT_* 設定。
+     */
+    if (
+        input ===
+        MASTER_RECOVERY_CODE
+    ) {
+        systemPassword =
+            DEFAULT_ADMIN_PASSWORD;
 
-if (!savedEditorPassword) {
-    savedEditorPassword = DEFAULT_EDITOR_PASSWORD;
-    await setDBValue('editor_password', savedEditorPassword);
-}
+        editorPassword =
+            DEFAULT_EDITOR_PASSWORD;
 
-if (savedEditorEnabled === null || savedEditorEnabled === undefined) {
-    savedEditorEnabled = true;
-    await setDBValue('editor_enabled', savedEditorEnabled);
-}
+        editorEnabled =
+            DEFAULT_EDITOR_ENABLED;
 
-systemPassword = savedAdminPassword;
-editorPassword = savedEditorPassword;
-editorEnabled = Boolean(savedEditorEnabled);
-
-    if (input === MASTER_RECOVERY_CODE) {
-        await setDBValue('admin_password', DEFAULT_ADMIN_PASSWORD);
-        await setDBValue('editor_password', DEFAULT_EDITOR_PASSWORD);
-        await setDBValue('editor_enabled', true);
-
-        systemPassword = DEFAULT_ADMIN_PASSWORD;
-        editorPassword = DEFAULT_EDITOR_PASSWORD;
-        editorEnabled = true;
+        await clearPersistedRiskSystemData();
 
         isAdminAuthenticated = false;
         isEditorAuthenticated = false;
+        isRiskEditMode = false;
 
-        updateAdminModeUI();
+        clearViewerWorkspace();
 
-        document.getElementById('adminPasswordInput').value = '';
+        document.getElementById(
+            'adminPasswordInput'
+        ).value = '';
 
-        showToast("管理者與使用者權限已恢復預設，請重新登入後再修改密碼。", "success");
+        showToast(
+            "管理者與使用者權限已恢復預設，請重新登入。",
+            "success"
+        );
+
         closeAdminModal();
         return;
     }
 
-if (input === systemPassword) {
-    isAdminAuthenticated = true;
-    isEditorAuthenticated = true;
+    /*
+     * 管理者登入。
+     */
+    if (
+        input ===
+        systemPassword
+    ) {
+        isAdminAuthenticated = true;
+        isEditorAuthenticated = true;
+
+        isRiskEditMode = false;
+
+        await loadFormalWorkbookIntoWorkspace();
+
+        showToast(
+            '管理者登入成功，已進入完整權限模式。',
+            'success'
+        );
+
+        closeAdminModal();
+
+        document.getElementById(
+            'adminPasswordInput'
+        ).value = '';
+
+        return;
+    }
 
     /*
-     * 登入後預設為檢視模式。
+     * 使用者登入。
      */
-    isRiskEditMode = false;
+    if (
+        editorEnabled &&
+        input === editorPassword
+    ) {
+        isAdminAuthenticated = false;
+        isEditorAuthenticated = true;
 
-    await loadFormalWorkbookIntoWorkspace();
+        isRiskEditMode = false;
+
+        await loadFormalWorkbookIntoWorkspace();
+
+        showToast(
+            '使用者登入成功，已進入資料檢視模式。',
+            'success'
+        );
+
+        closeAdminModal();
+
+        document.getElementById(
+            'adminPasswordInput'
+        ).value = '';
+
+        return;
+    }
+
+    /*
+     * 使用者密碼正確，
+     * 但 GitHub HTML 已停用使用者權限。
+     */
+    if (
+        !editorEnabled &&
+        input === editorPassword
+    ) {
+        showToast(
+            "使用者共用權限目前已停用，請洽管理者。",
+            "warning"
+        );
+
+        document.getElementById(
+            'adminPasswordInput'
+        ).value = '';
+
+        return;
+    }
 
     showToast(
-        '管理者登入成功，已進入完整權限模式。',
-        'success'
+        "密碼錯誤，請重新輸入！",
+        "error"
     );
-
-    closeAdminModal();
 
     document.getElementById(
         'adminPasswordInput'
     ).value = '';
-
-    return;
-}
-
-if (
-    editorEnabled &&
-    input === editorPassword
-) {
-    isAdminAuthenticated = false;
-    isEditorAuthenticated = true;
-
-    /*
-     * 使用者登入後也預設為檢視模式。
-     */
-    isRiskEditMode = false;
-
-    await loadFormalWorkbookIntoWorkspace();
-
-    showToast(
-        '使用者登入成功，已進入資料檢視模式。',
-        'success'
-    );
-
-    closeAdminModal();
-
-    document.getElementById(
-        'adminPasswordInput'
-    ).value = '';
-
-    return;
-}
-
-    showToast("密碼錯誤，請重新輸入！", "error");
 }
 
 async function changeAdminPassword() {
     if (!canChangePassword()) {
-        showToast("只有管理者可以修改權限與密碼設定。", "error");
+        showToast(
+            "只有管理者可以修改權限與密碼設定。",
+            "error"
+        );
         return;
     }
 
-    const oldPw = document.getElementById('oldPasswordInput').value;
-    const newAdminPw = document.getElementById('newPasswordInput').value;
-    const newEditorPw = document.getElementById('newEditorPasswordInput').value;
-    const editorEnabledInput = document.getElementById('editorEnabledCheckbox');
+    const oldPw =
+        document.getElementById(
+            'oldPasswordInput'
+        ).value;
 
-    const savedPassword = await getDBValue('admin_password') || DEFAULT_ADMIN_PASSWORD;
+    const newAdminPw =
+        document.getElementById(
+            'newPasswordInput'
+        ).value.trim();
+
+    const newEditorPw =
+        document.getElementById(
+            'newEditorPasswordInput'
+        ).value.trim();
 
     /*
-      只有在要修改「管理者密碼」時，才要求輸入目前管理者密碼。
-      若只是調整使用者共用權限或修改使用者密碼，不需要再次輸入管理者密碼。
-    */
+     * 修改管理者密碼時，
+     * 驗證目前工作階段管理者密碼。
+     */
     if (newAdminPw) {
         if (!oldPw) {
-            showToast("修改管理者密碼時，請先輸入目前管理者密碼。", "warning");
+            showToast(
+                "修改管理者密碼時，請先輸入目前管理者密碼。",
+                "warning"
+            );
             return;
         }
 
-        if (oldPw !== savedPassword) {
-            showToast("目前管理者密碼驗證失敗。", "error");
+        if (
+            oldPw !==
+            systemPassword
+        ) {
+            showToast(
+                "目前管理者密碼驗證失敗。",
+                "error"
+            );
             return;
         }
 
-        systemPassword = newAdminPw;
-        await setDBValue('admin_password', systemPassword);
+        /*
+         * 只修改目前工作階段。
+         */
+        systemPassword =
+            newAdminPw;
     }
 
     if (newEditorPw) {
-        editorPassword = newEditorPw;
-        await setDBValue('editor_password', editorPassword);
+        /*
+         * 只修改目前工作階段。
+         */
+        editorPassword =
+            newEditorPw;
     }
 
-    editorEnabled = editorEnabledInput ? editorEnabledInput.checked : true;
-    await setDBValue('editor_enabled', editorEnabled);
+    /*
+     * 使用者正式啟用狀態
+     * 永遠由 GitHub HTML 控制。
+     */
+    editorEnabled =
+        DEFAULT_EDITOR_ENABLED;
 
-showToast("權限與密碼設定已儲存。", "success");
+    showToast(
+        "權限與密碼設定已更新。",
+        "success"
+    );
 
-document.getElementById('oldPasswordInput').value = '';
-document.getElementById('newPasswordInput').value = '';
-document.getElementById('newEditorPasswordInput').value = '';
+    document.getElementById(
+        'oldPasswordInput'
+    ).value = '';
 
-updateAdminModeUI();
-closePermissionSettingsModal();
+    document.getElementById(
+        'newPasswordInput'
+    ).value = '';
+
+    document.getElementById(
+        'newEditorPasswordInput'
+    ).value = '';
+
+    updateAdminModeUI();
+    closePermissionSettingsModal();
 }
 
 function lockAdmin() {
 isRiskEditMode = false;
     isAdminAuthenticated = false;
     isEditorAuthenticated = false;
+
+/*
+ * 登出後恢復 GitHub HTML
+ * 的正式權限設定。
+ */
+systemPassword =
+    DEFAULT_ADMIN_PASSWORD;
+
+editorPassword =
+    DEFAULT_EDITOR_PASSWORD;
+
+editorEnabled =
+    DEFAULT_EDITOR_ENABLED;    
 
     closePermissionSettingsModal();
 
@@ -6676,8 +6846,8 @@ isRiskEditMode = false;
     }
 
 /*
- * 返回空白預覽者畫面，
- * 但不刪除 IndexedDB 正式資料。
+ * 登出後清除目前工作階段，
+ * 返回空白預覽者畫面。
  */
 clearViewerWorkspace();
 
@@ -6889,19 +7059,25 @@ async function importFromJson(event) {
 
             applyImportedRiskAssessmentData(importedData);
 
-            /*
-             * 正式載入 / 匯入不處理：
-             * admin_password
-             * editor_password
-             * editor_enabled
-             * apiKey
-             *
-             * 密碼、權限與 API 設定維持目前瀏覽器原本設定。
-             */
+/*
+ * 正式載入 / 匯入不處理：
+ * admin_password
+ * editor_password
+ * editor_enabled
+ * apiKey
+ *
+ * 權限一律維持目前 GitHub HTML
+ * 的 DEFAULT_* 正式設定；
+ * AI config 維持既有設定。
+ */
             isPreviewDataMode = false;
             isRiskEditMode = false;
 
-            await setDBValue('workbook', workbook);
+            /*
+ * 正式資料只載入本次工作階段。
+ * 同時清除舊版本可能殘留的 IndexedDB 資料。
+ */
+await clearPersistedRiskSystemData();
 
             switchTab(workbook.activeSheetId, true);
             updateAdminModeUI();
@@ -7076,7 +7252,7 @@ function processFiles(files) {
                     });
                     
                     updateAttachmentUI(currentAttachmentRowId, window._tempAttachments[currentAttachmentRowId]);
-                    updateRowState(currentAttachmentRowId); // 自動寫入 IndexedDB 同步保存
+                    updateRowState(currentAttachmentRowId); // 同步至目前工作階段
                     renderAttachmentList(window._tempAttachments[currentAttachmentRowId]);
                     showToast(`附件 ${file.name} 已成功上傳！`, 'success');
                 };
