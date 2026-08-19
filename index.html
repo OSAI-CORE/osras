@@ -3813,6 +3813,12 @@ function updateSheetMetaState() {
 
     saveSheetMetaToActiveSheet();
     syncWorkbook();
+
+    /*
+     * 公司名稱、部門、評估人員、
+     * 日期、填表人等資料已有修改。
+     */
+    markRiskMatrixDirty();
 }
 
         // ----------------------------------------------------
@@ -3870,6 +3876,97 @@ let isPreviewDataMode = false;
  * 預設仍為檢視模式。
  */
 let isRiskEditMode = false;
+
+
+/* =========================================================
+   工作階段防呆狀態
+========================================================= */
+
+/*
+ * 風險評估矩陣目前已有修改，
+ * 但尚未按下「儲存記錄」。
+ *
+ * 包含：
+ * - 表格欄位修改
+ * - 表頭資料修改
+ * - 新增／刪除／複製項次
+ * - 分頁新增／改名／刪除
+ * - AI 自動填入
+ * - 附件新增／刪除
+ */
+let riskMatrixDirty = false;
+
+
+/*
+ * 已完成本次 Session 儲存，
+ * 或系統已產生正式工作成果，
+ * 但最新資料尚未匯出 JSON。
+ */
+let sessionNeedsExport = false;
+
+
+/*
+ * 防止登出按鈕被重複觸發。
+ */
+let isLoggingOut = false;
+
+
+function hasUnsavedRiskChanges() {
+    return riskMatrixDirty;
+}
+
+
+function hasPendingSessionChanges() {
+    return (
+        riskMatrixDirty ||
+        sessionNeedsExport
+    );
+}
+
+
+function markRiskMatrixDirty() {
+    if (
+        canEditRiskMatrixNow()
+    ) {
+        riskMatrixDirty = true;
+    }
+}
+
+
+function markSessionNeedsExport() {
+    if (canEditData()) {
+        sessionNeedsExport = true;
+    }
+}
+
+
+function clearWorkProtectionState() {
+    riskMatrixDirty = false;
+    sessionNeedsExport = false;
+}
+
+
+/*
+ * F5、關閉分頁、關閉瀏覽器、
+ * 離開目前網站時的最後防呆。
+ *
+ * 實際提示文字由瀏覽器決定。
+ */
+window.addEventListener(
+    "beforeunload",
+    event => {
+
+        if (
+            !hasPendingSessionChanges()
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+        event.returnValue = "";
+    }
+);
+
 
 let systemPassword = DEFAULT_ADMIN_PASSWORD;
 let editorPassword = DEFAULT_EDITOR_PASSWORD;
@@ -4105,11 +4202,17 @@ function clearViewerWorkspace() {
  * 清除目前工作階段資料，
  * 正式可延續資料僅以匯出的 JSON 為準。
  */
-    isPreviewDataMode = false;
-    isRiskEditMode = false;
+isPreviewDataMode = false;
+isRiskEditMode = false;
 
-    workbook =
-        createBlankRiskWorkbook();
+/*
+ * 工作階段已完整清除，
+ * 同步重設防呆狀態。
+ */
+clearWorkProtectionState();
+
+workbook =
+    createBlankRiskWorkbook();
 
     osraData = [];
     rowCounter = 0;
@@ -4159,10 +4262,15 @@ async function loadFormalWorkbookIntoWorkspace() {
     osraData = [];
     rowCounter = 0;
 
-    isPreviewDataMode = false;
-    isRiskEditMode = false;
+isPreviewDataMode = false;
+isRiskEditMode = false;
 
-    window._tempAttachments = {};
+/*
+ * 登入後建立全新的正式工作階段。
+ */
+clearWorkProtectionState();
+
+window._tempAttachments = {};
 
     switchTab(
         workbook.activeSheetId,
@@ -4334,8 +4442,14 @@ function addTab() {
         auditHtml: ''
     });
 
-    switchTab(newId);
-    showToast(`已成功新增分頁「${name.trim()}」`, "success");
+switchTab(newId);
+
+markRiskMatrixDirty();
+
+showToast(
+    `已成功新增分頁「${name.trim()}」`,
+    "success"
+);
 }
 
 function renameTab(sheetId) {
@@ -4348,13 +4462,35 @@ function renameTab(sheetId) {
     const sheet = workbook.sheets.find(s => s.id === sheetId);
     if (!sheet) return;
 
-    const newName = prompt("請輸入新的分頁名稱：", sheet.name);
-    if (newName !== null && newName.trim() !== "") {
-        sheet.name = newName.trim();
-        syncWorkbook();
-        renderTabs();
-        showToast("分頁名稱已更新", "success");
-    }
+const newName =
+    prompt(
+        "請輸入新的分頁名稱：",
+        sheet.name
+    );
+
+const trimmedName =
+    newName !== null
+        ? newName.trim()
+        : "";
+
+if (
+    trimmedName &&
+    trimmedName !== sheet.name
+) {
+    sheet.name =
+        trimmedName;
+
+    syncWorkbook();
+
+    markRiskMatrixDirty();
+
+    renderTabs();
+
+    showToast(
+        "分頁名稱已更新",
+        "success"
+    );
+}
 }
 
 function deleteTab(sheetId) {
@@ -4373,14 +4509,24 @@ function deleteTab(sheetId) {
 
     workbook.sheets = workbook.sheets.filter(s => s.id !== sheetId);
 
-    if (workbook.activeSheetId === sheetId) {
-        switchTab(workbook.sheets[0].id);
-    } else {
-        syncWorkbook();
-        renderTabs();
-    }
+if (
+    workbook.activeSheetId ===
+    sheetId
+) {
+    switchTab(
+        workbook.sheets[0].id
+    );
+} else {
+    syncWorkbook();
+    renderTabs();
+}
 
-    showToast(`分頁「${sheet.name}」已刪除`, "warning");
+markRiskMatrixDirty();
+
+showToast(
+    `分頁「${sheet.name}」已刪除`,
+    "warning"
+);
 }
 
         // ----------------------------------------------------
@@ -4856,12 +5002,18 @@ async function deleteRow(rowId) {
      * 等待 IndexedDB 儲存完成後，
      * 才顯示刪除完成訊息。
      */
-    await syncWorkbook();
+await syncWorkbook();
 
-    showToast(
-        `評估項次 ${itemNo} 已刪除。`,
-        'warning'
-    );
+/*
+ * 刪除項次屬於尚未完成
+ * 「儲存記錄」的矩陣修改。
+ */
+markRiskMatrixDirty();
+
+showToast(
+    `評估項次 ${itemNo} 已刪除。`,
+    'warning'
+);
 }
 
         function duplicateRow(rowId) {
@@ -4877,30 +5029,69 @@ async function manualSaveRecords(
     showNotification = true
 ) {
     if (!canEditData()) {
-    showToast("請先登入使用者或管理者權限後再儲存。", "warning");
-    openAdminModal();
-    return;
-}
-    const rows = document.querySelectorAll('#tableBody tr');
+        showToast(
+            "請先登入使用者或管理者權限後再儲存。",
+            "warning"
+        );
+
+        openAdminModal();
+        return;
+    }
+
+    /*
+     * 記住儲存前是否真的有修改。
+     */
+    const hadChanges =
+        riskMatrixDirty;
+
+    const rows =
+        document.querySelectorAll(
+            '#tableBody tr'
+        );
+
     osraData = [];
-    
-rows.forEach(row => {
-    const id = parseInt(row.getAttribute('data-row-id'));
-    const data = getRowData(id);
-    osraData.push(data);
-});
 
-saveSheetMetaToActiveSheet();
-await syncWorkbook();
-    
-if (showNotification) {
-    showToast(
-        '風險評估矩陣表已套用至目前工作階段！',
-        'success'
-    );
-}
+    rows.forEach(row => {
+        const id =
+            parseInt(
+                row.getAttribute(
+                    'data-row-id'
+                )
+            );
 
-updateDashboardStats();
+        const data =
+            getRowData(id);
+
+        osraData.push(data);
+    });
+
+    saveSheetMetaToActiveSheet();
+
+    await syncWorkbook();
+
+    /*
+     * 有實際修改才標記：
+     * 最新 Session 尚未匯出 JSON。
+     */
+    if (hadChanges) {
+        sessionNeedsExport = true;
+    }
+
+    /*
+     * 本次矩陣編輯已完成段落儲存。
+     */
+    riskMatrixDirty = false;
+
+    if (showNotification) {
+        showToast(
+            hadChanges
+                ? "風險評估矩陣表已儲存至目前工作階段，請記得匯出最新 JSON。"
+                : "目前沒有新的矩陣修改。",
+            "success"
+        );
+    }
+
+    updateDashboardStats();
 }
 
         function reindexRows() {
@@ -4971,6 +5162,13 @@ saveRowState(rowId);
 updateDashboardStats();
 
 if (!isRenderingSheet) {
+
+    /*
+     * S / P 修改，或 AI 自動填入後
+     * 重新計算風險，皆視為矩陣內容變更。
+     */
+    markRiskMatrixDirty();
+
     markAuditAsOutdatedForCurrentSheet();
 }
 
@@ -4992,6 +5190,13 @@ if (!isRenderingSheet) {
 
 function updateRowState(rowId) {
     saveRowState(rowId);
+
+    /*
+     * 人工欄位、勾選項目、
+     * 附件等內容已有修改。
+     */
+    markRiskMatrixDirty();
+
     updateDashboardStats();
 
     if (!isRenderingSheet) {
@@ -5399,16 +5604,30 @@ function restoreAuditPanelForCurrentSheet() {
     }
 }
 
-function saveAuditPanelToCurrentSheet(warningCount, htmlContent) {
-    const sheet = getActiveSheet();
+function saveAuditPanelToCurrentSheet(
+    warningCount,
+    htmlContent
+) {
+    const sheet =
+        getActiveSheet();
+
     if (!sheet) return;
 
     normalizeSheet(sheet);
 
-    sheet.auditWarningCount = Number(warningCount) || 0;
-    sheet.auditHtml = htmlContent || '';
+    sheet.auditWarningCount =
+        Number(warningCount) || 0;
+
+    sheet.auditHtml =
+        htmlContent || '';
 
     syncWorkbook();
+
+    /*
+     * AI 稽核結果會納入 workbook，
+     * 因此完成稽核後直接要求重新匯出 JSON。
+     */
+    markSessionNeedsExport();
 }
 
 function markAuditAsOutdatedForCurrentSheet() {
@@ -6050,62 +6269,92 @@ updateAiAuditButtonState();
         // N. 管理員登入與驗證邏輯處理 (含管理員權限介面動態呈現)
         // ----------------------------------------------------
 async function toggleAdmin() {
+
     /*
-     * 已登入時維持原本的
-     * 儲存並登出流程。
+     * 已登入時執行登出。
      */
-if (canEditData()) {
-    const confirmed =
-        confirm(
-            '確定要登出目前模式嗎？\n\n' +
-            '尚未匯出的變更將在登出後清除，' +
-            '請確認已先匯出最新 JSON。'
-        );
+    if (canEditData()) {
 
-    if (!confirmed) {
-        return;
-    }
+        if (isLoggingOut) {
+            return;
+        }
 
-    try {
+        const logoutMessage =
+            hasPendingSessionChanges()
+                ? (
+                    '確定要登出目前模式嗎？\n\n' +
+                    '目前仍有尚未儲存或尚未匯出 JSON 的工作成果，' +
+                    '登出後本次工作階段資料將清除。\n\n' +
+                    '請確認已先完成儲存並匯出最新 JSON。'
+                )
+                : (
+                    '確定要登出目前模式嗎？\n\n' +
+                    '目前沒有尚未儲存或尚未匯出的工作變更。'
+                );
+
+        if (
+            !confirm(
+                logoutMessage
+            )
+        ) {
+            return;
+        }
+
+        isLoggingOut = true;
+
+        try {
+
+            /*
+             * 登出前確認舊 IndexedDB
+             * 沒有留下正式資料。
+             */
+            await clearPersistedRiskSystemData();
+
+        } catch (error) {
+
+            console.error(
+                '清除本機暫存資料失敗：',
+                error
+            );
+
+            showToast(
+                '清除本機暫存資料失敗，請重新整理後再試。',
+                'error'
+            );
+
+            isLoggingOut = false;
+
+            return;
+        }
+
         /*
-         * 登出前再次確認
-         * 舊 IndexedDB 沒有正式資料。
+         * 已確認登出，
+         * 清除所有工作階段防呆旗標。
          */
-        await clearPersistedRiskSystemData();
+        clearWorkProtectionState();
 
-    } catch (error) {
-        console.error(
-            '清除本機暫存資料失敗：',
-            error
-        );
+        lockAdmin();
+
+        closeAdminModal();
+        closePermissionSettingsModal();
+
+        isLoggingOut = false;
 
         showToast(
-            '清除本機暫存資料失敗，請重新整理後再試。',
-            'error'
+            '已完成登出。',
+            'success'
         );
 
         return;
     }
 
-    lockAdmin();
-
-    closeAdminModal();
-    closePermissionSettingsModal();
-
-    showToast(
-        '已完成登出。',
-        'success'
-    );
-
-    return;
-}
 
     /*
-     * 比照績效管理系統：
      * 預覽資料存在時，
      * 登入前先詢問是否退出預覽。
      */
     if (isPreviewDataMode) {
+
         if (
             !confirm(
                 '登入前將先退出預覽並清除目前預覽資料，是否繼續？'
@@ -6117,6 +6366,11 @@ if (canEditData()) {
         clearViewerWorkspace();
     }
 
+
+    /*
+     * 尚未登入：
+     * 正常開啟權限登入視窗。
+     */
     openAdminModal();
 }
 
@@ -6859,8 +7113,25 @@ switchAdminTab('login');
         // ----------------------------------------------------
 function exportToJson() {
     if (!canExportReviewData()) {
-        showToast("請先登入使用者或管理者權限後再匯出資料。", "warning");
+        showToast(
+            "請先登入使用者或管理者權限後再匯出資料。",
+            "warning"
+        );
+
         openAdminModal();
+        return;
+    }
+
+    /*
+     * 尚有未完成「儲存記錄」的修改時，
+     * 不允許直接匯出正式 JSON。
+     */
+    if (hasUnsavedRiskChanges()) {
+        showToast(
+            "目前仍有尚未儲存的風險評估修改，請先按下綠色「儲存記錄」後再匯出 JSON。",
+            "warning"
+        );
+
         return;
     }
 
@@ -6893,11 +7164,22 @@ function exportToJson() {
     a.href = URL.createObjectURL(blob);
     a.download = `職安風險評估RAS_${exportDate}.json`;
 
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+document.body.appendChild(a);
 
-    showToast("JSON 資料已匯出。", "success");
+a.click();
+
+document.body.removeChild(a);
+
+/*
+ * 最新正式 Session
+ * 已完成 JSON 匯出。
+ */
+sessionNeedsExport = false;
+
+showToast(
+    "JSON 資料已匯出。",
+    "success"
+);
 }
 
 function applyImportedRiskAssessmentData(importedData) {
@@ -7015,10 +7297,19 @@ async function loadPreviewJson(event) {
              *
              * 預覽模式只更新目前頁面，不寫入 IndexedDB。
              */
-            isPreviewDataMode = true;
+isPreviewDataMode = true;
 isRiskEditMode = false;
 
-            switchTab(workbook.activeSheetId, true);
+/*
+ * 剛載入的 JSON 本身已有外部檔案，
+ * 不視為本次工作階段的新修改。
+ */
+clearWorkProtectionState();
+
+switchTab(
+    workbook.activeSheetId,
+    true
+);
             updateAdminModeUI();
 
             showToast("預覽資料載入成功！", "success");
@@ -7053,9 +7344,22 @@ async function importFromJson(event) {
 
             const importLabel = isAdminAuthenticated ? '匯入資料' : '載入資料';
 
-            if (!confirm(`${importLabel}將覆蓋目前所有紀錄，確定要繼續嗎？`)) {
-                return;
-            }
+const pendingWorkWarning =
+    hasPendingSessionChanges()
+        ? (
+            "\n\n目前有尚未儲存或尚未匯出的工作成果，" +
+            "繼續後將被覆蓋。"
+        )
+        : "";
+
+if (
+    !confirm(
+        `${importLabel}將覆蓋目前所有紀錄，確定要繼續嗎？` +
+        pendingWorkWarning
+    )
+) {
+    return;
+}
 
             applyImportedRiskAssessmentData(importedData);
 
@@ -7070,10 +7374,17 @@ async function importFromJson(event) {
  * 的 DEFAULT_* 正式設定；
  * AI config 維持既有設定。
  */
-            isPreviewDataMode = false;
-            isRiskEditMode = false;
+isPreviewDataMode = false;
+isRiskEditMode = false;
 
-            /*
+/*
+ * 剛載入的 JSON 已經是一份
+ * 正式存在的外部資料，
+ * 不需立即再次要求匯出。
+ */
+clearWorkProtectionState();
+
+/*
  * 正式資料只載入本次工作階段。
  * 同時清除舊版本可能殘留的 IndexedDB 資料。
  */
