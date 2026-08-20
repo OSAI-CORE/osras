@@ -2994,7 +2994,7 @@ class="group relative overflow-visible
 
 
                 <p class="text-[11px] text-slate-400 leading-snug text-center mt-3">
-                    正式資料維持原有 JSON；預覽資料另設有效期限與開啟次數。
+                    正式資料維持原有檔案格式；預覽資料另設有效期限與開啟次數。
                 </p>
 
 
@@ -4418,7 +4418,7 @@ clearViewerWorkspace();
             if (banner && config.apiKey) {
                 banner.className = "bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3";
                 banner.querySelector('h4').innerText = "系統正在使用：智慧聯網雲端生成引擎";
-                banner.querySelector('p').innerText = "系統將即時呼叫雲端職安語意大模型進行智慧型危害分析與複評；評估資料僅保留於目前工作階段，請使用 JSON 匯出保存正式資料。";
+                banner.querySelector('p').innerText = "系統將即時呼叫雲端職安語意大模型進行智慧型危害分析與複評；評估資料僅保留於目前工作階段，請使用「匯出資料」保存正式資料。";
                 banner.querySelector('i').className = "fa-solid fa-cloud-bolt text-emerald-600 text-xl mt-0.5";
             }
 
@@ -4507,8 +4507,7 @@ function validateAndConsumeLimitedPreview(
             ok: false,
 
             message:
-                '此檔案不是本系統產生的預覽專用 JSON。\n\n' +
-                '請使用「匯出資料 → 預覽資料」產生的檔案。'
+'此檔案不是本系統產生的預覽專用檔案。'
         };
     }
 
@@ -5680,7 +5679,7 @@ async function manualSaveRecords(
     if (showNotification) {
         showToast(
             hadChanges
-                ? "風險評估矩陣表已儲存至目前工作階段，請記得匯出最新 JSON。"
+                ? "風險評估矩陣表已儲存至目前工作階段，請記得匯出最新資料檔案。"
                 : "目前沒有新的矩陣修改。",
             "success"
         );
@@ -6877,10 +6876,10 @@ async function toggleAdmin() {
         const logoutMessage =
             hasPendingSessionChanges()
                 ? (
-                    '確定要登出目前模式嗎？\n\n' +
-                    '目前仍有尚未儲存或尚未匯出 JSON 的工作成果，' +
-                    '登出後本次工作階段資料將清除。\n\n' +
-                    '請確認已先完成儲存並匯出最新 JSON。'
+'確定要登出目前模式嗎？\n\n' +
+'目前仍有尚未儲存或尚未匯出資料檔案的工作成果，' +
+'登出後本次工作階段資料將清除。\n\n' +
+'請確認已先完成儲存並匯出最新資料檔案。'
                 )
                 : (
                     '確定要登出目前模式嗎？\n\n' +
@@ -7099,7 +7098,7 @@ function updateJsonActionButtons() {
             '載入預覽';
 
         let title =
-            '載入限時／限次預覽 JSON';
+            '載入限時／限次預覽檔案';
 
         if (isAdminAuthenticated) {
             iconName =
@@ -8133,7 +8132,7 @@ function exportPreviewJson() {
      */
     if (hasUnsavedRiskChanges()) {
         showToast(
-            "目前仍有尚未儲存的風險評估修改，請先按下綠色「儲存記錄」後再匯出 JSON。",
+            "目前仍有尚未儲存的風險評估修改，請先按下綠色「儲存記錄」後再匯出資料檔案。",
             "warning"
         );
 
@@ -8182,7 +8181,7 @@ document.body.removeChild(a);
 sessionNeedsExport = false;
 
 showToast(
-    "JSON 資料已匯出。",
+    "資料檔案已匯出。",
     "success"
 );
 }
@@ -8389,7 +8388,7 @@ async function loadPreviewJson(
 
 
                 showToast(
-                    '載入失敗：JSON 格式不正確或不是本系統資料。',
+                    '載入失敗：檔案格式不正確或不是本系統資料。',
                     'error'
                 );
 
@@ -8440,7 +8439,7 @@ if (
 
     alert(
         '此檔案為預覽專用資料，不能載入正式工作區。\n\n' +
-        '如需接續編輯，請使用正式「匯出資料」所產生的 JSON。'
+        '如需接續編輯，請使用正式「匯出資料」所產生的檔案。'
     );
 
 
