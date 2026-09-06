@@ -14,16 +14,131 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <!-- Google Fonts Inter & Noto Sans TC -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+<!-- Font Awesome：提前建立 CDN 連線 -->
+<link
+    rel="preconnect"
+    href="https://cdnjs.cloudflare.com"
+    crossorigin
+>
+
+<!-- Font Awesome：優先載入 Solid 圖示字型，避免文字先出現、圖示後補 -->
+<link
+    rel="preload"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2"
+    as="font"
+    type="font/woff2"
+    crossorigin
+>
 
 <!-- Font Awesome Icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+>
+
+<script>
+(function () {
+
+    function showHeaderActionButtons() {
+        document.documentElement.classList.add(
+            'fa-icons-ready'
+        );
+    }
+
+    /*
+     * 等待 Font Awesome Solid 字型真正可以使用後，
+     * 再一次顯示上方功能按鈕。
+     */
+    if (
+        document.fonts &&
+        document.fonts.load
+    ) {
+        document.fonts
+            .load(
+                '900 1em "Font Awesome 6 Free"'
+            )
+            .then(
+                showHeaderActionButtons
+            )
+            .catch(
+                showHeaderActionButtons
+            );
+
+        /*
+         * 防呆：
+         * 即使 CDN 或瀏覽器 Font API 發生例外，
+         * 也不會讓按鈕永久消失。
+         */
+        setTimeout(
+            showHeaderActionButtons,
+            1500
+        );
+
+    } else {
+
+        window.addEventListener(
+            'load',
+            showHeaderActionButtons,
+            { once: true }
+        );
+    }
+
+})();
+</script>
     
     <style>
         body {
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
             background-color: #f8fafc;
         }
+
+/* =========================================================
+   上方功能按鈕初始化
+   Font Awesome 尚未準備完成前先不顯示，
+   避免文字先出現、圖示稍後補上的視覺斷層。
+========================================================= */
+#header-action-buttons {
+    visibility: hidden;
+}
+
+html.fa-icons-ready #header-action-buttons {
+    visibility: visible;
+}        
+
+        /* =========================================================
+   權限登入視窗
+   字體與密碼圓點比照績效管理系統
+========================================================= */
+#adminModal {
+    font-family: 'Noto Sans TC', sans-serif;
+}
+
+/* 權限登入主標題 */
+#adminModal h3 {
+    font-family: 'Noto Sans TC', sans-serif;
+}
+
+/* 密碼輸入框：
+   比照績效管理系統的字體、大小、粗細與字距 */
+#adminPasswordInput {
+    font-family: 'Noto Sans TC', sans-serif !important;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.42em;
+}
+
+/* 未輸入密碼時的六顆圓點也完全使用相同比例 */
+#adminPasswordInput::placeholder {
+    font-family: 'Noto Sans TC', sans-serif !important;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.42em;
+    opacity: 1;
+}
 
         /* 職安評估表配色標準 */
         .bg-section-1 { background-color: #fef08a; } /* 作業編號及名稱 (淡黃) */
@@ -397,6 +512,65 @@ body:not(.edit-mode) table.osra-table textarea:focus {
         transform:
             translateX(-50%)
             translateY(-2px) !important;
+    }
+}
+
+/* =========================================================
+   系統功能按鈕 Tooltip
+   外觀比照法規系統雲端中心提示框
+   僅桌機滑鼠裝置顯示，手機觸控不顯示
+========================================================= */
+.system-tooltip-btn {
+    position: relative;
+}
+
+@media (hover: hover) and (pointer: fine) {
+
+    .system-tooltip-btn::after {
+        content: attr(data-tooltip);
+
+        position: absolute;
+        z-index: 200;
+
+        left: 50%;
+        top: calc(100% + 6px);
+
+        transform:
+            translateX(-50%)
+            translateY(-2px);
+
+        padding: 4px 7px;
+        border-radius: 6px;
+
+        background: rgba(15, 23, 42, 0.94);
+        color: #ffffff;
+
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.2;
+
+        white-space: nowrap;
+
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+
+        transition:
+            opacity 0.14s ease,
+            transform 0.14s ease,
+            visibility 0.14s ease;
+
+        box-shadow:
+            0 6px 16px rgba(15, 23, 42, 0.18);
+    }
+
+    .system-tooltip-btn:hover::after {
+        opacity: 1;
+        visibility: visible;
+
+        transform:
+            translateX(-50%)
+            translateY(0);
     }
 }
 
@@ -1369,6 +1543,82 @@ nav p {
 }
 
 /* =========================================================
+   手機直式 Header 最終排序：
+   雲端中心固定第一排
+   僅調整位置，不改按鈕尺寸及顏色
+========================================================= */
+@media screen and (orientation: portrait) and (max-width: 767px) {
+
+    /* 雲端中心：第一排滿版 */
+    nav #cloud-preview-entry-btn {
+        grid-column: 1 / -1 !important;
+        grid-row: 1 !important;
+        order: 1 !important;
+
+        font-weight: 900;
+        border-radius: 0.75rem;
+    }
+
+    /* 預覽者：第二排列印／載入預覽 */
+    body:not(.admin-mode):not(.editor-mode)
+    nav #print-pdf-btn {
+        grid-row: 2 !important;
+        order: 2 !important;
+    }
+
+    body:not(.admin-mode):not(.editor-mode)
+    nav #load-json-btn {
+        grid-row: 2 !important;
+        order: 3 !important;
+    }
+
+    /* 使用者：第二排列印／匯出／載入 */
+    body.editor-mode
+    nav #print-pdf-btn {
+        grid-row: 2 !important;
+        order: 2 !important;
+    }
+
+    body.editor-mode
+    nav #export-json-btn {
+        grid-row: 2 !important;
+        order: 3 !important;
+    }
+
+    body.editor-mode
+    nav #load-json-btn {
+        grid-row: 2 !important;
+        order: 4 !important;
+    }
+
+    /* 管理者：第二排列印／權限設定 */
+    body.admin-mode
+    nav #print-pdf-btn {
+        grid-row: 2 !important;
+        order: 2 !important;
+    }
+
+    body.admin-mode
+    nav #mobile-permission-settings-btn {
+        grid-row: 2 !important;
+        order: 3 !important;
+    }
+
+    /* 管理者：第三排匯出／匯入 */
+    body.admin-mode
+    nav #export-json-btn {
+        grid-row: 3 !important;
+        order: 4 !important;
+    }
+
+    body.admin-mode
+    nav #load-json-btn {
+        grid-row: 3 !important;
+        order: 5 !important;
+    }
+}
+
+/* =========================================================
    桌機版：四張統計圖卡高度精簡
 ========================================================= */
 @media screen and (min-width: 768px) {
@@ -1422,6 +1672,69 @@ nav p {
 
 #matrix-action-buttons {
     gap: 6px;
+}
+
+/* =========================================================
+   矩陣四顆功能按鈕 Tooltip
+   使用 body 浮動提示框，不調整矩陣 Header 層級
+========================================================= */
+
+/*
+ * 關閉這四顆按鈕原本的 ::after Tooltip，
+ * 避免被矩陣外層 overflow-hidden 裁切。
+ */
+#matrix-action-buttons
+.system-tooltip-btn::after {
+    display: none !important;
+}
+
+/*
+ * 實際提示框會由 JavaScript 動態放到 body。
+ * 外觀比照法規系統雲端中心 Tooltip。
+ */
+.matrix-floating-tooltip {
+    position: fixed;
+
+    z-index: 45;
+
+    padding: 4px 7px;
+    border-radius: 6px;
+
+    background: rgba(15, 23, 42, 0.94);
+    color: #ffffff;
+
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.2;
+
+    white-space: nowrap;
+
+    opacity: 0;
+    visibility: hidden;
+
+    pointer-events: none;
+
+    transform:
+        translateX(-50%)
+        translateY(-2px);
+
+    transition:
+        opacity 0.14s ease,
+        transform 0.14s ease,
+        visibility 0.14s ease;
+
+    box-shadow:
+        0 6px 16px
+        rgba(15, 23, 42, 0.18);
+}
+
+.matrix-floating-tooltip.is-visible {
+    opacity: 1;
+    visibility: visible;
+
+    transform:
+        translateX(-50%)
+        translateY(0);
 }
 
 .matrix-bulk-icon-btn,
@@ -2474,14 +2787,13 @@ table.osra-table textarea::placeholder {
         </div>
 
         <!-- 手機直式：權限登入／登出固定於標題右側 -->
-        <button
-            id="mobile-admin-toggle-btn"
-            type="button"
-            onclick="toggleAdmin()"
-            class="mobile-admin-key-btn hidden bg-slate-800 hover:bg-slate-700 text-yellow-500 hover:text-yellow-400 rounded-lg text-sm font-medium transition items-center justify-center border border-slate-700 shrink-0"
-            title="權限登入"
-            aria-label="權限登入"
-        >
+<button
+    id="mobile-admin-toggle-btn"
+    type="button"
+    onclick="toggleAdmin()"
+    class="mobile-admin-key-btn hidden bg-slate-800 hover:bg-slate-700 text-yellow-500 hover:text-yellow-400 rounded-lg text-sm font-medium transition items-center justify-center border border-slate-700 shrink-0"
+    aria-label="權限登入"
+>
             <i
                 id="mobile-admin-key-icon"
                 class="fa-solid fa-key"
@@ -2492,120 +2804,166 @@ table.osra-table textarea::placeholder {
 </div>
 </div>
             
-            <!-- 導航功能按鈕組：簡潔精緻單排按鈕群 -->
-            <div class="flex flex-wrap justify-center lg:justify-end items-center gap-2.5 w-full lg:w-auto">
-<!-- 手機直式第一排左側：列印 -->
-<button
-    id="print-pdf-btn"
-    type="button"
-    onclick="printRiskAssessment()"
-    class="bg-slate-700 hover:bg-slate-600 text-white px-3.5 py-1.5 rounded-lg text-sm font-medium transition flex items-center gap-1.5 shadow-sm"
+<!-- 導航功能按鈕組：簡潔精緻單排按鈕群 -->
+<div
+    id="header-action-buttons"
+    class="flex flex-wrap justify-center lg:justify-end items-center gap-2.5 w-full lg:w-auto"
 >
-    <i class="fa-solid fa-print"></i>
-    <span>列印 / PDF</span>
-</button>
 
-<!-- 手機直式：僅管理者顯示 -->
-<button
-    id="mobile-permission-settings-btn"
-    type="button"
-    onclick="openPermissionSettingsModal()"
-    class="hidden bg-slate-700 hover:bg-slate-600 text-white px-3.5 py-1.5 rounded-lg text-sm font-medium transition items-center justify-center gap-1.5 shadow-sm"
-    title="權限與密碼設定"
-    aria-label="權限與密碼設定"
->
-    <i class="fa-solid fa-gear text-cyan-300"></i>
-    <span>權限設定</span>
-</button>
+    <!-- 雲端中心：固定放在功能列最左側 -->
+    <button id="cloud-preview-entry-btn"
+            type="button"
+            onclick="openCloudPreviewModal()"
+            class="bg-sky-600 hover:bg-sky-700
+                   text-white
+                   px-3.5 py-1.5
+                   rounded-xl
+                   text-xs sm:text-sm
+                   font-black
+                   transition-all
+                   flex items-center justify-center
+                   gap-1.5
+                   shadow-md
+                   whitespace-nowrap"
+            aria-label="雲端中心">
 
+        <i class="fas fa-cloud w-4 text-center"></i>
+
+        <span>雲端中心</span>
+    </button>
+
+    <!-- 列印 / PDF -->
+    <button
+        id="print-pdf-btn"
+        type="button"
+        onclick="printRiskAssessment()"
+        class="bg-slate-700 hover:bg-slate-600
+               text-white
+               px-3.5 py-1.5
+               rounded-xl
+               text-xs sm:text-sm
+               font-black
+               transition-all
+               flex items-center
+               gap-1.5
+               shadow-sm"
+    >
+        <i class="fas fa-print"></i>
+        <span>列印 / PDF</span>
+    </button>
+
+    <!-- 手機直式：僅管理者顯示 -->
+    <button
+        id="mobile-permission-settings-btn"
+        type="button"
+        onclick="openPermissionSettingsModal()"
+        class="hidden
+               bg-slate-700 hover:bg-slate-600
+               text-white
+               px-3.5 py-1.5
+               rounded-xl
+               text-xs sm:text-sm
+               font-black
+               transition-all
+               items-center justify-center
+               gap-1.5
+               shadow-sm"
+        aria-label="權限與密碼設定"
+    >
+        <i class="fas fa-gear text-cyan-300"></i>
+        <span>權限設定</span>
+    </button>
+
+<!-- 匯出資料 -->
 <button id="export-json-btn"
         onclick="openDataExportModal()"
-        class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-lg text-sm font-medium transition flex items-center gap-1.5 shadow-md">
-    <i class="fa-solid fa-file-export"></i>
+        class="hidden
+               bg-emerald-600 hover:bg-emerald-700
+               text-white
+               px-3.5 py-1.5
+               rounded-xl
+               text-xs sm:text-sm
+               font-black
+               transition-all
+               flex items-center
+               gap-1.5
+               shadow-md">
+    <i class="fas fa-file-export"></i>
     <span id="export-json-label">匯出資料</span>
 </button>
 
-<input type="file" id="dbImportInput" accept=".json" class="hidden" onchange="handleJsonFileLoad(event)">
+    <input type="file"
+           id="dbImportInput"
+           accept=".json"
+           class="hidden"
+           onchange="handleJsonFileLoad(event)">
 
-<button id="load-json-btn"
-        onclick="handleLoadJsonAction()"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 rounded-lg text-sm font-medium transition flex items-center gap-1.5 shadow-md">
-    <i class="fa-solid fa-download"></i>
-    <span id="load-json-label">載入預覽</span>
-</button>
+    <!-- 載入預覽／載入資料／匯入資料／退出預覽 -->
+    <button id="load-json-btn"
+            onclick="handleLoadJsonAction()"
+            class="bg-blue-600 hover:bg-blue-700
+                   text-white
+                   px-3.5 py-1.5
+                   rounded-xl
+                   text-xs sm:text-sm
+                   font-black
+                   transition-all
+                   flex items-center
+                   gap-1.5
+                   shadow-md">
 
-<button id="cloud-preview-entry-btn"
+        <i class="fas fa-file-import w-4 text-center"></i>
+
+        <span id="load-json-label">
+            載入預覽
+        </span>
+    </button>
+
+    <!-- 桌機及手機橫式：僅管理者顯示 -->
+    <button
+        id="permission-settings-btn"
         type="button"
-        onclick="openCloudPreviewModal()"
-        class="bg-sky-600 hover:bg-sky-700
+        onclick="openPermissionSettingsModal()"
+        class="hidden
+               bg-slate-800 hover:bg-slate-700
                text-white
                px-3.5 py-1.5
-               rounded-lg
+               rounded-xl
+               text-xs sm:text-sm
+               font-black
+               transition-all
+               items-center justify-center
+               gap-1.5
+               border border-cyan-700
+               shadow-md
+               whitespace-nowrap"
+        aria-label="權限與密碼設定"
+    >
+        <i class="fas fa-gear text-cyan-300"></i>
+        <span>權限設定</span>
+    </button>
+
+    <!-- 權限登入／登出 -->
+    <button
+        id="admin-toggle-btn"
+        type="button"
+        onclick="toggleAdmin()"
+        class="bg-slate-800 hover:bg-slate-700
+               text-yellow-500 hover:text-yellow-400
+               p-2.5 rounded-lg
                text-sm font-medium
                transition
                flex items-center justify-center
-               gap-1.5
-               shadow-md
-               whitespace-nowrap"
-        title="雲端中心"
-        aria-label="雲端中心">
+               border border-slate-700"
+        aria-label="權限登入或登出"
+    >
+        <i
+            id="admin-key-icon"
+            class="fa-solid fa-key"
+        ></i>
+    </button>
 
-    <i data-lucide="cloudy"
-       class="w-4 h-4"></i>
-
-    <span>雲端中心</span>
-</button>
-
-<!--
-    桌機及手機橫式：
-    僅管理者顯示完整的「齒輪＋權限設定」按鈕
--->
-<button
-    id="permission-settings-btn"
-    type="button"
-    onclick="openPermissionSettingsModal()"
-    class="hidden
-           bg-slate-800 hover:bg-slate-700
-           text-white
-           px-3.5 py-1.5
-           rounded-lg
-           text-sm font-medium
-           transition
-           items-center justify-center
-           gap-1.5
-           border border-cyan-700
-           shadow-md
-           whitespace-nowrap"
-    title="權限與密碼設定"
-    aria-label="權限與密碼設定"
->
-    <i class="fa-solid fa-gear text-cyan-300"></i>
-    <span>權限設定</span>
-</button>
-
-<!--
-    登入／登出固定放在功能列最右側
--->
-<button
-    id="admin-toggle-btn"
-    type="button"
-    onclick="toggleAdmin()"
-    class="bg-slate-800 hover:bg-slate-700
-           text-yellow-500 hover:text-yellow-400
-           p-2.5 rounded-lg
-           text-sm font-medium
-           transition
-           flex items-center justify-center
-           border border-slate-700"
-    title="權限登入 / 登出"
-    aria-label="權限登入或登出"
->
-    <i
-        id="admin-key-icon"
-        class="fa-solid fa-key"
-    ></i>
-</button>
-            </div>
+</div>
         </div>
     </nav>
 
@@ -2682,9 +3040,9 @@ table.osra-table textarea::placeholder {
             id="bulk-generate-btn"
             type="button"
             onclick="openBulkImportModal()"
-            class="admin-delete-block matrix-bulk-icon-btn"
-            title="批次智慧生成"
-            aria-label="批次智慧生成"
+class="admin-delete-block matrix-bulk-icon-btn system-tooltip-btn"
+data-tooltip="批次智慧生成"
+aria-label="批次智慧生成"
         >
             <i class="fa-solid fa-wand-magic-sparkles"></i>
         </button>
@@ -2694,9 +3052,9 @@ table.osra-table textarea::placeholder {
     id="add-row-btn"
     type="button"
     onclick="handleAddEvaluationRowClick()"
-    class="admin-edit-block matrix-add-icon-btn"
-    title="新增評估項次"
-    aria-label="新增評估項次"
+class="admin-edit-block matrix-add-icon-btn system-tooltip-btn"
+data-tooltip="新增評估項次"
+aria-label="新增評估項次"
 >
     <i class="fa-solid fa-plus"></i>
 </button>
@@ -2706,9 +3064,9 @@ table.osra-table textarea::placeholder {
             id="risk-edit-toggle-btn"
             type="button"
             onclick="toggleRiskEditMode()"
-            class="hidden edit-toggle-icon-btn is-view"
-            title="進入風險評估矩陣編輯模式"
-            aria-label="進入風險評估矩陣編輯模式"
+class="hidden edit-toggle-icon-btn is-view system-tooltip-btn"
+data-tooltip="編輯模式"
+aria-label="編輯模式"
         >
             <i class="fa-solid fa-pen-to-square"></i>
         </button>
@@ -2718,9 +3076,9 @@ table.osra-table textarea::placeholder {
             id="save-records-btn"
             type="button"
             onclick="manualSaveRecords()"
-            class="hidden save-data-icon-btn"
-            title="儲存評估記錄"
-            aria-label="儲存評估記錄"
+class="hidden save-data-icon-btn system-tooltip-btn"
+data-tooltip="儲存記錄"
+aria-label="儲存記錄"
         >
             <i class="fa-solid fa-floppy-disk"></i>
         </button>
@@ -3038,54 +3396,132 @@ class="group relative overflow-visible
         </div>
     </main>
 
-<!-- 彈窗1：管理員安全登入 Modal -->
+<!-- 權限登入視窗：外觀比照績效管理系統 -->
 <div id="adminModal"
      onpointerdown="closeAdminModalOutside(event)"
-     class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+     class="fixed inset-0
+            bg-slate-900/60
+            backdrop-blur-sm
+            z-[100]
+            hidden
+            flex items-center justify-center
+            p-4">
 
     <div onclick="event.stopPropagation()"
-         class="w-full max-w-sm mx-4 overflow-hidden rounded-2xl bg-white shadow-xl border border-slate-200 animate-fade-in">
+         class="bg-white
+                w-full max-w-sm mx-3
+                rounded-2xl
+                shadow-2xl
+                border border-slate-200
+                overflow-hidden
+                max-h-[calc(100svh-24px)]
+                overflow-y-auto">
 
         <!-- 頂部簡潔標頭 -->
-        <div class="relative bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-900 px-5 py-4 text-white">
-            <button onclick="closeAdminModal()"
-                    class="absolute right-3 top-3 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white transition flex items-center justify-center">
-                <i class="fa-solid fa-xmark text-sm"></i>
+        <div class="relative
+                    bg-gradient-to-r
+                    from-slate-900
+                    via-slate-800
+                    to-indigo-900
+                    px-5 py-4
+                    text-white">
+
+            <button
+                type="button"
+                onclick="closeAdminModal()"
+                class="absolute
+                       right-3 top-3
+                       w-8 h-8
+                       rounded-full
+                       bg-white/10
+                       hover:bg-white/20
+                       text-slate-200
+                       hover:text-white
+                       transition
+                       flex items-center
+                       justify-center"
+                title="關閉"
+            >
+                <i
+                    data-lucide="x"
+                    class="w-4 h-4"
+                ></i>
             </button>
 
             <div class="pr-8">
+
                 <div class="flex items-center gap-2.5">
-                    <i class="fa-solid fa-lock text-yellow-300 text-lg"></i>
+
+                    <i
+                        data-lucide="lock-keyhole"
+                        class="w-5 h-5 text-yellow-300"
+                    ></i>
+
                     <h3 class="text-lg font-black tracking-wide">
-                        管理員控制台
+                        權限登入
                     </h3>
+
                 </div>
 
-                <p class="mt-1 text-[11px] text-slate-300 tracking-[0.14em] font-semibold">
+                <p class="mt-1
+                          text-[11px]
+                          text-slate-300
+                          tracking-[0.14em]
+                          font-semibold">
                     ACCESS CONTROL
                 </p>
+
             </div>
         </div>
 
         <!-- 登入內容 -->
-        <div id="tab-login" class="px-5 py-5 space-y-4">
+        <div id="tab-login"
+             class="px-5 py-5 space-y-4">
 
-            <div id="admin-lock-screen" class="space-y-4">
+            <div id="admin-lock-screen"
+                 class="space-y-4">
 
                 <!-- 安全登入狀態列 -->
-                <div class="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-700 px-4 py-2.5 text-base font-black">
-                    <i class="fa-solid fa-shield-keyhole text-indigo-600"></i>
+                <div class="w-full
+                            flex items-center justify-center
+                            gap-2
+                            rounded-xl
+                            bg-indigo-50
+                            border border-indigo-100
+                            text-indigo-700
+                            px-4 py-2.5
+                            text-base
+                            font-black">
+
+                    <i
+                        data-lucide="shield-check"
+                        class="w-5 h-5 text-indigo-600"
+                    ></i>
+
                     安全驗證
                 </div>
 
-                <p class="text-center text-xs text-slate-500 leading-relaxed">
+                <p class="text-center
+                          text-xs
+                          text-slate-500
+                          leading-relaxed">
+
                     請輸入管理者或使用者密碼，以啟動對應的系統操作權限。
+
                 </p>
 
                 <!-- 密碼輸入 -->
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2 text-center">
+
+                    <label class="block
+                                  text-sm
+                                  font-bold
+                                  text-slate-700
+                                  mb-2
+                                  text-center">
+
                         請輸入登入密碼
+
                     </label>
 
                     <input
@@ -3093,34 +3529,102 @@ class="group relative overflow-visible
                         id="adminPasswordInput"
                         placeholder="••••••"
                         onkeydown="handleAdminLoginKey(event)"
-                        class="w-full h-11 border border-slate-300 rounded-xl px-4 text-base text-center tracking-[0.42em] font-bold bg-slate-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition"
+                        class="w-full
+                               h-11
+                               border border-slate-300
+                               rounded-xl
+                               px-4
+                               text-base
+                               text-center
+                               tracking-[0.42em]
+                               font-bold
+                               bg-slate-50
+                               focus:bg-white
+                               focus:outline-none
+                               focus:ring-4
+                               focus:ring-indigo-100
+                               focus:border-indigo-500
+                               transition
+                               text-slate-900"
                     >
+
                 </div>
 
                 <!-- 登入按鈕 -->
-                <button onclick="verifyAdminPassword()"
-                        class="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-black shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-right-to-bracket"></i>
+                <button
+                    type="button"
+                    onclick="verifyAdminPassword()"
+                    class="w-full
+                           h-11
+                           rounded-xl
+                           bg-indigo-600
+                           hover:bg-indigo-700
+                           text-white
+                           text-sm
+                           font-black
+                           shadow-md
+                           shadow-indigo-500/20
+                           transition
+                           flex items-center
+                           justify-center
+                           gap-2"
+                >
+
+                    <i
+                        data-lucide="log-in"
+                        class="w-4 h-4"
+                    ></i>
+
                     登入驗證
+
                 </button>
 
-                <p class="text-[10px] text-center text-slate-400 leading-relaxed">
-                    未登入狀態僅提供預覽、列印與 PDF 等功能。
-                </p>
             </div>
 
-            <!-- 保留此區塊，避免 JS 參照錯誤；目前正常情況不顯示 -->
-            <div id="admin-settings-screen" class="space-y-4 hidden">
-                <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-xs text-emerald-800 flex items-center gap-2">
+            <!--
+                保留原有隱藏區塊，
+                避免既有 JavaScript 參照失效。
+            -->
+            <div id="admin-settings-screen"
+                 class="space-y-4 hidden">
+
+                <div class="bg-emerald-50
+                            border border-emerald-100
+                            rounded-xl
+                            p-3
+                            text-xs
+                            text-emerald-800
+                            flex items-center
+                            gap-2">
+
                     <i class="fa-solid fa-circle-check text-emerald-600"></i>
-                    <span>密碼驗證成功！目前已處於對應權限模式。</span>
+
+                    <span>
+                        密碼驗證成功！目前已處於對應權限模式。
+                    </span>
+
                 </div>
+
                 <div class="flex gap-2">
-                    <button onclick="toggleAdmin()"
-                            class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-semibold shadow transition">
+
+                    <button
+                        onclick="toggleAdmin()"
+                        class="w-full
+                               py-2
+                               bg-slate-800
+                               hover:bg-slate-700
+                               text-white
+                               rounded-xl
+                               text-sm
+                               font-semibold
+                               shadow
+                               transition"
+                    >
                         安全鎖定（登出）
                     </button>
+
                 </div>
+
             </div>
 
         </div>
@@ -9915,7 +10419,7 @@ const toggleEnabledIcon =
 
 const toggleEnabledClass =
     previewEnabled
-        ? 'border-amber-100 bg-amber-50 text-amber-600 hover:bg-amber-100 hover:border-amber-200'
+        ? 'border-amber-100 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:border-amber-200'
         : 'border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:border-emerald-200';
 
 
@@ -21020,12 +21524,23 @@ class="w-10 bg-white border border-slate-200 rounded text-center font-bold">
                 <!-- 操作按鈕 (帶有 admin-only-cell 樣式以實現動態控制) -->
                 <td class="text-center p-1 bg-slate-50 admin-delete-cell">
                     <div class="flex justify-center gap-1.5">
-                        <button onclick="duplicateRow(${rowId})" title="複製此行" class="text-slate-400 hover:text-indigo-600 transition">
-                            <i class="fa-solid fa-copy"></i>
-                        </button>
-                        <button onclick="deleteRow(${rowId})" title="刪除此行" class="text-slate-400 hover:text-red-600 transition">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+<button
+    onclick="duplicateRow(${rowId})"
+    class="system-tooltip-btn text-slate-400 hover:text-indigo-600 transition"
+    data-tooltip="複製此行"
+    aria-label="複製此行"
+>
+    <i class="fa-solid fa-copy"></i>
+</button>
+
+<button
+    onclick="deleteRow(${rowId})"
+    class="system-tooltip-btn text-slate-400 hover:text-red-600 transition"
+    data-tooltip="刪除此行"
+    aria-label="刪除此行"
+>
+    <i class="fa-solid fa-trash"></i>
+</button>
                     </div>
                 </td>
             `;
@@ -21931,22 +22446,12 @@ function updateAiAuditButtonState() {
         String(!isAvailable)
     );
 
-    /*
-     * 預覽者及無資料狀態不顯示瀏覽器 tooltip，
-     * 避免游標移入時出現額外反應。
-     */
-    if (!hasPermission) {
-        btn.removeAttribute(
-            'title'
-        );
-    } else if (!hasRows) {
-        btn.removeAttribute(
-            'title'
-        );
-    } else {
-        btn.title =
-            '執行 AI 風險評估稽核';
-    }
+/*
+ * AI 稽核按鈕不顯示 Tooltip。
+ */
+btn.removeAttribute(
+    'title'
+);
 }
 
 async function runAiAudit() {
@@ -22595,8 +23100,28 @@ function openAdminModal() {
     const settingsScreen = document.getElementById('admin-settings-screen');
     const input = document.getElementById('adminPasswordInput');
 
+    /*
+     * 若矩陣 Tooltip 正在顯示，
+     * 開啟登入視窗前立即收起。
+     */
+    document
+        .getElementById(
+            'matrix-floating-tooltip'
+        )
+        ?.classList
+        .remove(
+            'is-visible'
+        );
+
     if (modal) {
         modal.classList.remove('hidden');
+    }
+
+    /*
+     * 登入視窗圖示比照績效系統使用 Lucide。
+     */
+    if (window.lucide) {
+        lucide.createIcons();
     }
 
     if (lockScreen) {
@@ -22715,58 +23240,41 @@ function updateJsonActionButtons() {
     }
 
     if (loadBtn) {
-        let iconName =
-            'file-search';
+        let iconClass =
+            'fas fa-file-import';
 
         let label =
             '載入預覽';
 
-        let title =
-            '載入限時／限次預覽檔案';
-
         if (isAdminAuthenticated) {
-            iconName =
-                'file-input';
+            iconClass =
+                'fas fa-file-import';
 
             label =
                 '匯入資料';
 
-            title =
-                '匯入並覆蓋正式資料';
-
         } else if (
             isEditorAuthenticated
         ) {
-            iconName =
-                'file-input';
+            iconClass =
+                'fas fa-file-import';
 
             label =
                 '載入資料';
 
-            title =
-                '載入並覆蓋正式資料';
-
         } else if (
             isPreviewDataMode
         ) {
-            /*
-             * 比照績效管理系統：
-             * eye-off ＋ 退出預覽。
-             */
-            iconName =
-                'eye-off';
+            iconClass =
+                'fas fa-eye-slash';
 
             label =
                 '退出預覽';
-
-            title =
-                '退出目前預覽資料';
         }
 
         loadBtn.innerHTML = `
             <i
-                data-lucide="${iconName}"
-                class="w-4 h-4"
+                class="${iconClass} w-4 text-center"
             ></i>
 
             <span id="load-json-label">
@@ -22774,17 +23282,159 @@ function updateJsonActionButtons() {
             </span>
         `;
 
-        loadBtn.title =
-            title;
+        /*
+         * 上方資料載入功能按鈕
+         * 不顯示 Tooltip。
+         */
+        loadBtn.removeAttribute(
+            'title'
+        );
     }
 
     /*
-     * 重新渲染動態插入的 Lucide 圖示。
+     * 其他區域仍有 Lucide 圖示，
+     * 因此保留既有初始化。
      */
     if (window.lucide) {
         lucide.createIcons();
     }
 }
+
+/* =========================================================
+   矩陣功能按鈕浮動 Tooltip
+
+   不修改矩陣 Header 的 overflow / z-index，
+   Tooltip 直接放在 body 顯示。
+========================================================= */
+function initMatrixFloatingTooltips() {
+
+    /*
+     * 手機及觸控裝置不顯示 Tooltip。
+     */
+    const hoverSupported =
+        window.matchMedia(
+            '(hover: hover) and (pointer: fine)'
+        );
+
+    let tooltip =
+        document.getElementById(
+            'matrix-floating-tooltip'
+        );
+
+    if (!tooltip) {
+        tooltip =
+            document.createElement(
+                'div'
+            );
+
+        tooltip.id =
+            'matrix-floating-tooltip';
+
+        tooltip.className =
+            'matrix-floating-tooltip';
+
+        document.body.appendChild(
+            tooltip
+        );
+    }
+
+    const buttonIds = [
+        'bulk-generate-btn',
+        'add-row-btn',
+        'risk-edit-toggle-btn',
+        'save-records-btn'
+    ];
+
+    function hideTooltip() {
+        tooltip.classList.remove(
+            'is-visible'
+        );
+    }
+
+    function showTooltip(button) {
+
+        if (!hoverSupported.matches) {
+            return;
+        }
+
+        const text =
+            button.getAttribute(
+                'data-tooltip'
+            );
+
+        if (!text) {
+            return;
+        }
+
+        const rect =
+            button.getBoundingClientRect();
+
+        tooltip.textContent =
+            text;
+
+        tooltip.style.left =
+            `${rect.left + rect.width / 2}px`;
+
+        tooltip.style.top =
+            `${rect.bottom + 6}px`;
+
+        tooltip.classList.add(
+            'is-visible'
+        );
+    }
+
+    buttonIds.forEach(id => {
+
+        const button =
+            document.getElementById(
+                id
+            );
+
+        if (!button) {
+            return;
+        }
+
+        button.addEventListener(
+            'mouseenter',
+            () => showTooltip(button)
+        );
+
+        button.addEventListener(
+            'mouseleave',
+            hideTooltip
+        );
+
+        /*
+         * 點擊任何矩陣按鈕立即收起，
+         * 避免開啟其他視窗時殘留。
+         */
+        button.addEventListener(
+            'mousedown',
+            hideTooltip
+        );
+
+        button.addEventListener(
+            'click',
+            hideTooltip
+        );
+    });
+
+    /*
+     * 捲動或改變視窗尺寸時也收起。
+     */
+    window.addEventListener(
+        'scroll',
+        hideTooltip,
+        true
+    );
+
+    window.addEventListener(
+        'resize',
+        hideTooltip
+    );
+}
+
+initMatrixFloatingTooltips();
 
 /* =========================================================
    風險評估矩陣編輯／檢視控制
@@ -22836,15 +23486,24 @@ function updateRiskEditModeControls() {
             }"></i>
         `;
 
-        editBtn.title =
-            isRiskEditMode
-                ? '結束編輯並切換為檢視模式'
-                : '進入風險評估矩陣編輯模式';
+const editTooltip =
+    isRiskEditMode
+        ? '檢視模式'
+        : '編輯模式';
 
-        editBtn.setAttribute(
-            'aria-label',
-            editBtn.title
-        );
+editBtn.removeAttribute(
+    'title'
+);
+
+editBtn.setAttribute(
+    'data-tooltip',
+    editTooltip
+);
+
+editBtn.setAttribute(
+    'aria-label',
+    editTooltip
+);
     }
 
     if (saveBtn) {
@@ -23007,48 +23666,164 @@ if (mobilePermissionBtn) {
     mobilePermissionBtn.classList.toggle('inline-flex', isAdminAuthenticated);
 }    
 
-    if (isAdminAuthenticated) {
-if (icon) icon.className = "fa-solid fa-unlock-keyhole text-yellow-400";
-if (mobileIcon) mobileIcon.className = "fa-solid fa-unlock-keyhole text-yellow-400";
-
-        if (btn) {
-            btn.title = "管理者登出";
-            btn.className = "bg-slate-800 hover:bg-slate-700 text-yellow-400 hover:text-yellow-300 p-2.5 rounded-lg text-sm font-medium transition flex items-center justify-center border border-yellow-600 shadow-md";
-        }
-
-        if (mobileBtn) {
-            mobileBtn.title = "管理者登出";
-            mobileBtn.className = "mobile-admin-key-btn hidden bg-slate-800 hover:bg-slate-700 text-yellow-400 hover:text-yellow-300 p-2.5 rounded-lg text-sm font-medium transition items-center justify-center border border-yellow-600 shadow-md shrink-0";
-        }
-
-    } else if (isEditorAuthenticated) {
-if (icon) icon.className = "fa-solid fa-unlock-keyhole text-emerald-400";
-if (mobileIcon) mobileIcon.className = "fa-solid fa-unlock-keyhole text-emerald-400";
-
-        if (btn) {
-            btn.title = "使用者登出";
-            btn.className = "bg-slate-800 hover:bg-slate-700 text-emerald-400 hover:text-emerald-300 p-2.5 rounded-lg text-sm font-medium transition flex items-center justify-center border border-emerald-600 shadow-md";
-        }
-
-        if (mobileBtn) {
-            mobileBtn.title = "使用者登出";
-            mobileBtn.className = "mobile-admin-key-btn hidden bg-slate-800 hover:bg-slate-700 text-emerald-400 hover:text-emerald-300 p-2.5 rounded-lg text-sm font-medium transition items-center justify-center border border-emerald-600 shadow-md shrink-0";
-        }
-
-    } else {
-        if (icon) icon.className = "fa-solid fa-key text-yellow-500";
-        if (mobileIcon) mobileIcon.className = "fa-solid fa-key text-yellow-500";
-
-        if (btn) {
-            btn.title = "權限登入";
-            btn.className = "bg-slate-800 hover:bg-slate-700 text-yellow-500 hover:text-yellow-400 p-2.5 rounded-lg text-sm font-medium transition flex items-center justify-center border border-slate-700";
-        }
-
-        if (mobileBtn) {
-            mobileBtn.title = "權限登入";
-            mobileBtn.className = "mobile-admin-key-btn hidden bg-slate-800 hover:bg-slate-700 text-yellow-500 hover:text-yellow-400 p-2.5 rounded-lg text-sm font-medium transition items-center justify-center border border-slate-700 shrink-0";
-        }
+if (isAdminAuthenticated) {
+    if (icon) {
+        icon.className =
+            "fa-solid fa-unlock-keyhole text-yellow-400";
     }
+
+    if (mobileIcon) {
+        mobileIcon.className =
+            "fa-solid fa-unlock-keyhole text-yellow-400";
+    }
+
+    if (btn) {
+        btn.removeAttribute('title');
+
+        btn.setAttribute(
+            'data-tooltip',
+            '管理者登出'
+        );
+
+        btn.setAttribute(
+            'aria-label',
+            '管理者登出'
+        );
+
+        btn.className =
+            "system-tooltip-btn " +
+            "bg-slate-800 hover:bg-slate-700 " +
+            "text-yellow-400 hover:text-yellow-300 " +
+            "p-2.5 rounded-lg text-sm font-medium " +
+            "transition flex items-center justify-center " +
+            "border border-yellow-600 shadow-md";
+    }
+
+    if (mobileBtn) {
+        mobileBtn.removeAttribute('title');
+
+        mobileBtn.setAttribute(
+            'data-tooltip',
+            '管理者登出'
+        );
+
+        mobileBtn.setAttribute(
+            'aria-label',
+            '管理者登出'
+        );
+
+        mobileBtn.className =
+            "system-tooltip-btn " +
+            "mobile-admin-key-btn hidden " +
+            "bg-slate-800 hover:bg-slate-700 " +
+            "text-yellow-400 hover:text-yellow-300 " +
+            "p-2.5 rounded-lg text-sm font-medium " +
+            "transition items-center justify-center " +
+            "border border-yellow-600 shadow-md shrink-0";
+    }
+
+} else if (isEditorAuthenticated) {
+    if (icon) {
+        icon.className =
+            "fa-solid fa-unlock-keyhole text-emerald-400";
+    }
+
+    if (mobileIcon) {
+        mobileIcon.className =
+            "fa-solid fa-unlock-keyhole text-emerald-400";
+    }
+
+    if (btn) {
+        btn.removeAttribute('title');
+
+        btn.setAttribute(
+            'data-tooltip',
+            '使用者登出'
+        );
+
+        btn.setAttribute(
+            'aria-label',
+            '使用者登出'
+        );
+
+        btn.className =
+            "system-tooltip-btn " +
+            "bg-slate-800 hover:bg-slate-700 " +
+            "text-emerald-400 hover:text-emerald-300 " +
+            "p-2.5 rounded-lg text-sm font-medium " +
+            "transition flex items-center justify-center " +
+            "border border-emerald-600 shadow-md";
+    }
+
+    if (mobileBtn) {
+        mobileBtn.removeAttribute('title');
+
+        mobileBtn.setAttribute(
+            'data-tooltip',
+            '使用者登出'
+        );
+
+        mobileBtn.setAttribute(
+            'aria-label',
+            '使用者登出'
+        );
+
+        mobileBtn.className =
+            "system-tooltip-btn " +
+            "mobile-admin-key-btn hidden " +
+            "bg-slate-800 hover:bg-slate-700 " +
+            "text-emerald-400 hover:text-emerald-300 " +
+            "p-2.5 rounded-lg text-sm font-medium " +
+            "transition items-center justify-center " +
+            "border border-emerald-600 shadow-md shrink-0";
+    }
+
+} else {
+    if (icon) {
+        icon.className =
+            "fa-solid fa-key text-yellow-500";
+    }
+
+    if (mobileIcon) {
+        mobileIcon.className =
+            "fa-solid fa-key text-yellow-500";
+    }
+
+    if (btn) {
+        btn.removeAttribute('title');
+        btn.removeAttribute('data-tooltip');
+
+        btn.setAttribute(
+            'aria-label',
+            '權限登入'
+        );
+
+        btn.className =
+            "bg-slate-800 hover:bg-slate-700 " +
+            "text-yellow-500 hover:text-yellow-400 " +
+            "p-2.5 rounded-lg text-sm font-medium " +
+            "transition flex items-center justify-center " +
+            "border border-slate-700";
+    }
+
+    if (mobileBtn) {
+        mobileBtn.removeAttribute('title');
+        mobileBtn.removeAttribute('data-tooltip');
+
+        mobileBtn.setAttribute(
+            'aria-label',
+            '權限登入'
+        );
+
+        mobileBtn.className =
+            "mobile-admin-key-btn hidden " +
+            "bg-slate-800 hover:bg-slate-700 " +
+            "text-yellow-500 hover:text-yellow-400 " +
+            "p-2.5 rounded-lg text-sm font-medium " +
+            "transition items-center justify-center " +
+            "border border-slate-700 shrink-0";
+    }
+}
 
 /*
  * 依矩陣編輯模式設定輸入欄位。
