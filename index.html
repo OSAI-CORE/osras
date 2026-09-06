@@ -1307,8 +1307,9 @@ nav #load-json-btn {
 /* =========================================================
    手機直式：雲端中心入口
 
-   三種角色皆固定放在主要功能按鈕下方，
-   並獨立占滿一整排。
+   外觀比照桌機版：
+   sky-600 藍底、白字、font-black。
+   位置由下方各角色最終排序控制。
 ========================================================= */
 nav #cloud-preview-entry-btn {
     display:
@@ -1316,12 +1317,6 @@ nav #cloud-preview-entry-btn {
 
     grid-column:
         1 / -1 !important;
-
-    grid-row:
-        auto !important;
-
-    order:
-        10 !important;
 
     width:
         100% !important;
@@ -1345,33 +1340,29 @@ nav #cloud-preview-entry-btn {
         0.4rem !important;
 
     border-radius:
-        0.7rem;
+        0.75rem;
 
-    /*
-     * 維持目前雲端功能的天空藍色系，
-     * 但降低背景強度，避免滿版按鈕太突兀。
-     */
     background:
-        rgba(14, 165, 233, 0.14) !important;
+        #0284c7 !important;
 
     color:
-        #bae6fd !important;
+        #ffffff !important;
 
     border:
-        1px solid
-        rgba(56, 189, 248, 0.34) !important;
-
-    box-shadow:
         none !important;
 
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.10),
+        0 2px 4px -2px rgba(0, 0, 0, 0.10) !important;
+
     font-size:
-        0.72rem !important;
+        0.75rem !important;
 
     font-weight:
-        700;
+        900 !important;
 
     letter-spacing:
-        0.02em;
+        normal;
 
     white-space:
         nowrap;
@@ -1381,7 +1372,6 @@ nav #cloud-preview-entry-btn {
 
     transition:
         background-color 0.16s ease,
-        border-color 0.16s ease,
         color 0.16s ease,
         transform 0.12s ease !important;
 }
@@ -1409,13 +1399,10 @@ nav #cloud-preview-entry-btn svg {
  */
 nav #cloud-preview-entry-btn:active {
     background:
-        rgba(14, 165, 233, 0.27) !important;
+        #0369a1 !important;
 
     color:
         #ffffff !important;
-
-    border-color:
-        rgba(56, 189, 248, 0.58) !important;
 
     transform:
         scale(0.985);
@@ -1543,76 +1530,117 @@ nav p {
 }
 
 /* =========================================================
-   手機直式 Header 最終排序：
-   雲端中心固定第一排
-   僅調整位置，不改按鈕尺寸及顏色
+   手機直式 Header 最終排序
+
+   預覽者：
+   第 1 排：列印 / 載入預覽
+   第 2 排：雲端中心
+
+   使用者：
+   第 1 排：列印 / 匯出 / 載入
+   第 2 排：雲端中心
+
+   管理者：
+   第 1 排：列印 / 權限設定
+   第 2 排：匯出 / 匯入
+   第 3 排：雲端中心
 ========================================================= */
 @media screen and (orientation: portrait) and (max-width: 767px) {
 
-    /* 雲端中心：第一排滿版 */
-    nav #cloud-preview-entry-btn {
-        grid-column: 1 / -1 !important;
-        grid-row: 1 !important;
-        order: 1 !important;
+    /* =====================================================
+       預覽者
+       ===================================================== */
 
-        font-weight: 900;
-        border-radius: 0.75rem;
-    }
-
-    /* 預覽者：第二排列印／載入預覽 */
     body:not(.admin-mode):not(.editor-mode)
     nav #print-pdf-btn {
-        grid-row: 2 !important;
-        order: 2 !important;
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        order: 1 !important;
     }
 
     body:not(.admin-mode):not(.editor-mode)
     nav #load-json-btn {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        order: 2 !important;
+    }
+
+    body:not(.admin-mode):not(.editor-mode)
+    nav #cloud-preview-entry-btn {
+        grid-column: 1 / -1 !important;
         grid-row: 2 !important;
         order: 3 !important;
     }
 
-    /* 使用者：第二排列印／匯出／載入 */
+
+    /* =====================================================
+       使用者
+       ===================================================== */
+
     body.editor-mode
     nav #print-pdf-btn {
-        grid-row: 2 !important;
-        order: 2 !important;
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        order: 1 !important;
     }
 
     body.editor-mode
     nav #export-json-btn {
-        grid-row: 2 !important;
-        order: 3 !important;
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        order: 2 !important;
     }
 
     body.editor-mode
     nav #load-json-btn {
+        grid-column: 3 !important;
+        grid-row: 1 !important;
+        order: 3 !important;
+    }
+
+    body.editor-mode
+    nav #cloud-preview-entry-btn {
+        grid-column: 1 / -1 !important;
         grid-row: 2 !important;
         order: 4 !important;
     }
 
-    /* 管理者：第二排列印／權限設定 */
+
+    /* =====================================================
+       管理者
+       ===================================================== */
+
     body.admin-mode
     nav #print-pdf-btn {
-        grid-row: 2 !important;
-        order: 2 !important;
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        order: 1 !important;
     }
 
     body.admin-mode
     nav #mobile-permission-settings-btn {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        order: 2 !important;
+    }
+
+    body.admin-mode
+    nav #export-json-btn {
+        grid-column: 1 !important;
         grid-row: 2 !important;
         order: 3 !important;
     }
 
-    /* 管理者：第三排匯出／匯入 */
     body.admin-mode
-    nav #export-json-btn {
-        grid-row: 3 !important;
+    nav #load-json-btn {
+        grid-column: 2 !important;
+        grid-row: 2 !important;
         order: 4 !important;
     }
 
     body.admin-mode
-    nav #load-json-btn {
+    nav #cloud-preview-entry-btn {
+        grid-column: 1 / -1 !important;
         grid-row: 3 !important;
         order: 5 !important;
     }
@@ -3452,10 +3480,7 @@ class="group relative overflow-visible
 
                 <div class="flex items-center gap-2.5">
 
-                    <i
-                        data-lucide="lock-keyhole"
-                        class="w-5 h-5 text-yellow-300"
-                    ></i>
+<i class="fas fa-lock text-yellow-300 text-base"></i>
 
                     <h3 class="text-lg font-black tracking-wide">
                         權限登入
@@ -3493,10 +3518,7 @@ class="group relative overflow-visible
                             text-base
                             font-black">
 
-                    <i
-                        data-lucide="shield-check"
-                        class="w-5 h-5 text-indigo-600"
-                    ></i>
+<i class="fas fa-shield-halved text-indigo-600 text-base"></i>
 
                     安全驗證
                 </div>
