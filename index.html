@@ -105,7 +105,29 @@
 
 html.fa-icons-ready #header-action-buttons {
     visibility: visible;
-}        
+}
+
+/*
+ * 固定「列印 / PDF」圖示槽位。
+ *
+ * Font Awesome 載入前後，
+ * 都預留相同寬度，避免按鈕文字瞬間位移。
+ *
+ * 只影響列印按鈕，不影響其他 Header 按鈕。
+ */
+#print-pdf-btn > i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 14px;
+    min-width: 14px;
+    height: 14px;
+    line-height: 14px;
+
+    flex: 0 0 14px;
+    text-align: center;
+}
 
         /* =========================================================
    權限登入視窗
@@ -334,6 +356,31 @@ table.osra-table .sticky-title-col textarea {
     }
 }
 
+.scale-in-center {
+    animation:
+        scale-in-center
+        0.3s
+        cubic-bezier(
+            0.250,
+            0.460,
+            0.450,
+            0.940
+        )
+        both;
+}
+
+@keyframes scale-in-center {
+    0% {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
 /* 桌機版預設：手機版標題區權限按鈕一律隱藏 */
 nav #mobile-admin-toggle-btn,
 nav #mobile-permission-settings-btn {
@@ -530,7 +577,7 @@ body:not(.edit-mode) table.osra-table textarea:focus {
         content: attr(data-tooltip);
 
         position: absolute;
-        z-index: 200;
+        z-index: 300;
 
         left: 50%;
         top: calc(100% + 6px);
@@ -572,6 +619,12 @@ body:not(.edit-mode) table.osra-table textarea:focus {
             translateX(-50%)
             translateY(0);
     }
+
+.system-tooltip-btn:active::after {
+    opacity: 0;
+    visibility: hidden;
+}
+
 }
 
 .attachment-symbol {
@@ -3988,15 +4041,25 @@ class="group relative overflow-visible
                    bg-white/10 hover:bg-white/20
                    text-slate-200 hover:text-white
                    transition
+                   disabled:opacity-60
+                   disabled:cursor-wait
                    items-center justify-center"
-            title="返回雲端中心"
             aria-label="返回雲端中心">
 
-        <i data-lucide="arrow-left"
-           class="w-4 h-4"></i>
+        <svg viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2"
+             stroke-linecap="round"
+             stroke-linejoin="round"
+             class="w-4 h-4"
+             aria-hidden="true">
+
+            <path d="m12 19-7-7 7-7"></path>
+            <path d="M19 12H5"></path>
+        </svg>
 
     </button>
-
 
     <!-- 第二層：重新整理 -->
     <button type="button"
@@ -4006,15 +4069,26 @@ class="group relative overflow-visible
                    bg-white/10 hover:bg-white/20
                    text-slate-200 hover:text-white
                    transition
+                   disabled:opacity-60
+                   disabled:cursor-wait
                    items-center justify-center"
-            title="重新整理"
             aria-label="重新整理">
 
-        <i data-lucide="refresh-cw"
-           class="w-4 h-4"></i>
+        <svg id="cloud-center-header-refresh-icon"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2"
+             stroke-linecap="round"
+             stroke-linejoin="round"
+             class="w-4 h-4"
+             aria-hidden="true">
+
+            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path>
+            <path d="M21 3v5h-5"></path>
+        </svg>
 
     </button>
-
 
     <!-- 所有頁面：關閉 -->
     <button type="button"
@@ -4024,11 +4098,20 @@ class="group relative overflow-visible
                    text-slate-200 hover:text-white
                    transition
                    flex items-center justify-center"
-            title="關閉"
-            aria-label="關閉">
+            aria-label="關閉雲端中心">
 
-        <i data-lucide="x"
-           class="w-4 h-4"></i>
+        <svg viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2"
+             stroke-linecap="round"
+             stroke-linejoin="round"
+             class="w-4 h-4"
+             aria-hidden="true">
+
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+        </svg>
 
     </button>
 
@@ -4037,8 +4120,7 @@ class="group relative overflow-visible
     <div class="flex items-center gap-2.5">
 
 <i id="cloud-center-header-icon"
-   data-lucide="cloudy"
-   class="w-5 h-5 text-sky-300"></i>
+   class="fas fa-cloud text-sky-300"></i>
 
 <h3 id="cloud-center-header-title"
     class="text-lg font-black">
@@ -4169,8 +4251,8 @@ class="group relative overflow-visible
                        justify-center gap-2
                        transition shadow-sm">
 
-            <i data-lucide="cloud-download"
-               class="w-4 h-4"></i>
+<i class="fas fa-cloud-arrow-down"
+   aria-hidden="true"></i>
 
             <span>開啟雲端預覽</span>
 
@@ -4211,8 +4293,7 @@ class="group relative overflow-visible
                  flex items-center justify-center
                  shrink-0">
 
-        <i data-lucide="cloud"
-           class="w-4 h-4 text-emerald-600"></i>
+<i class="fas fa-cloud text-emerald-600"></i>
 
     </span>
 
@@ -4236,10 +4317,10 @@ class="group relative overflow-visible
 
     </span>
 
-    <i data-lucide="chevron-right"
-       class="w-4 h-4
-              text-emerald-300
-              shrink-0"></i>
+<i class="fas fa-chevron-right
+          text-xs
+          text-emerald-300
+          shrink-0"></i>
 
 </button>
 
@@ -4266,8 +4347,7 @@ class="group relative overflow-visible
                  flex items-center justify-center
                  shrink-0">
 
-        <i data-lucide="cloud-upload"
-           class="w-4 h-4 text-sky-600"></i>
+<i class="fas fa-cloud-arrow-up text-sky-600"></i>
 
     </span>
 
@@ -4291,10 +4371,10 @@ class="group relative overflow-visible
 
     </span>
 
-    <i data-lucide="chevron-right"
-       class="w-4 h-4
-              text-sky-300
-              shrink-0"></i>
+<i class="fas fa-chevron-right
+          text-xs
+          text-sky-300
+          shrink-0"></i>
 
 </button>
 
@@ -4321,8 +4401,7 @@ class="group relative overflow-visible
                  flex items-center justify-center
                  shrink-0">
 
-        <i data-lucide="cloud-cog"
-           class="w-4 h-4 text-sky-600"></i>
+<i class="fas fa-sliders text-sky-600"></i>
 
     </span>
 
@@ -4348,10 +4427,10 @@ class="group relative overflow-visible
 
     </span>
 
-    <i data-lucide="chevron-right"
-       class="w-4 h-4
-              text-sky-300
-              shrink-0"></i>
+<i class="fas fa-chevron-right
+          text-xs
+          text-sky-300
+          shrink-0"></i>
 
 </button>
 
@@ -4378,8 +4457,7 @@ class="group relative overflow-visible
                  flex items-center justify-center
                  shrink-0">
 
-        <i data-lucide="users"
-           class="w-4 h-4 text-indigo-600"></i>
+<i class="fas fa-users text-indigo-600"></i>
 
     </span>
 
@@ -4403,10 +4481,10 @@ class="group relative overflow-visible
 
     </span>
 
-    <i data-lucide="chevron-right"
-       class="w-4 h-4
-              text-indigo-300
-              shrink-0"></i>
+<i class="fas fa-chevron-right
+          text-xs
+          text-indigo-300
+          shrink-0"></i>
 
 </button>
 
@@ -4447,8 +4525,18 @@ class="group relative overflow-visible
                transition
                shadow-sm">
 
-    <i data-lucide="plus"
-       class="w-4 h-4"></i>
+    <svg viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         class="w-4 h-4"
+         aria-hidden="true">
+
+        <path d="M5 12h14"></path>
+        <path d="M12 5v14"></path>
+    </svg>
 
     <span>
         建立雲端工作資料
@@ -4532,8 +4620,8 @@ class="group relative overflow-visible
                 shadow-sm
             ">
 
-        <i data-lucide="cloud-upload"
-           class="w-4 h-4"></i>
+<i class="fas fa-cloud-arrow-up text-sm leading-none"
+   aria-hidden="true"></i>
 
         <span>
             儲存至雲端
@@ -4697,10 +4785,10 @@ class="group relative overflow-visible
                transition
                shadow-sm">
 
-    <i data-lucide="cloud-upload"
-       class="w-4 h-4"></i>
+<i class="fas fa-cloud-arrow-up text-sm leading-none"
+   aria-hidden="true"></i>
 
-    <span>發布雲端預覽</span>
+<span>發布雲端預覽</span>
 
 </button>
 
@@ -4813,8 +4901,18 @@ class="group relative overflow-visible
                            flex items-center justify-center"
                     aria-label="關閉">
 
-                <i data-lucide="x"
-                   class="w-4 h-4"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-4 h-4"
+     aria-hidden="true">
+
+    <path d="M18 6 6 18"></path>
+    <path d="m6 6 12 12"></path>
+</svg>
 
             </button>
 
@@ -4822,8 +4920,19 @@ class="group relative overflow-visible
 
                 <div class="flex items-center gap-2.5">
 
-                    <i data-lucide="square-pen"
-                       class="w-5 h-5 text-emerald-300"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-5 h-5 text-emerald-300"
+     aria-hidden="true">
+
+    <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+
+    <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852Z"></path>
+</svg>
 
                     <h3 class="text-lg font-black">
                         編輯工作資料
@@ -4912,8 +5021,21 @@ class="group relative overflow-visible
                                justify-center
                                gap-2">
 
-                    <i data-lucide="check"
-                       class="w-4 h-4"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-4 h-4"
+     aria-hidden="true">
+
+    <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path>
+
+    <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"></path>
+
+    <path d="M7 3v4a1 1 0 0 0 1 1h7"></path>
+</svg>
 
                     <span>儲存</span>
 
@@ -4944,10 +5066,10 @@ class="group relative overflow-visible
             w-full max-w-sm mx-3
             rounded-2xl
             shadow-2xl
-            border border-slate-200
-            overflow-hidden
-            max-h-[calc(100svh-24px)]
-            overflow-y-auto">
+border border-slate-200
+overflow-y-auto
+max-h-[calc(100svh-24px)]
+scale-in-center">
 
         <!-- Header -->
         <div class="relative
@@ -4969,16 +5091,49 @@ class="group relative overflow-visible
                     title="關閉"
                     aria-label="關閉">
 
-                <i data-lucide="x"
-                   class="w-4 h-4"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-4 h-4"
+     aria-hidden="true">
+
+    <path d="M18 6 6 18"></path>
+    <path d="m6 6 12 12"></path>
+</svg>
 
             </button>
 
 
-            <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-2.5 pr-8">
 
-                <i data-lucide="user-plus"
-                   class="w-5 h-5 text-indigo-300"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-5 h-5 text-indigo-300"
+     aria-hidden="true">
+
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+
+    <circle cx="9"
+            cy="7"
+            r="4"></circle>
+
+    <line x1="19"
+          x2="19"
+          y1="8"
+          y2="14"></line>
+
+    <line x1="22"
+          x2="16"
+          y1="11"
+          y2="11"></line>
+</svg>
 
                 <h3 class="text-lg font-black">
                     新增發布帳號
@@ -5130,8 +5285,31 @@ class="group relative overflow-visible
                                flex items-center
                                justify-center gap-1.5">
 
-                    <i data-lucide="user-plus"
-                       class="w-4 h-4"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-4 h-4"
+     aria-hidden="true">
+
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+
+    <circle cx="9"
+            cy="7"
+            r="4"></circle>
+
+    <line x1="19"
+          x2="19"
+          y1="8"
+          y2="14"></line>
+
+    <line x1="22"
+          x2="16"
+          y1="11"
+          y2="11"></line>
+</svg>
 
                     <span>建立帳號</span>
 
@@ -5157,13 +5335,15 @@ class="group relative overflow-visible
             flex items-center justify-center
             p-4 no-print">
 
-    <div onclick="event.stopPropagation()"
-         class="bg-white
-                w-full max-w-sm mx-3
-                rounded-2xl
-                shadow-2xl
-                border border-slate-200
-                overflow-hidden">
+<div onclick="event.stopPropagation()"
+     class="bg-white
+            w-full max-w-sm mx-3
+            rounded-2xl
+            shadow-2xl
+            border border-slate-200
+            overflow-y-auto
+            max-h-[calc(100svh-24px)]
+            scale-in-center">
 
         <!-- Header -->
         <div class="relative
@@ -5181,15 +5361,39 @@ class="group relative overflow-visible
                            bg-white/10 hover:bg-white/20
                            flex items-center justify-center">
 
-                <i data-lucide="x"
-                   class="w-4 h-4"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-4 h-4"
+     aria-hidden="true">
+
+    <path d="M18 6 6 18"></path>
+    <path d="m6 6 12 12"></path>
+</svg>
 
             </button>
 
-            <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-2.5 pr-8">
 
-                <i data-lucide="key-round"
-                   class="w-5 h-5 text-indigo-300"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-5 h-5 text-indigo-300"
+     aria-hidden="true">
+
+    <path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"></path>
+
+    <circle cx="16.5"
+            cy="7.5"
+            r=".5"
+            fill="currentColor"></circle>
+</svg>
 
                 <h3 class="text-lg font-black">
                     修改發布帳號密碼
@@ -5321,8 +5525,21 @@ class="group relative overflow-visible
                                flex items-center
                                justify-center gap-1.5">
 
-                    <i data-lucide="save"
-                       class="w-4 h-4"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-4 h-4"
+     aria-hidden="true">
+
+    <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path>
+
+    <path d="M17 21v-8H7v8"></path>
+
+    <path d="M7 3v5h8"></path>
+</svg>
 
                     <span>更新密碼</span>
 
@@ -5377,14 +5594,35 @@ class="group relative overflow-visible
                            flex items-center justify-center"
                     title="關閉">
 
-                <i data-lucide="x"
-                   class="w-4 h-4"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-4 h-4"
+     aria-hidden="true">
+
+    <path d="M18 6 6 18"></path>
+    <path d="m6 6 12 12"></path>
+</svg>
             </button>
 
-            <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-2.5 pr-8">
 
-                <i data-lucide="square-pen"
-                   class="w-5 h-5 text-sky-300"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-5 h-5 text-sky-300"
+     aria-hidden="true">
+
+    <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+
+    <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852Z"></path>
+</svg>
 
                 <h3 class="text-lg font-black">
                     編輯雲端預覽
@@ -5549,8 +5787,21 @@ class="group relative overflow-visible
                                flex items-center
                                justify-center gap-1.5">
 
-                    <i data-lucide="save"
-                       class="w-4 h-4"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-4 h-4"
+     aria-hidden="true">
+
+    <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path>
+
+    <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"></path>
+
+    <path d="M7 3v4a1 1 0 0 0 1 1h7"></path>
+</svg>
 
                     <span>儲存修改</span>
 
@@ -5581,8 +5832,9 @@ class="group relative overflow-visible
                 w-full max-w-sm mx-3
                 rounded-2xl
                 shadow-2xl
-                border border-slate-200
-                overflow-hidden">
+border border-slate-200
+overflow-y-auto
+max-h-[calc(100svh-24px)]">
 
         <!-- Header -->
         <div class="relative
@@ -5601,15 +5853,39 @@ class="group relative overflow-visible
                            flex items-center justify-center"
                     title="關閉">
 
-                <i data-lucide="x"
-                   class="w-4 h-4"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-4 h-4"
+     aria-hidden="true">
+
+    <path d="M18 6 6 18"></path>
+    <path d="m6 6 12 12"></path>
+</svg>
 
             </button>
 
-            <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-2.5 pr-8">
 
-                <i data-lucide="key-round"
-                   class="w-5 h-5 text-sky-300"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-5 h-5 text-sky-300"
+     aria-hidden="true">
+
+    <path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"></path>
+
+    <circle cx="16.5"
+            cy="7.5"
+            r=".5"
+            fill="currentColor"></circle>
+</svg>
 
                 <h3 class="text-lg font-black">
                     重設預覽密碼
@@ -5733,10 +6009,27 @@ class="group relative overflow-visible
                text-white
                text-xs font-black
                transition
-               flex items-center
-               justify-center">
+flex items-center
+justify-center
+gap-1.5">
 
-    <span>更新密碼</span>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-4 h-4"
+     aria-hidden="true">
+
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"></path>
+
+    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+
+    <polyline points="7 3 7 8 15 8"></polyline>
+</svg>
+
+<span>更新密碼</span>
 
 </button>
 
@@ -5751,31 +6044,62 @@ class="group relative overflow-visible
 
 <!-- Cloud Publisher 雲端發布登入 -->
 <div id="cloud-publisher-login-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="cloud-publisher-login-title"
      onpointerdown="closeCloudPublisherLoginModalOutside(event)"
      class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[140] hidden flex items-center justify-center p-4 no-print">
 
-<div onclick="event.stopPropagation()"
-     class="bg-white w-full max-w-sm mx-3 rounded-2xl shadow-2xl overflow-y-auto border border-slate-200 max-h-[calc(100svh-24px)]">
+<div class="bg-white w-full max-w-sm mx-3 rounded-2xl shadow-2xl overflow-y-auto border border-slate-200 max-h-[calc(100svh-24px)]">
 
         <div class="relative bg-gradient-to-r from-slate-900 via-slate-800 to-sky-900 px-5 py-4 text-white">
 
-            <button type="button"
-                    onclick="closeCloudPublisherLoginModal()"
-                    class="absolute right-3 top-3 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">
+<button type="button"
+        onclick="closeCloudPublisherLoginModal()"
+        class="absolute right-3 top-3 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
+        aria-label="關閉雲端發布驗證視窗">
 
-                <i data-lucide="x"
-                   class="w-4 h-4"></i>
+    <svg viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         class="w-4 h-4"
+         aria-hidden="true">
 
-            </button>
+        <path d="M18 6 6 18"></path>
+        <path d="m6 6 12 12"></path>
 
-            <div class="flex items-center gap-2.5">
-                <i data-lucide="cloud-upload"
-                   class="w-5 h-5 text-sky-300"></i>
+    </svg>
 
-                <h3 class="text-lg font-black">
-                    雲端發布驗證
-                </h3>
-            </div>
+</button>
+
+<div class="flex items-center gap-2.5">
+
+    <svg viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         class="w-5 h-5 text-sky-300"
+         aria-hidden="true">
+
+        <path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"></path>
+
+        <circle cx="16.5"
+                cy="7.5"
+                r=".5"
+                fill="currentColor"></circle>
+    </svg>
+
+<h3 id="cloud-publisher-login-title"
+    class="text-lg font-black">
+    雲端發布驗證
+</h3>
+
+</div>
 
             <p class="mt-1 text-[10px] text-slate-300 tracking-[0.14em] font-semibold">
                 CLOUD PUBLISHER
@@ -5815,16 +6139,40 @@ class="group relative overflow-visible
                 雲端發布帳號驗證失敗
             </p>
 
-            <button type="button"
-                    id="cloud-publisher-login-btn"
-                    onclick="submitCloudPublisherLogin()"
-                    class="w-full h-11 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-black transition flex items-center justify-center gap-2">
+<button type="button"
+        id="cloud-publisher-login-btn"
+        onclick="submitCloudPublisherLogin()"
+        class="w-full h-11
+               rounded-xl
+               bg-sky-600
+               enabled:hover:bg-sky-700
+               disabled:cursor-wait
+               text-white
+               text-sm font-black
+               transition
+               flex items-center
+               justify-center
+               gap-2">
 
-                <i data-lucide="log-in"
-                   class="w-4 h-4"></i>
+    <svg viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         class="w-4 h-4"
+         aria-hidden="true">
 
-                登入雲端發布
-            </button>
+        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+        <path d="m10 17 5-5-5-5"></path>
+        <path d="M15 12H3"></path>
+    </svg>
+
+    <span>
+        登入雲端發布
+    </span>
+
+</button>
 
         </div>
     </div>
@@ -8308,53 +8656,53 @@ function setCloudCenterHeader(
     }
 
 
-    const configs = {
+const configs = {
 
-        home: {
-            icon: 'cloudy',
-            title: '雲端中心',
-            subtitle: 'CLOUD CENTER',
-            color: 'text-sky-300'
-        },
+    home: {
+        icon: 'fa-cloud',
+        title: '雲端中心',
+        subtitle: 'CLOUD CENTER',
+        color: 'text-sky-300'
+    },
 
-        workspace: {
-            icon: 'cloud',
-            title: '雲端工作資料',
-            subtitle: 'CLOUD WORKSPACE',
-            color: 'text-emerald-300'
-        },
+    workspace: {
+        icon: 'fa-cloud',
+        title: '雲端工作資料',
+        subtitle: 'CLOUD WORKSPACE',
+        color: 'text-emerald-600'
+    },
 
-        publish: {
-            icon: 'cloud-upload',
-            title: '發布新預覽',
-            subtitle: 'PUBLISH PREVIEW',
-            color: 'text-sky-300'
-        },
+    publish: {
+        icon: 'fa-cloud-arrow-up',
+        title: '發布新預覽',
+        subtitle: 'PUBLISH PREVIEW',
+        color: 'text-sky-300'
+    },
 
-        manage: {
-            icon: 'cloud-cog',
+    manage: {
+        icon: 'fa-sliders',
 
-            title:
-                getCurrentRole() === 'admin'
-                    ? '管理雲端預覽'
-                    : '我的發布預覽',
+        title:
+            getCurrentRole() === 'admin'
+                ? '管理雲端預覽'
+                : '我的發布預覽',
 
-            subtitle:
-                getCurrentRole() === 'admin'
-                    ? 'MANAGE PREVIEWS'
-                    : 'MY PREVIEWS',
+        subtitle:
+            getCurrentRole() === 'admin'
+                ? 'MANAGE PREVIEWS'
+                : 'MY PREVIEWS',
 
-            color: 'text-indigo-300'
-        },
+        color: 'text-indigo-300'
+    },
 
-        accounts: {
-            icon: 'users',
-            title: '管理發布帳號',
-            subtitle: 'PUBLISHER ACCOUNTS',
-            color: 'text-violet-300'
-        }
+    accounts: {
+        icon: 'fa-users',
+        title: '管理發布帳號',
+        subtitle: 'PUBLISHER ACCOUNTS',
+        color: 'text-violet-300'
+    }
 
-    };
+};
 
 
     const config =
@@ -8441,14 +8789,12 @@ function setCloudCenterHeader(
     }
 
 
-    icon.setAttribute(
-        'data-lucide',
-        config.icon
-    );
+icon.removeAttribute(
+    'data-lucide'
+);
 
-
-    icon.className =
-        `w-5 h-5 ${config.color}`;
+icon.className =
+    `fas ${config.icon} ${config.color}`;
 
 
     title.textContent =
@@ -8459,15 +8805,44 @@ function setCloudCenterHeader(
         config.subtitle;
 
 
-    subtitle.className =
-        `mt-1
-         text-[10px]
-         ${config.color}
-         tracking-[0.14em]
-         font-semibold`;
+subtitle.className =
+    `mt-1
+     text-[10px]
+     text-slate-300
+     tracking-[0.14em]
+     font-semibold`;
 
 
     lucide.createIcons();
+}
+
+function setCloudCenterHeaderRefreshBusy(
+    busy
+) {
+    const button =
+        document.getElementById(
+            'cloud-center-header-refresh-btn'
+        );
+
+    const icon =
+        document.getElementById(
+            'cloud-center-header-refresh-icon'
+        );
+
+    if (
+        !button ||
+        !icon
+    ) {
+        return;
+    }
+
+    button.disabled =
+        !!busy;
+
+    icon.classList.toggle(
+        'fa-spin',
+        !!busy
+    );
 }
 
 function openCloudPreviewModal() {
@@ -8755,7 +9130,7 @@ const accountsCard =
             );
 
 roleIcon.className =
-    'w-4 h-4 text-indigo-600 shrink-0';
+    'w-4 h-4 text-slate-500 shrink-0';
         }
 
         if (manageCard) {
@@ -8809,7 +9184,7 @@ if (accountsCard) {
             );
 
 roleIcon.className =
-    'w-4 h-4 text-indigo-500 shrink-0';
+    'w-4 h-4 text-slate-500 shrink-0';
         }
 
         if (manageCard) {
@@ -9034,11 +9409,20 @@ if (!email) {
         );
     }
 
-    if (button) {
-        button.disabled = true;
-        button.innerText =
-            '驗證中...';
-    }
+if (button) {
+
+    button.disabled =
+        true;
+
+    button.innerHTML = `
+        <i class="fas fa-spinner fa-spin text-sm"
+           aria-hidden="true"></i>
+
+        <span>
+            驗證中...
+        </span>
+    `;
+}
 
     try {
         const accessToken =
@@ -9079,17 +9463,30 @@ errorBox.innerText =
         passwordInput?.select();
 
     } finally {
-        if (button) {
-            button.disabled = false;
+if (button) {
+    button.disabled =
+        false;
 
-            button.innerHTML = `
-                <i data-lucide="log-in"
-                   class="w-4 h-4"></i>
-                登入雲端發布
-            `;
+    button.innerHTML = `
+        <svg viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2"
+             stroke-linecap="round"
+             stroke-linejoin="round"
+             class="w-4 h-4"
+             aria-hidden="true">
 
-            lucide.createIcons();
-        }
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+            <path d="m10 17 5-5-5-5"></path>
+            <path d="M15 12H3"></path>
+        </svg>
+
+        <span>
+            登入雲端發布
+        </span>
+    `;
+}
     }
 }
 
@@ -9170,6 +9567,19 @@ function resetCloudPreviewPublishForm() {
         maxViewsSelect.value =
             '3';
     }
+
+/*
+ * 每次重新進入發布視窗，
+ * 清除上一次發布留下的狀態與按鈕忙碌畫面。
+ */
+setCloudPreviewPublishStatus(
+    ''
+);
+
+setCloudPreviewPublishBusy(
+    false
+);
+
 }
 
 
@@ -9410,41 +9820,43 @@ function setCloudPreviewPublishBusy(
 
     if (!button) return;
 
-    button.disabled = busy;
+    button.disabled =
+        busy;
 
+    /*
+     * 忙碌時只停用按鈕並顯示旋轉圖示，
+     * 不降低透明度，也不改變按鈕原本藍色。
+     */
     if (busy) {
+
+        button.classList.remove(
+            'opacity-60'
+        );
+
         button.classList.add(
-            'opacity-60',
             'cursor-wait'
         );
 
         button.innerHTML = `
-            <span class="
-                w-4 h-4
-                rounded-full
-                border-2
-                border-white/40
-                border-t-white
-                animate-spin
-            "></span>
+            <i class="fas fa-spinner fa-spin text-sm leading-none"
+               aria-hidden="true"></i>
 
             <span>${message}</span>
         `;
 
     } else {
+
         button.classList.remove(
             'opacity-60',
             'cursor-wait'
         );
 
         button.innerHTML = `
-            <i data-lucide="cloud-upload"
-               class="w-4 h-4"></i>
+            <i class="fas fa-cloud-arrow-up text-sm leading-none"
+               aria-hidden="true"></i>
 
             <span>發布雲端預覽</span>
         `;
-
-        lucide.createIcons();
     }
 }
 
@@ -10318,11 +10730,183 @@ function getCloudPreviewStatusInfo(
     }
 
 
-    return {
-        label: '使用中',
-        className:
-            'bg-emerald-50 text-emerald-700 border-emerald-100'
-    };
+return {
+    label: '使用中',
+    className:
+        'bg-emerald-100 text-emerald-700 border-emerald-100'
+};
+}
+
+/*
+ * 複製管理雲端預覽圖卡中的 Preview ID。
+ *
+ * HTTPS 部署環境優先使用 Clipboard API；
+ * 本機 HTML 或不支援 Clipboard API 時，
+ * 自動改用暫時 textarea 複製。
+ */
+async function copyCloudPreviewIdFromButton(
+    button
+) {
+    const previewId =
+        String(
+            button?.dataset?.previewId ||
+            ''
+        ).trim();
+
+
+    /*
+     * 點擊後立即收起 Tooltip，
+     * 避免提示框停留在按鈕旁邊。
+     */
+    button?.classList.add(
+        'cloud-tooltip-suppressed'
+    );
+
+    button?.blur();
+
+
+    if (!previewId) {
+
+        showToast(
+            '找不到可複製的 Preview ID。',
+            'error'
+        );
+
+        return;
+    }
+
+
+    let copied =
+        false;
+
+
+    /*
+     * Vercel HTTPS 等安全環境，
+     * 優先使用正式 Clipboard API。
+     */
+    if (
+        window.isSecureContext &&
+        navigator.clipboard &&
+        typeof navigator.clipboard.writeText ===
+            'function'
+    ) {
+
+        try {
+
+            await navigator.clipboard.writeText(
+                previewId
+            );
+
+            copied =
+                true;
+
+        } catch (error) {
+
+            console.warn(
+                'Clipboard API 複製失敗，改用相容模式：',
+                error
+            );
+        }
+    }
+
+
+    /*
+     * 本機 file:// 或 Clipboard API
+     * 不可使用時的相容處理。
+     */
+    if (!copied) {
+
+        const helper =
+            document.createElement(
+                'textarea'
+            );
+
+
+        helper.value =
+            previewId;
+
+        helper.setAttribute(
+            'readonly',
+            ''
+        );
+
+
+        helper.style.position =
+            'fixed';
+
+        helper.style.left =
+            '-9999px';
+
+        helper.style.top =
+            '0';
+
+        helper.style.opacity =
+            '0';
+
+        helper.style.pointerEvents =
+            'none';
+
+
+        try {
+
+            document.body.appendChild(
+                helper
+            );
+
+
+            try {
+
+                helper.focus({
+                    preventScroll: true
+                });
+
+            } catch (_) {
+
+                helper.focus();
+            }
+
+
+            helper.select();
+
+            helper.setSelectionRange(
+                0,
+                helper.value.length
+            );
+
+
+            copied =
+                document.execCommand(
+                    'copy'
+                ) === true;
+
+        } catch (error) {
+
+            console.warn(
+                '相容模式複製 Preview ID 失敗：',
+                error
+            );
+
+        } finally {
+
+            helper.remove();
+        }
+    }
+
+
+    if (copied) {
+
+        showToast(
+            'Preview ID 已複製。',
+            'success'
+        );
+
+    } else {
+
+        showToast(
+            '無法自動複製 Preview ID，請手動選取複製。',
+            'error'
+        );
+    }
 }
 
 function renderCloudPreviewManageList(
@@ -10354,30 +10938,30 @@ function renderCloudPreviewManageList(
                 px-4 py-7
                 text-center
             ">
-                <i data-lucide="cloud"
-                   class="w-6 h-6
-                          text-slate-300
-                          mx-auto mb-2"></i>
+<i class="fas fa-cloud text-slate-300 text-xl"
+   aria-hidden="true"></i>
 
-                <p class="
-                    text-xs font-bold
-                    text-slate-500
-                ">
-                    尚無雲端預覽
-                </p>
+<p class="
+    mt-2
+    text-xs font-bold
+    text-slate-500
+">
+    尚無雲端預覽
+</p>
 
-                <p class="
-                    text-[10px]
-                    text-slate-400
-                    mt-1
-                ">
-                    尚未發布風險評估雲端預覽
-                </p>
+<p class="
+    text-[10px]
+    text-slate-400
+    mt-1
+">
+    ${showAdminActions
+        ? '尚未發布風險評估雲端預覽'
+        : '目前帳號尚未發布雲端預覽'}
+</p>
             </div>
         `;
 
-        lucide.createIcons();
-        return;
+return;
     }
 
 
@@ -10433,10 +11017,44 @@ const toggleEnabledTitle =
         : '重新開放';
 
 
-const toggleEnabledIcon =
+const toggleEnabledIconHtml =
     previewEnabled
-        ? 'pause'
-        : 'play';
+        ? `
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 class="w-3.5 h-3.5"
+                 aria-hidden="true">
+
+                <rect x="14"
+                      y="3"
+                      width="5"
+                      height="18"
+                      rx="1"></rect>
+
+                <rect x="5"
+                      y="3"
+                      width="5"
+                      height="18"
+                      rx="1"></rect>
+            </svg>
+        `
+        : `
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 class="w-3.5 h-3.5"
+                 aria-hidden="true">
+
+                <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path>
+            </svg>
+        `;
 
 
 const toggleEnabledClass =
@@ -10446,13 +11064,13 @@ const toggleEnabledClass =
 
 
                 return `
-                    <div class="
-                        rounded-xl
-                        border border-slate-200
-                        bg-white
-                        px-3.5 py-3
-                        shadow-sm
-                    ">
+<div class="
+    rounded-xl
+    border border-sky-100
+    bg-sky-50
+    px-3.5 py-3
+    shadow-sm
+">
 
 <!-- 名稱、狀態與管理操作 -->
 <div class="
@@ -10471,12 +11089,8 @@ const toggleEnabledClass =
         gap-2
     ">
 
-        <i data-lucide="cloud"
-           class="
-               w-4 h-4
-               text-sky-600
-               shrink-0
-           "></i>
+<i class="fas fa-cloud text-sky-600 text-sm shrink-0"
+   aria-hidden="true"></i>
 
         <span class="
             min-w-0
@@ -10514,8 +11128,22 @@ hover:border-indigo-200
         data-tooltip="重設密碼"
         aria-label="重設密碼">
 
-    <i data-lucide="key-round"
-       class="w-3.5 h-3.5"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-3.5 h-3.5"
+     aria-hidden="true">
+
+    <path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"></path>
+
+    <circle cx="16.5"
+            cy="7.5"
+            r=".5"
+            fill="currentColor"></circle>
+</svg>
 
 </button>
 
@@ -10552,8 +11180,19 @@ hover:border-indigo-200
                 data-tooltip="編輯"
                 aria-label="編輯">
 
-            <i data-lucide="square-pen"
-               class="w-3.5 h-3.5"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-3.5 h-3.5"
+     aria-hidden="true">
+
+    <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+
+    <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852Z"></path>
+</svg>
 
         </button>
 
@@ -10577,8 +11216,7 @@ hover:border-indigo-200
                 data-tooltip="${toggleEnabledTitle}"
                 aria-label="${toggleEnabledTitle}">
 
-            <i data-lucide="${toggleEnabledIcon}"
-               class="w-3.5 h-3.5"></i>
+${toggleEnabledIconHtml}
 
         </button>
 
@@ -10605,24 +11243,16 @@ hover:border-indigo-200
                 data-tooltip="刪除"
                 aria-label="刪除">
 
-            <span class="
-                attachment-symbol
-                attachment-trash-symbol
-            "
-                  aria-hidden="true">
+<svg viewBox="0 0 24 24"
+     class="w-[17px] h-[17px]"
+     aria-hidden="true">
 
-                <svg viewBox="0 0 24 24"
-                     focusable="false">
+    <path fill="currentColor"
+          d="M9 3.5h6l.8 1.7H20a1 1 0 1 1 0 2H4a1 1 0 0 1 0-2h4.2L9 3.5Z"></path>
 
-                    <path fill="currentColor"
-                          d="M9 3.5h6l.8 1.7H20a1 1 0 1 1 0 2H4a1 1 0 0 1 0-2h4.2L9 3.5Z"/>
-
-                    <path fill="currentColor"
-                          d="M6.2 8.7h11.6l-.8 10.1A2.5 2.5 0 0 1 14.5 21h-5a2.5 2.5 0 0 1-2.5-2.2L6.2 8.7Zm3.2 2.2a.8.8 0 0 0-.8.8l.3 5.6a.8.8 0 0 0 1.6-.1l-.3-5.6a.8.8 0 0 0-.8-.7Zm5.2 0a.8.8 0 0 0-.8.7l-.3 5.6a.8.8 0 1 0 1.6.1l.3-5.6a.8.8 0 0 0-.8-.8Z"/>
-
-                </svg>
-
-            </span>
+    <path fill="currentColor"
+          d="M6.2 8.7h11.6l-.8 10.1A2.5 2.5 0 0 1 14.5 21h-5a2.5 2.5 0 0 1-2.5-2.2L6.2 8.7Zm3.2 2.2a.8.8 0 0 0-.8.8l.3 5.6a.8.8 0 0 0 1.6-.1l-.3-5.6a.8.8 0 0 0-.8-.7Zm5.2 0a.8.8 0 0 0-.8.7l-.3 5.6a.8.8 0 1 0 1.6.1l.3-5.6a.8.8 0 0 0-.8-.8Z"></path>
+</svg>
 
         </button>
 
@@ -10651,6 +11281,64 @@ hover:border-indigo-200
         ${previewId}
     </div>
 
+<!-- 複製 Preview ID -->
+<button
+    type="button"
+    data-preview-id="${previewId}"
+    onclick="
+        copyCloudPreviewIdFromButton(
+            this
+        )
+    "
+    onpointerenter="
+        this.classList.remove(
+            'cloud-tooltip-suppressed'
+        )
+    "
+    class="
+        cloud-tooltip-btn
+        shrink-0
+        w-6 h-6
+        rounded-md
+        border border-sky-100
+        bg-white/80
+        text-sky-600
+        hover:bg-sky-100
+        hover:border-sky-200
+        hover:text-sky-700
+        transition
+        flex
+        items-center
+        justify-center
+        focus-visible:outline-none
+        focus-visible:ring-2
+        focus-visible:ring-sky-300
+    "
+data-tooltip="複製 ID"
+aria-label="複製 Preview ID"
+>
+
+    <svg viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         class="w-3.5 h-3.5"
+         aria-hidden="true">
+
+        <rect width="14"
+              height="14"
+              x="8"
+              y="8"
+              rx="2"
+              ry="2"></rect>
+
+        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+
+    </svg>
+
+</button>
 
 <div class="
     shrink-0
@@ -10740,8 +11428,6 @@ hover:border-indigo-200
                 `;
             })
             .join('');
-
-    lucide.createIcons();
 }
 
 /*
@@ -10756,6 +11442,9 @@ async function loadCloudPreviewManageList() {
             'cloud-preview-manage-list'
         );
 
+setCloudCenterHeaderRefreshBusy(
+    true
+);
 
     /*
      * 讀取中畫面。
@@ -10897,8 +11586,15 @@ async function loadCloudPreviewManageList() {
             message,
             'error'
         );
+
+    } finally {
+
+        setCloudCenterHeaderRefreshBusy(
+            false
+        );
     }
-}
+
+    }
 
 /* =========================================================
    重設雲端預覽密碼
@@ -11064,20 +11760,16 @@ function openCloudPreviewPasswordResetModalFromButton(
     );
 
 
-    modal.classList.remove(
-        'hidden'
-    );
+modal.classList.remove(
+    'hidden'
+);
 
-
-    lucide.createIcons();
-
-
-    setTimeout(
-        () => {
-            passwordInput?.focus();
-        },
-        50
-    );
+setTimeout(
+    () => {
+        passwordInput?.focus();
+    },
+    50
+);
 }
 
 
@@ -11694,20 +12386,16 @@ function openCloudPreviewEditModalFromButton(
     );
 
 
-    modal.classList.remove(
-        'hidden'
-    );
+modal.classList.remove(
+    'hidden'
+);
 
-
-    lucide.createIcons();
-
-
-    setTimeout(
-        () => {
-            nameInput?.focus();
-        },
-        50
-    );
+setTimeout(
+    () => {
+        nameInput?.focus();
+    },
+    50
+);
 }
 
 
@@ -12930,12 +13618,29 @@ if (
                 text-center
             ">
 
-                <i data-lucide="users"
-                   class="
-                       w-6 h-6
-                       text-slate-300
-                       mx-auto mb-2
-                   "></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="
+         w-6 h-6
+         text-slate-300
+         mx-auto mb-2
+     "
+     aria-hidden="true">
+
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+
+    <path d="M16 3.128a4 4 0 0 1 0 7.744"></path>
+
+    <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+
+    <circle cx="9"
+            cy="7"
+            r="4"></circle>
+</svg>
 
                 <p class="
                     text-xs
@@ -12947,8 +13652,6 @@ if (
 
             </div>
         `;
-
-        lucide.createIcons();
 
         return;
     }
@@ -13017,20 +13720,20 @@ if (
                             : 'bg-slate-200 text-slate-500';
 
 
-                    const toggleClass =
-                        enabled
-                            ? 'border-amber-100 bg-amber-50 text-amber-700 hover:bg-amber-100'
-                            : 'border-emerald-100 bg-emerald-50 text-emerald-700 hover:bg-emerald-100';
+const toggleTextClass =
+    enabled
+        ? 'text-amber-700'
+        : 'text-emerald-600';
 
 
 return `
-    <div class="
-        rounded-xl
-        border border-slate-200
-        bg-white
-        px-3.5 py-3
-        shadow-sm
-    ">
+<div class="
+    rounded-xl
+    border border-sky-100
+    bg-sky-50
+    px-3.5 py-3
+    shadow-sm
+">
 
         <div class="
             flex
@@ -13039,21 +13742,52 @@ return `
             min-w-0
         ">
 
-            <!-- 帳號圖示 -->
-            <i data-lucide="${
-                isAdminAccount
-                    ? 'shield-check'
-                    : 'user-check'
-            }"
-               class="
-                   w-4 h-4
-                   ${
-                       isAdminAccount
-                           ? 'text-amber-600'
-                           : 'text-indigo-600'
-                   }
-                   shrink-0
-               "></i>
+<!-- 帳號圖示 -->
+${
+    isAdminAccount
+        ? `
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 class="
+                     w-4 h-4
+                     text-amber-600
+                     shrink-0
+                 "
+                 aria-hidden="true">
+
+                <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
+
+                <path d="m9 12 2 2 4-4"></path>
+            </svg>
+        `
+        : `
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 class="
+                     w-4 h-4
+                     text-indigo-600
+                     shrink-0
+                 "
+                 aria-hidden="true">
+
+                <path d="m16 11 2 2 4-4"></path>
+
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+
+                <circle cx="9"
+                        cy="7"
+                        r="4"></circle>
+            </svg>
+        `
+}
 
 
 <!-- 左側：帳號名稱 -->
@@ -13069,13 +13803,15 @@ return `
 </span>
 
 
-<!-- 中間：帳號狀態 -->
+<!-- 右側：帳號狀態 -->
 <div class="
     shrink-0
     w-[54px]
     flex
     items-center
-    justify-center
+    justify-start
+    order-3
+    translate-x-3
 ">
     <span class="
         px-2 py-0.5
@@ -13090,7 +13826,7 @@ return `
 </div>
 
 
-<!-- 右側：管理操作 -->
+<!-- 右側：帳號管理操作 -->
 <div class="
     shrink-0
     w-[60px]
@@ -13098,54 +13834,100 @@ return `
     items-center
     justify-end
     gap-1
+    order-2
+    translate-x-3
 ">
 
                 ${
                     !isAdminAccount
                         ? `
-                            <!-- 停用 / 重新啟用 -->
-                            <button
-                                type="button"
-                                data-user-id="${userId}"
-                                data-account-name="${shownAccount}"
-                                data-enabled="${
-                                    enabled
-                                        ? 'true'
-                                        : 'false'
-                                }"
-                                onclick="toggleCloudPublisherAccountEnabledFromButton(this)"
-                                class="
-                                    cloud-tooltip-btn
-                                    w-7 h-7
-                                    rounded-lg
-                                    border
-                                    ${toggleClass}
-                                    transition
-                                    flex
-                                    items-center
-                                    justify-center
-                                "
-                                data-tooltip="${
-                                    enabled
-                                        ? '停用'
-                                        : '重新啟用'
-                                }"
-                                aria-label="${
-                                    enabled
-                                        ? '停用'
-                                        : '重新啟用'
-                                }">
+<!-- 停用 / 重新啟用 -->
+<button
+    type="button"
+    data-user-id="${userId}"
+    data-account-name="${shownAccount}"
+    data-enabled="${
+        enabled
+            ? 'true'
+            : 'false'
+    }"
+    onclick="
+        this.classList.add(
+            'cloud-tooltip-suppressed'
+        );
+        this.blur();
+        toggleCloudPublisherAccountEnabledFromButton(
+            this
+        );
+    "
+    onpointerenter="
+        this.classList.remove(
+            'cloud-tooltip-suppressed'
+        )
+    "
+    class="
+        cloud-tooltip-btn
+        w-7 h-7
+        rounded-lg
+        ${toggleTextClass}
+        transition
+        flex
+        items-center
+        justify-center
+        disabled:cursor-wait
+    "
+    data-tooltip="${
+        enabled
+            ? '停用'
+            : '重新啟用'
+    }"
+    aria-label="${
+        enabled
+            ? '停用'
+            : '重新啟用'
+    }">
 
-                                <i data-lucide="${
-                                    enabled
-                                        ? 'pause'
-                                        : 'play'
-                                }"
-                                   class="
-                                       w-3.5 h-3.5
-                                   "></i>
+    ${
+        enabled
+            ? `
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round"
+                     class="w-3.5 h-3.5"
+                     aria-hidden="true">
 
-                            </button>
+                    <rect x="14"
+                          y="3"
+                          width="5"
+                          height="18"
+                          rx="1"></rect>
+
+                    <rect x="5"
+                          y="3"
+                          width="5"
+                          height="18"
+                          rx="1"></rect>
+                </svg>
+            `
+            : `
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round"
+                     class="w-3.5 h-3.5"
+                     aria-hidden="true">
+
+                    <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path>
+                </svg>
+            `
+    }
+
+</button>
                         `
                         : ''
                 }
@@ -13176,8 +13958,31 @@ return `
                                 data-tooltip="新增帳號"
                                 aria-label="新增帳號">
 
-                                <i data-lucide="user-plus"
-                                   class="w-3.5 h-3.5"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-3.5 h-3.5"
+     aria-hidden="true">
+
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+
+    <circle cx="9"
+            cy="7"
+            r="4"></circle>
+
+    <line x1="19"
+          x2="19"
+          y1="8"
+          y2="14"></line>
+
+    <line x1="22"
+          x2="16"
+          y1="11"
+          y2="11"></line>
+</svg>
 
                             </button>
                         `
@@ -13185,36 +13990,57 @@ return `
                 }
 
 
-                <!-- 修改密碼 -->
-                <button
-                    type="button"
-                    data-user-id="${userId}"
-                    data-account-name="${shownAccount}"
-                    onclick="openCloudPublisherPasswordModalFromButton(this)"
-                    class="
-                        cloud-tooltip-btn
-                        w-7 h-7
-                        rounded-lg
-                        border
-border-indigo-100
-bg-indigo-50
-text-indigo-600
-hover:bg-indigo-100
-hover:border-indigo-200
-transition
-                        flex
-                        items-center
-                        justify-center
-                    "
-                    data-tooltip="修改密碼"
-                    aria-label="修改密碼">
+<!-- 修改密碼 -->
+<button
+    type="button"
+    data-user-id="${userId}"
+    data-account-name="${shownAccount}"
+    onclick="
+        this.classList.add(
+            'cloud-tooltip-suppressed'
+        );
+        this.blur();
+        openCloudPublisherPasswordModalFromButton(
+            this
+        );
+    "
+    onpointerenter="
+        this.classList.remove(
+            'cloud-tooltip-suppressed'
+        )
+    "
+    class="
+        cloud-tooltip-btn
+        w-7 h-7
+        rounded-lg
+        text-indigo-600
+        transition
+        flex
+        items-center
+        justify-center
+        disabled:cursor-wait
+    "
+    data-tooltip="修改密碼"
+    aria-label="修改密碼">
 
-                    <i data-lucide="key-round"
-                       class="
-                           w-3.5 h-3.5
-                       "></i>
+    <svg viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         class="w-3.5 h-3.5"
+         aria-hidden="true">
 
-                </button>
+        <path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"></path>
+
+        <circle cx="16.5"
+                cy="7.5"
+                r=".5"
+                fill="currentColor"></circle>
+    </svg>
+
+</button>
 
             </div>
 
@@ -13234,10 +14060,8 @@ transition
      * 再依 user001 ～ user006
      * 的剩餘空位更新新增按鈕。
      */
-    updateCloudPublisherCreateButtonState();
+updateCloudPublisherCreateButtonState();
 
-
-    lucide.createIcons();
 }
 
 
@@ -13248,6 +14072,9 @@ async function loadCloudPublisherAccountsList() {
             'cloud-publisher-accounts-list'
         );
 
+setCloudCenterHeaderRefreshBusy(
+    true
+);        
 
     /*
      * 清單尚未讀取完成前，
@@ -13387,8 +14214,15 @@ async function loadCloudPublisherAccountsList() {
             message,
             'error'
         );
+
+    } finally {
+
+        setCloudCenterHeaderRefreshBusy(
+            false
+        );
+    }        
+        
     }
-}
 
 async function toggleCloudPublisherAccountEnabledFromButton(
     button
@@ -13753,10 +14587,6 @@ function openCloudPublisherPasswordModalFromButton(
         'hidden'
     );
 
-
-    lucide.createIcons();
-
-
     setTimeout(
         () => {
             passwordInput?.focus();
@@ -13960,10 +14790,9 @@ async function submitCloudPublisherPasswordChange() {
                 true;
 
 
-            saveButton.classList.add(
-                'opacity-60',
-                'cursor-wait'
-            );
+saveButton.classList.add(
+    'cursor-wait'
+);
 
 
             saveButton.innerHTML = `
@@ -14096,17 +14925,12 @@ async function submitCloudPublisherPasswordChange() {
                 false;
 
 
-            saveButton.classList.remove(
-                'opacity-60',
-                'cursor-wait'
-            );
+saveButton.classList.remove(
+    'cursor-wait'
+);
 
-
-            saveButton.innerHTML =
-                originalHtml;
-
-
-            lucide.createIcons();
+saveButton.innerHTML =
+    originalHtml;
         }
     }
 }
@@ -14268,9 +15092,6 @@ function openCloudPublisherCreateModal() {
     modal.classList.remove(
         'hidden'
     );
-
-
-    lucide.createIcons();
 
 
     /*
@@ -14478,10 +15299,9 @@ async function submitCloudPublisherCreate() {
                 true;
 
 
-            saveButton.classList.add(
-                'opacity-60',
-                'cursor-wait'
-            );
+saveButton.classList.add(
+    'cursor-wait'
+);
 
 
             saveButton.innerHTML = `
@@ -14628,17 +15448,12 @@ async function submitCloudPublisherCreate() {
                 false;
 
 
-            saveButton.classList.remove(
-                'opacity-60',
-                'cursor-wait'
-            );
+saveButton.classList.remove(
+    'cursor-wait'
+);
 
-
-            saveButton.innerHTML =
-                originalHtml;
-
-
-            lucide.createIcons();
+saveButton.innerHTML =
+    originalHtml;
         }
     }
 }
@@ -14777,19 +15592,18 @@ function setCloudWorkspaceCreateBusy(
 
     if (busy) {
 
-        button.className =
-            `w-full h-10
-             rounded-xl
-             border border-emerald-200
-             bg-emerald-500
-             text-white
-             text-xs font-black
-             flex items-center
-             justify-center gap-2
-             cursor-wait
-             opacity-80
-             transition
-             shadow-sm`;
+button.className =
+    `w-full h-10
+     rounded-xl
+     border border-emerald-200
+     bg-emerald-600
+     text-white
+     text-xs font-black
+     flex items-center
+     justify-center gap-2
+     cursor-wait
+     transition
+     shadow-sm`;
 
 
         button.innerHTML = `
@@ -14823,17 +15637,24 @@ function setCloudWorkspaceCreateBusy(
              shadow-sm`;
 
 
-        button.innerHTML = `
-            <i data-lucide="plus"
-               class="w-4 h-4"></i>
+button.innerHTML = `
+    <svg viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         class="w-4 h-4"
+         aria-hidden="true">
 
-            <span>
-                建立雲端工作資料
-            </span>
-        `;
+        <path d="M5 12h14"></path>
+        <path d="M12 5v14"></path>
+    </svg>
 
-
-        lucide.createIcons();
+    <span>
+        建立雲端工作資料
+    </span>
+`;
     }
 }
 
@@ -14986,13 +15807,12 @@ function openCloudWorkspaceRenameModalFromButton(
     lucide.createIcons();
 
 
-    setTimeout(
-        () => {
-            input?.focus();
-            input?.select();
-        },
-        50
-    );
+setTimeout(
+    () => {
+        input?.focus();
+    },
+    50
+);
 }
 
 
@@ -15772,18 +16592,13 @@ function renderCloudWorkspaceList(
         return;
     }
 
-
-    /*
-     * Risk 系統沒有母版使用的
-     * 全域 isAdmin 變數。
-     *
-     * Workspace 清單在本函式內
-     * 依 Risk 三層權限取得管理者狀態。
-     */
-    const isAdmin =
-        getCurrentRole() ===
-        'admin';
-
+/*
+ * Risk 系統依目前三層權限
+ * 判斷 Workspace 管理功能。
+ */
+const isAdmin =
+    getCurrentRole() ===
+    'admin';
 
     if (
         !Array.isArray(
@@ -15792,48 +16607,37 @@ function renderCloudWorkspaceList(
         workspaces.length === 0
     ) {
 
-        container.innerHTML = `
-            <div class="
-                rounded-xl
-                border border-dashed
-                border-slate-200
-                bg-slate-50
-                px-4 py-8
-                text-center
-            ">
+container.innerHTML = `
+    <div class="
+        rounded-xl
+        border border-dashed
+        border-slate-200
+        bg-slate-50
+        px-4 py-8
+        text-center
+    ">
 
-                <i data-lucide="cloud"
-                   class="
-                       w-7 h-7
-                       text-slate-300
-                       mx-auto mb-2
-                   "></i>
+        <i class="
+               fas fa-cloud
+               block
+               text-[22px]
+               text-slate-300
+               mx-auto mb-2
+           "
+           aria-hidden="true"></i>
 
-                <p class="
-                    text-xs
-                    font-black
-                    text-slate-500
-                ">
-                    尚未建立雲端工作資料
-                </p>
+        <p class="
+            text-xs
+            font-black
+            text-slate-500
+        ">
+            尚未建立雲端工作資料
+        </p>
 
-                <p class="
-                    mt-1
-                    text-[10px]
-                    leading-relaxed
-                    text-slate-400
-                ">
-                    下一階段完成附件雲端同步後，
-                    即可建立第一份工作資料。
-                </p>
+    </div>
+`;
 
-            </div>
-        `;
-
-
-        lucide.createIcons();
-
-        return;
+return;
     }
 
 
@@ -15866,12 +16670,6 @@ function renderCloudWorkspaceList(
     workspace?.enabled !==
     false;
     
-const toggleEnabledIcon =
-    enabled
-        ? 'pause'
-        : 'play';
-
-
 const toggleEnabledTitle =
     enabled
         ? '停用'
@@ -15880,8 +16678,48 @@ const toggleEnabledTitle =
 
 const toggleEnabledClass =
     enabled
-        ? 'border-amber-100 bg-amber-50 text-amber-700 hover:bg-amber-100'
-        : 'border-emerald-100 bg-emerald-50 text-emerald-700 hover:bg-emerald-100';    
+        ? 'text-amber-700'
+        : 'text-emerald-600';
+
+
+const toggleEnabledMarkup =
+    enabled
+        ? `
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 class="w-3.5 h-3.5"
+                 aria-hidden="true">
+
+                <rect x="14"
+                      y="3"
+                      width="5"
+                      height="18"
+                      rx="1"></rect>
+
+                <rect x="5"
+                      y="3"
+                      width="5"
+                      height="18"
+                      rx="1"></rect>
+            </svg>
+        `
+        : `
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 class="w-3.5 h-3.5"
+                 aria-hidden="true">
+
+                <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path>
+            </svg>
+        `;   
 
 const isSameWorkspace =
     !!activeCloudWorkspaceId &&
@@ -15939,223 +16777,215 @@ const hasNewerWorkspaceRevision =
                     } catch (_) {}
 
 
-                    return `
-                        <div class="
-                            rounded-xl
-                            border border-slate-200
-                            bg-white
-                            px-3.5 py-3
-                            shadow-sm
-                        ">
-
-                            <div class="
-                                flex
-                                items-start
-                                gap-2
-                            ">
-
-<i data-lucide="cloud"
-   class="
-       w-4 h-4
-       text-emerald-600
-       shrink-0
-       mt-1
-   "></i>
-
-
-                                <div class="
-                                    min-w-0
-                                    flex-1
-                                ">
-
-<div class="
-    flex
-    items-center
-    gap-2
-    min-w-0
-">
-
-    <!-- 工作資料名稱 -->
-    <p class="
-        min-w-0
-        flex-1
-        text-sm
-        font-black
-        text-slate-800
-        truncate
-    ">
-        ${name}
-    </p>
-
-
-    <!-- 管理操作 -->
+return `
     <div class="
-        shrink-0
-        flex
-        items-center
-        gap-1
+        rounded-xl
+        border border-sky-100
+        bg-sky-50
+        px-3.5 py-3
+        shadow-sm
     ">
 
-        <!-- 編輯名稱 -->
-        <button
-            type="button"
-            data-workspace-id="${id}"
-            data-workspace-name="${name}"
-            onclick="openCloudWorkspaceRenameModalFromButton(this)"
-            class="
-                cloud-tooltip-btn
-                w-7 h-7
-                rounded-lg
-border border-indigo-100
-bg-indigo-50
-text-sky-600
-hover:bg-indigo-100
-hover:border-indigo-200
-                transition
+        <div class="min-w-0">
+
+            <div class="
                 flex
                 items-center
-                justify-center
-            "
-            data-tooltip="編輯"
-            aria-label="編輯">
+                gap-1
+                min-w-0
+            ">
 
-            <i data-lucide="square-pen"
-               class="w-3.5 h-3.5"></i>
-
-        </button>
-
-
-        ${
-            isAdmin
-                ? `
-                    <!-- 停用 / 重新啟用 -->
-                    <button
-                        type="button"
-                        data-workspace-id="${id}"
-                        data-workspace-name="${name}"
-                        data-workspace-enabled="${enabled ? 'true' : 'false'}"
-                        onclick="toggleCloudWorkspaceEnabledFromButton(this)"
-                        class="
-                            cloud-tooltip-btn
-                            w-7 h-7
-                            rounded-lg
-                            border
-                            ${toggleEnabledClass}
-                            transition
-                            flex
-                            items-center
-                            justify-center
-                        "
-                        data-tooltip="${toggleEnabledTitle}"
-                        aria-label="${toggleEnabledTitle}">
-
-                        <i data-lucide="${toggleEnabledIcon}"
-                           class="w-3.5 h-3.5"></i>
-
-                    </button>
-
-
-                    <!-- 永久刪除 -->
-                    <button
-                        type="button"
-                        data-workspace-id="${id}"
-                        data-workspace-name="${name}"
-                        onclick="deleteCloudWorkspaceFromButton(this)"
-                        class="
-                            cloud-tooltip-btn
-                            w-7 h-7
-                            rounded-lg
-                            border border-red-100
-                            bg-red-50
-                            text-red-500
-                            hover:bg-red-100
-                            hover:border-red-200
-                            hover:text-red-600
-                            transition
-                            flex
-                            items-center
-                            justify-center
-                        "
-                        data-tooltip="刪除"
-                        aria-label="刪除">
-
-                        <span class="
-                            attachment-symbol
-                            attachment-trash-symbol
-                        "
-                              aria-hidden="true">
-
-                            <svg viewBox="0 0 24 24"
-                                 focusable="false">
-
-                                <path fill="currentColor"
-                                      d="M9 3.5h6l.8 1.7H20a1 1 0 1 1 0 2H4a1 1 0 0 1 0-2h4.2L9 3.5Z"/>
-
-                                <path fill="currentColor"
-                                      d="M6.2 8.7h11.6l-.8 10.1A2.5 2.5 0 0 1 14.5 21h-5a2.5 2.5 0 0 1-2.5-2.2L6.2 8.7Zm3.2 2.2a.8.8 0 0 0-.8.8l.3 5.6a.8.8 0 0 0 1.6-.1l-.3-5.6a.8.8 0 0 0-.8-.7Zm5.2 0a.8.8 0 0 0-.8.7l-.3 5.6a.8.8 0 1 0 1.6.1l.3-5.6a.8.8 0 0 0-.8-.8Z"/>
-
-                            </svg>
-
-                        </span>
-
-                    </button>
-                `
-                : ''
-        }
-
-    </div>
-
-</div>
-
-
-<div class="
-    mt-1.5
-    flex
-    items-center
-    justify-between
-    gap-2
-    min-w-0
-">
-
-    ${
-        updatedText
-            ? `
-                <p class="
+                <!-- 雲朵與工作資料名稱 -->
+                <div class="
                     min-w-0
-                    truncate
-                    text-[10px]
-                    text-slate-400
+                    flex-1
+                    flex
+                    items-center
+                    gap-2
                 ">
-                    最近更新：
-                    ${escapeCloudPreviewHtml(
-                        updatedText
-                    )}
-                </p>
-            `
-            : `
-                <span></span>
-            `
-    }
+
+                    <i class="
+                        fas fa-cloud
+                        text-emerald-600
+                        text-sm
+                        shrink-0
+                    "
+                    aria-hidden="true"></i>
+
+                    <span class="
+                        min-w-0
+                        flex-1
+                        truncate
+                        text-sm
+                        font-black
+                        text-slate-800
+                    ">
+                        ${name}
+                    </span>
+
+                </div>
 
 
-    <span class="
-        shrink-0
-        px-2 py-0.5
-        rounded-full
-        bg-emerald-100
-        text-emerald-700
-        text-[9px]
-        font-black
-        whitespace-nowrap
-    ">
-        Revision ${revision}
-    </span>
+                <!-- 管理操作 -->
+                <div class="
+                    shrink-0
+                    flex
+                    items-center
+                    gap-1.5
+                ">
 
-</div>
+                    <!-- 編輯名稱 -->
+                    <button
+                        type="button"
+                        data-workspace-id="${id}"
+                        data-workspace-name="${name}"
+                        onclick="openCloudWorkspaceRenameModalFromButton(this)"
+                        class="
+                            cloud-tooltip-btn
+                            w-7 h-7
+                            rounded-lg
+                            text-sky-600
+                            transition
+                            flex
+                            items-center
+                            justify-center
+                        "
+                        data-tooltip="編輯"
+                        aria-label="編輯工作資料名稱">
 
-                                </div>
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             stroke-linecap="round"
+                             stroke-linejoin="round"
+                             class="w-3.5 h-3.5"
+                             aria-hidden="true">
 
-                            </div>
+                            <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+
+                            <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852Z"></path>
+                        </svg>
+
+                    </button>
+
+
+                    ${
+                        isAdmin
+                            ? `
+                                <!-- 停用／重新啟用 -->
+                                <button
+                                    type="button"
+                                    data-workspace-id="${id}"
+                                    data-workspace-name="${name}"
+                                    data-workspace-enabled="${enabled ? 'true' : 'false'}"
+                                    onclick="toggleCloudWorkspaceEnabledFromButton(this)"
+                                    class="
+                                        cloud-tooltip-btn
+                                        w-7 h-7
+                                        rounded-lg
+                                        ${toggleEnabledClass}
+                                        transition
+                                        flex
+                                        items-center
+                                        justify-center
+                                    "
+                                    data-tooltip="${toggleEnabledTitle}"
+                                    aria-label="${toggleEnabledTitle}">
+
+                                    ${toggleEnabledMarkup}
+
+                                </button>
+
+
+                                <!-- 永久刪除 -->
+                                <button
+                                    type="button"
+                                    data-workspace-id="${id}"
+                                    data-workspace-name="${name}"
+                                    onclick="deleteCloudWorkspaceFromButton(this)"
+                                    class="
+                                        cloud-tooltip-btn
+                                        w-7 h-7
+                                        rounded-lg
+                                        text-red-500
+                                        hover:text-red-600
+                                        transition
+                                        flex
+                                        items-center
+                                        justify-center
+                                    "
+                                    data-tooltip="刪除"
+                                    aria-label="刪除">
+
+                                    <svg viewBox="0 0 24 24"
+                                         class="w-[17px] h-[17px]"
+                                         aria-hidden="true">
+
+                                        <path fill="currentColor"
+                                              d="M9 3.5h6l.8 1.7H20a1 1 0 1 1 0 2H4a1 1 0 0 1 0-2h4.2L9 3.5Z"></path>
+
+                                        <path fill="currentColor"
+                                              d="M6.2 8.7h11.6l-.8 10.1A2.5 2.5 0 0 1 14.5 21h-5a2.5 2.5 0 0 1-2.5-2.2L6.2 8.7Zm3.2 2.2a.8.8 0 0 0-.8.8l.3 5.6a.8.8 0 0 0 1.6-.1l-.3-5.6a.8.8 0 0 0-.8-.7Zm5.2 0a.8.8 0 0 0-.8.7l-.3 5.6a.8.8 0 1 0 1.6.1l.3-5.6a.8.8 0 0 0-.8-.8Z"></path>
+                                    </svg>
+
+                                </button>
+                            `
+                            : ''
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="
+                mt-1.5
+                pl-6
+                flex
+                items-center
+                justify-between
+                gap-2
+                min-w-0
+            ">
+
+                ${
+                    updatedText
+                        ? `
+                            <p class="
+                                min-w-0
+                                truncate
+                                text-[10px]
+                                text-slate-400
+                            ">
+                                最近更新：
+                                ${escapeCloudPreviewHtml(
+                                    updatedText
+                                )}
+                            </p>
+                        `
+                        : `
+                            <span></span>
+                        `
+                }
+
+
+                <span class="
+                    shrink-0
+                    px-2 py-0.5
+                    rounded-full
+                    bg-emerald-100
+                    text-emerald-700
+                    text-[9px]
+                    font-black
+                    whitespace-nowrap
+                ">
+                    Revision ${revision}
+                </span>
+
+            </div>
+
+        </div>
 
 
                             <div class="
@@ -16184,8 +17014,22 @@ ${
                         gap-1.5
                     ">
 
-                <i data-lucide="pause-circle"
-                   class="w-3.5 h-3.5"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-3.5 h-3.5"
+     aria-hidden="true">
+
+    <circle cx="12"
+            cy="12"
+            r="10"></circle>
+
+    <path d="M10 15V9"></path>
+    <path d="M14 15V9"></path>
+</svg>
 
                 <span>
                     已停用
@@ -16215,8 +17059,20 @@ ${
                             transition
                         ">
 
-                    <i data-lucide="refresh-cw"
-                       class="w-3.5 h-3.5"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-3.5 h-3.5"
+     aria-hidden="true">
+
+    <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+    <path d="M21 3v5h-5"></path>
+    <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+    <path d="M8 16H3v5"></path>
+</svg>
 
                     <span>
                         有新版本，重新載入
@@ -16233,9 +17089,9 @@ ${
                         class="
                             w-full h-8
                             rounded-lg
-                            bg-blue-50
-                            text-blue-600
-                            border border-blue-100
+                            bg-emerald-100
+                            text-emerald-700
+                            border border-emerald-200
                             text-[10px]
                             font-bold
                             cursor-default
@@ -16245,8 +17101,21 @@ ${
                             gap-1.5
                         ">
 
-                    <i data-lucide="circle-check"
-                       class="w-3.5 h-3.5"></i>
+<svg viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="w-3.5 h-3.5"
+     aria-hidden="true">
+
+    <circle cx="12"
+            cy="12"
+            r="10"></circle>
+
+    <path d="m9 12 2 2 4-4"></path>
+</svg>
 
                     <span>
                         目前已載入
@@ -16259,25 +17128,27 @@ ${
                 <button type="button"
                         data-workspace-id="${id}"
                         onclick="loadCloudWorkspaceIntoSystem('${id}')"
-                        class="
-                            w-full h-8
-                            rounded-lg
-                            bg-emerald-50
-                            text-emerald-700
-                            border border-emerald-100
-                            hover:bg-emerald-100
-                            text-[10px]
-                            font-bold
-                            cursor-pointer
-                            flex
-                            items-center
-                            justify-center
-                            gap-1.5
-                            transition
+class="
+    w-full h-8
+    rounded-lg
+    bg-sky-600
+    text-white
+    border border-sky-700
+    hover:bg-sky-700
+    hover:border-sky-800
+    text-[10px]
+    font-bold
+    cursor-pointer
+    flex
+    items-center
+    justify-center
+    gap-1.5
+    transition-colors
+    duration-150
                         ">
 
-                    <i data-lucide="cloud-download"
-                       class="w-3.5 h-3.5"></i>
+<i class="fas fa-cloud-arrow-down text-[13px] leading-none"
+   aria-hidden="true"></i>
 
                     <span>
                         載入工作資料
@@ -16308,6 +17179,9 @@ async function loadCloudWorkspaceList() {
             'cloud-workspace-list'
         );
 
+setCloudCenterHeaderRefreshBusy(
+    true
+);        
 
     if (container) {
 
@@ -16343,9 +17217,10 @@ async function loadCloudWorkspaceList() {
     }
 
 
-    setCloudWorkspaceStatus(
-        ''
-    );
+setCloudWorkspaceStatus(
+    '正在讀取雲端工作資料...',
+    'info'
+);
 
 
     try {
@@ -16360,16 +17235,29 @@ async function loadCloudWorkspaceList() {
             });
 
 
-        renderCloudWorkspaceList(
-            result?.workspaces ||
-            []
-        );
+const workspaces =
+    Array.isArray(
+        result?.workspaces
+    )
+        ? result.workspaces
+        : [];
 
 
-        setCloudWorkspaceStatus(
-            '已成功連線雲端工作資料服務。',
-            'success'
-        );
+renderCloudWorkspaceList(
+    workspaces
+);
+
+
+setCloudWorkspaceStatus(
+    workspaces.length > 0
+        ? (
+            '已讀取 ' +
+            workspaces.length +
+            ' 份雲端工作資料。'
+        )
+        : '目前尚未建立雲端工作資料。',
+    'success'
+);
 
 
     } catch (error) {
@@ -16426,6 +17314,12 @@ async function loadCloudWorkspaceList() {
         setCloudWorkspaceStatus(
             message,
             'error'
+        );
+
+    } finally {
+
+        setCloudCenterHeaderRefreshBusy(
+            false
         );
     }
 }
@@ -19502,10 +20396,9 @@ async function saveCurrentCloudWorkspace() {
             button.disabled =
                 true;
 
-            button.classList.add(
-                'opacity-70',
-                'cursor-wait'
-            );
+button.classList.add(
+    'cursor-wait'
+);
 
             button.innerHTML = `
                 <span class="
@@ -19904,21 +20797,18 @@ async function saveCurrentCloudWorkspace() {
             button.disabled =
                 false;
 
-            button.classList.remove(
-                'opacity-70',
-                'cursor-wait'
-            );
+button.classList.remove(
+    'cursor-wait'
+);
 
-            button.innerHTML = `
-                <i data-lucide="cloud-upload"
-                   class="w-4 h-4"></i>
+button.innerHTML = `
+    <i class="fas fa-cloud-arrow-up text-sm leading-none"
+       aria-hidden="true"></i>
 
-                <span>
-                    儲存至雲端
-                </span>
-            `;
-
-            lucide.createIcons();
+    <span>
+        儲存至雲端
+    </span>
+`;
         }
     }
 }
@@ -23154,12 +24044,11 @@ function openAdminModal() {
         settingsScreen.classList.add('hidden');
     }
 
-    setTimeout(() => {
-        if (input) {
-            input.focus();
-            input.select();
-        }
-    }, 50);
+setTimeout(() => {
+    if (input) {
+        input.focus();
+    }
+}, 50);
 }
 
         function closeAdminModal() {
