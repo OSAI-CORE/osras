@@ -163,21 +163,16 @@ html.fa-icons-ready #header-action-buttons {
 }
 
 /* =========================================================
-   Cloud Publisher 所有帳號與密碼視窗
-   字型及密碼圓點統一比照證照管理系統
+   雲端中心與所有第二層功能視窗
+   字型統一比照證照管理系統
 ========================================================= */
-#cloud-publisher-login-modal,
-#cloud-publisher-login-modal input,
-#cloud-publisher-login-modal button,
-
+#cloud-preview-modal,
+#cloud-workspace-rename-modal,
 #cloud-publisher-create-modal,
-#cloud-publisher-create-modal input,
-#cloud-publisher-create-modal select,
-#cloud-publisher-create-modal button,
-
 #cloud-publisher-password-modal,
-#cloud-publisher-password-modal input,
-#cloud-publisher-password-modal button {
+#cloud-preview-edit-modal,
+#cloud-preview-password-reset-modal,
+#cloud-publisher-login-modal {
     font-family:
         'Noto Sans TC',
         sans-serif;
@@ -188,11 +183,25 @@ html.fa-icons-ready #header-action-buttons {
  * 所有 Cloud Publisher 密碼欄位
  * 統一使用證照母版的正常字距。
  */
+/*
+ * 所有 Cloud Center 密碼輸入框
+ * 統一使用證照管理系統的字型與正常字距。
+ */
+#cloud-preview-view-password,
+#cloud-preview-publish-password,
+#cloud-preview-edit-password,
+#cloud-preview-password-new,
+#cloud-preview-password-confirm,
+
 #cloud-publisher-password,
 #cloud-publisher-create-password,
 #cloud-publisher-create-confirm-password,
 #cloud-publisher-new-password,
 #cloud-publisher-confirm-password {
+    font-family:
+        'Noto Sans TC',
+        sans-serif;
+
     letter-spacing:
         normal;
 }
@@ -206,21 +215,6 @@ html.fa-icons-ready #header-action-buttons {
         .bg-section-5 { background-color: #ffe4e6; } /* 控制措施 (淡粉) */
         .bg-section-6 { background-color: #f1f5f9; } /* 控制後預估風險 (淡灰) */
 
-        /* 滾動條美化 */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
 
         /* 表格格線與自適應調適 */
         table.osra-table {
@@ -511,6 +505,160 @@ body:not(.edit-mode) table.osra-table textarea:focus {
     font-size: 13px;
     font-style: italic;
     letter-spacing: 0.12em;
+}
+
+/* =========================================================
+   雲端中心固定框架與清單捲動機制
+
+   表頭、目前權限與下方關閉按鈕固定；
+   Workspace、預覽與帳號只捲動下方圖卡清單。
+========================================================= */
+#cloud-center-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#cloud-center-main-header {
+    flex: 0 0 auto;
+}
+
+#cloud-center-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/*
+ * 目前權限列不參與壓縮。
+ */
+#cloud-center-body > :first-child {
+    flex: 0 0 auto;
+}
+
+/*
+ * 第一層首頁、Viewer 與發布設定若高度不足，
+ * 由各自內容區負責捲動，不帶動表頭與關閉按鈕。
+ */
+#cloud-preview-viewer-home:not(.hidden),
+#cloud-preview-publisher-home:not(.hidden) {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/*
+ * 發布新預覽視窗保留 2px 內距，
+ * 避免輸入框的 focus ring 被捲動容器裁切。
+ */
+#cloud-preview-publish-view:not(.hidden) {
+    flex: 1 1 auto;
+    min-height: 0;
+
+    /*
+     * 保留輸入框 focus ring 顯示空間。
+     */
+    padding: 2px;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    /*
+     * 與三個清單型視窗使用相同捲動手感。
+     */
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+
+    /*
+     * Firefox 捲軸。
+     */
+    scrollbar-width: thin;
+    scrollbar-color:
+        #cbd5e1
+        #f1f5f9;
+}
+
+/*
+ * 三個清單型第二層視窗使用固定框架。
+ */
+#cloud-workspace-view:not(.hidden),
+#cloud-preview-manage-view:not(.hidden),
+#cloud-publisher-accounts-view:not(.hidden) {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/*
+ * 只有下方圖卡清單可以上下捲動。
+ */
+#cloud-workspace-list,
+#cloud-preview-manage-list,
+#cloud-publisher-accounts-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+
+    scrollbar-width: thin;
+    scrollbar-color:
+        #cbd5e1
+        #f1f5f9;
+}
+
+/*
+ * Chrome、Edge、Safari：
+ * 比照績效管理系統捲動條。
+ */
+#cloud-preview-publish-view::-webkit-scrollbar,
+#cloud-workspace-list::-webkit-scrollbar,
+#cloud-preview-manage-list::-webkit-scrollbar,
+#cloud-publisher-accounts-list::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+#cloud-preview-publish-view::-webkit-scrollbar-track,
+#cloud-workspace-list::-webkit-scrollbar-track,
+#cloud-preview-manage-list::-webkit-scrollbar-track,
+#cloud-publisher-accounts-list::-webkit-scrollbar-track {
+    background:
+        #f1f5f9;
+}
+
+#cloud-preview-publish-view::-webkit-scrollbar-thumb,
+#cloud-workspace-list::-webkit-scrollbar-thumb,
+#cloud-preview-manage-list::-webkit-scrollbar-thumb,
+#cloud-publisher-accounts-list::-webkit-scrollbar-thumb {
+    background:
+        #cbd5e1;
+
+    border-radius:
+        4px;
+}
+
+#cloud-preview-publish-view::-webkit-scrollbar-thumb:hover,
+#cloud-workspace-list::-webkit-scrollbar-thumb:hover,
+#cloud-preview-manage-list::-webkit-scrollbar-thumb:hover,
+#cloud-publisher-accounts-list::-webkit-scrollbar-thumb:hover {
+    background:
+        #94a3b8;
+}
+
+/*
+ * 下方關閉按鈕固定，不跟著圖卡清單捲動。
+ */
+#cloud-center-body > button:last-child {
+    flex: 0 0 auto;
 }
 
 /* =========================================================
@@ -4045,12 +4193,14 @@ class="group relative overflow-visible
             z-[130] hidden flex items-center justify-center
             p-4 no-print">
 
-<div onclick="event.stopPropagation()"
+<div id="cloud-center-panel"
+     onclick="event.stopPropagation()"
      class="bg-white w-full max-w-sm mx-3
             rounded-2xl shadow-2xl
             border border-slate-200
             scale-in-center
-            overflow-y-auto
+            flex flex-col
+            overflow-hidden
             max-h-[calc(100svh-24px)]">
 
 <!-- Header -->
@@ -4175,8 +4325,12 @@ class="group relative overflow-visible
 
 </div>
 
-        <!-- Body -->
-        <div class="px-5 pt-2 pb-5">
+<!-- Body -->
+<div id="cloud-center-body"
+     class="px-5 pt-2 pb-5
+            flex flex-1 flex-col
+            min-h-0
+            overflow-hidden">
 
             <!-- 目前角色 -->
             <div class="flex items-center justify-between
@@ -4542,55 +4696,102 @@ class="group relative overflow-visible
     </div>
 
 
-    <!-- 未來建立 Workspace 的位置 -->
-    <div class="mb-3">
+<!-- 建立／儲存 Workspace -->
+<div class="grid grid-cols-2
+            gap-2
+            mb-2.5">
 
-<button type="button"
-        id="cloud-workspace-create-btn"
-        onclick="createCloudWorkspaceFromCurrentData()"
-        class="w-full h-10
-               rounded-xl
-               border border-emerald-200
-               bg-emerald-600
-               hover:bg-emerald-700
-               text-white
-               text-xs font-black
-               flex items-center
-               justify-center gap-2
-               transition
-               shadow-sm">
+    <!-- 左側：建立雲端工作資料 -->
+    <button type="button"
+            id="cloud-workspace-create-btn"
+            onclick="createCloudWorkspaceFromCurrentData()"
+            class="w-full min-w-0
+                   h-10 sm:h-9
+                   px-2
+                   rounded-xl
+                   border border-emerald-200
+                   bg-emerald-600
+                   hover:bg-emerald-700
+                   text-white
+                   text-[11px] sm:text-xs
+                   font-black
+                   whitespace-nowrap
+                   flex items-center
+                   justify-center
+                   gap-1.5
+                   transition
+                   shadow-sm">
 
-    <svg viewBox="0 0 24 24"
-         fill="none"
-         stroke="currentColor"
-         stroke-width="2"
-         stroke-linecap="round"
-         stroke-linejoin="round"
-         class="w-4 h-4"
-         aria-hidden="true">
+        <svg viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2"
+             stroke-linecap="round"
+             stroke-linejoin="round"
+             class="w-3.5 h-3.5 shrink-0"
+             aria-hidden="true">
 
-        <path d="M5 12h14"></path>
-        <path d="M12 5v14"></path>
-    </svg>
+            <path d="M5 12h14"></path>
+            <path d="M12 5v14"></path>
 
-    <span>
-        建立雲端工作資料
-    </span>
+        </svg>
 
-</button>
+        <span>
+            建立雲端工作資料
+        </span>
 
-    </div>
+    </button>
 
-<!-- 目前已載入 Workspace 的雲端儲存 -->
+
+    <!-- 右側：儲存至雲端 -->
+    <button type="button"
+            id="cloud-workspace-save-btn"
+            onclick="saveCurrentCloudWorkspace()"
+            disabled
+            class="w-full min-w-0
+                   h-10 sm:h-9
+                   px-2
+                   rounded-xl
+                   border border-blue-200
+                   bg-blue-600
+                   hover:bg-blue-700
+                   disabled:hover:bg-blue-600
+                   text-white
+                   text-[11px] sm:text-xs
+                   font-black
+                   whitespace-nowrap
+                   flex items-center
+                   justify-center
+                   gap-1.5
+                   transition
+                   shadow-sm
+                   disabled:opacity-50
+                   disabled:cursor-not-allowed
+                   disabled:shadow-none">
+
+        <i class="fas fa-cloud-arrow-up
+                  text-xs leading-none
+                  shrink-0"
+           aria-hidden="true"></i>
+
+        <span>
+            儲存至雲端
+        </span>
+
+    </button>
+
+</div>
+
+
+<!-- 目前已載入 Workspace 狀態 -->
 <div id="cloud-workspace-active-actions"
-     class="hidden mb-3">
+     class="hidden mb-2.5">
 
     <div class="
         rounded-xl
         border border-blue-100
         bg-blue-50/60
         px-3 py-2.5
-        mb-2
     ">
 
         <div class="
@@ -4637,34 +4838,8 @@ class="group relative overflow-visible
 
     </div>
 
-
-    <button type="button"
-            id="cloud-workspace-save-btn"
-            onclick="saveCurrentCloudWorkspace()"
-            class="
-                w-full h-10
-                rounded-xl
-                border border-blue-200
-                bg-blue-600
-                hover:bg-blue-700
-                text-white
-                text-xs font-black
-                flex items-center
-                justify-center gap-2
-                transition
-                shadow-sm
-            ">
-
-<i class="fas fa-cloud-arrow-up text-sm leading-none"
-   aria-hidden="true"></i>
-
-        <span>
-            儲存至雲端
-        </span>
-
-    </button>
-
 </div>
+
 
     <!-- Workspace 清單 -->
     <div id="cloud-workspace-list"
@@ -10602,6 +10777,11 @@ function updateActiveCloudWorkspaceUI() {
             'cloud-workspace-active-revision'
         );
 
+    const saveButton =
+        document.getElementById(
+            'cloud-workspace-save-btn'
+        );
+
 
     const active =
         !!activeCloudWorkspaceId &&
@@ -10616,7 +10796,28 @@ function updateActiveCloudWorkspaceUI() {
         );
 
 
+    /*
+     * 儲存按鈕固定顯示在右側，
+     * 未建立或載入 Workspace 時不能使用。
+     */
+    if (saveButton) {
+        saveButton.disabled =
+            !active;
+    }
+
+
     if (!active) {
+
+        if (name) {
+            name.textContent =
+                '';
+        }
+
+        if (revision) {
+            revision.textContent =
+                '';
+        }
+
         return;
     }
 
@@ -15623,23 +15824,29 @@ function setCloudWorkspaceCreateBusy(
 
     if (busy) {
 
-button.className =
-    `w-full h-10
-     rounded-xl
-     border border-emerald-200
-     bg-emerald-600
-     text-white
-     text-xs font-black
-     flex items-center
-     justify-center gap-2
-     cursor-wait
-     transition
-     shadow-sm`;
+        button.className =
+            `w-full min-w-0
+             h-10 sm:h-9
+             px-2
+             rounded-xl
+             border border-emerald-200
+             bg-emerald-600
+             text-white
+             text-[11px] sm:text-xs
+             font-black
+             whitespace-nowrap
+             flex items-center
+             justify-center
+             gap-1.5
+             cursor-wait
+             transition
+             shadow-sm`;
 
 
         button.innerHTML = `
             <span class="
-                w-4 h-4
+                w-3.5 h-3.5
+                shrink-0
                 rounded-full
                 border-2
                 border-white/40
@@ -15655,37 +15862,44 @@ button.className =
     } else {
 
         button.className =
-            `w-full h-10
+            `w-full min-w-0
+             h-10 sm:h-9
+             px-2
              rounded-xl
              border border-emerald-200
              bg-emerald-600
              hover:bg-emerald-700
              text-white
-             text-xs font-black
+             text-[11px] sm:text-xs
+             font-black
+             whitespace-nowrap
              flex items-center
-             justify-center gap-2
+             justify-center
+             gap-1.5
              transition
              shadow-sm`;
 
 
-button.innerHTML = `
-    <svg viewBox="0 0 24 24"
-         fill="none"
-         stroke="currentColor"
-         stroke-width="2"
-         stroke-linecap="round"
-         stroke-linejoin="round"
-         class="w-4 h-4"
-         aria-hidden="true">
+        button.innerHTML = `
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 class="w-3.5 h-3.5 shrink-0"
+                 aria-hidden="true">
 
-        <path d="M5 12h14"></path>
-        <path d="M12 5v14"></path>
-    </svg>
+                <path d="M5 12h14"></path>
+                <path d="M12 5v14"></path>
 
-    <span>
-        建立雲端工作資料
-    </span>
-`;
+            </svg>
+
+            <span>
+                建立雲端工作資料
+            </span>
+        `;
+
     }
 }
 
@@ -20432,9 +20646,10 @@ button.classList.add(
 );
 
             button.innerHTML = `
-                <span class="
-                    w-4 h-4
-                    rounded-full
+<span class="
+    w-3.5 h-3.5
+    shrink-0
+    rounded-full
                     border-2
                     border-white/40
                     border-t-white
@@ -20822,24 +21037,30 @@ button.classList.add(
         /*
          * 無論成功或失敗，
          * 恢復「儲存至雲端」按鈕。
+         *
+         * Workspace 已被停用或刪除時，
+         * 儲存按鈕必須維持停用。
          */
         if (button) {
 
             button.disabled =
-                false;
+                !activeCloudWorkspaceId ||
+                activeCloudWorkspaceRevision < 1;
 
-button.classList.remove(
-    'cursor-wait'
-);
+            button.classList.remove(
+                'cursor-wait'
+            );
 
-button.innerHTML = `
-    <i class="fas fa-cloud-arrow-up text-sm leading-none"
-       aria-hidden="true"></i>
+            button.innerHTML = `
+                <i class="fas fa-cloud-arrow-up
+                          text-xs leading-none
+                          shrink-0"
+                   aria-hidden="true"></i>
 
-    <span>
-        儲存至雲端
-    </span>
-`;
+                <span>
+                    儲存至雲端
+                </span>
+            `;
         }
     }
 }
