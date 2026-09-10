@@ -662,6 +662,77 @@ body:not(.edit-mode) table.osra-table textarea:focus {
 }
 
 /* =========================================================
+   Cloud Center：旋轉讀取動畫相容性修正
+
+   風險評估系統目前沒有使用 cloud-ui-root，
+   因此直接以所有 cloud-*-modal
+   作為 Cloud Center 統一作用範圍。
+
+   統一接管：
+   1. Font Awesome 的 fa-spin
+   2. Tailwind 的 animate-spin
+
+   修正部分手機瀏覽器中
+   讀取圖示停留在第一幀、不旋轉的問題。
+========================================================= */
+
+@-webkit-keyframes oshCloudCenterSpin {
+    from {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+
+    to {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes oshCloudCenterSpin {
+    from {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+
+    to {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+[id^="cloud-"][id$="-modal"] .fa-spin,
+[id^="cloud-"][id$="-modal"] .animate-spin {
+    display: inline-block !important;
+
+    -webkit-animation:
+        oshCloudCenterSpin
+        1s
+        linear
+        infinite !important;
+
+    animation:
+        oshCloudCenterSpin
+        1s
+        linear
+        infinite !important;
+
+    -webkit-animation-play-state:
+        running !important;
+
+    animation-play-state:
+        running !important;
+
+    -webkit-transform-origin:
+        50% 50% !important;
+
+    transform-origin:
+        50% 50% !important;
+
+    will-change:
+        transform;
+}
+
+/* =========================================================
    雲端中心：純圖示功能按鈕 Tooltip
    僅桌機滑鼠裝置顯示，手機觸控不顯示。
 ========================================================= */
