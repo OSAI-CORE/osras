@@ -3301,11 +3301,12 @@ table.osra-table textarea::placeholder {
 
 
 /* =========================================================
-   三、匯出資料
-   ＝證照管理系統「匯出總表」
+   三、列印 / PDF
+
+   改用原本「匯出資料」的翡翠青綠配色。
 ========================================================= */
 
-#export-json-btn {
+#print-pdf-btn {
     background:
         #0f766e !important;
 
@@ -3323,7 +3324,7 @@ table.osra-table textarea::placeholder {
 
 @media (hover: hover) and (pointer: fine) {
 
-    #export-json-btn:hover {
+    #print-pdf-btn:hover {
         background:
             #115e59 !important;
 
@@ -3340,9 +3341,67 @@ table.osra-table textarea::placeholder {
 }
 
 
-#export-json-btn:active {
+#print-pdf-btn:active {
     background:
         #134e4a !important;
+
+    color:
+        #ffffff !important;
+
+    transform:
+        none !important;
+}
+
+
+/* =========================================================
+   四、資料操作按鈕
+
+   匯出資料
+   載入預覽
+   退出預覽
+   載入資料
+   匯入資料
+
+   全部使用原「列印 / PDF」的 Slate 配色。
+========================================================= */
+
+#export-json-btn,
+#load-json-btn {
+    background:
+        #475569 !important;
+
+    color:
+        #ffffff !important;
+
+    border-color:
+        transparent !important;
+}
+
+
+@media (hover: hover) and (pointer: fine) {
+
+    #export-json-btn:hover,
+    #load-json-btn:hover {
+        background:
+            #334155 !important;
+
+        color:
+            #ffffff !important;
+
+        transform:
+            none !important;
+    }
+}
+
+
+/*
+ * 原列印按鈕沒有另外的第三段危險色，
+ * 因此按下時維持 Slate-700。
+ */
+#export-json-btn:active,
+#load-json-btn:active {
+    background:
+        #334155 !important;
 
     color:
         #ffffff !important;
@@ -3596,28 +3655,6 @@ nav #mobile-permission-settings-btn {
             0 !important;
     }
 
-
-    /*
-     * 匯出資料＝匯出總表。
-     */
-    nav #export-json-btn {
-        padding:
-            0 12px !important;
-
-        gap:
-            6px !important;
-
-        border-radius:
-            12px !important;
-
-        font-size:
-            14px !important;
-
-        line-height:
-            1 !important;
-    }
-
-
     /*
      * 管理者權限設定。
      */
@@ -3650,27 +3687,30 @@ nav #mobile-permission-settings-btn {
     }
 
 
-    /*
-     * 第二排資料功能。
-     */
-    nav #load-json-btn,
-    nav #osai-platform-btn {
-        padding:
-            0 12px !important;
+/*
+ * 第二排資料功能。
+ *
+ * 匯出資料、載入／匯入資料
+ * 使用完全相同的尺寸規格。
+ */
+nav #export-json-btn,
+nav #load-json-btn,
+nav #osai-platform-btn {
+    padding:
+        0 12px !important;
 
-        gap:
-            6px !important;
+    gap:
+        6px !important;
 
-        border-radius:
-            12px !important;
+    border-radius:
+        12px !important;
 
-        font-size:
-            12px !important;
+    font-size:
+        12px !important;
 
-        line-height:
-            1 !important;
-    }
-
+    line-height:
+        1 !important;
+}
 
     nav #osai-platform-btn span {
         display:
@@ -3785,11 +3825,10 @@ and (max-width: 950px) {
      * 第一排：
      * 與證照手機橫式一致。
      */
-    nav #cloud-preview-entry-btn,
-    nav #export-json-btn,
-    nav #print-pdf-btn,
-    nav #admin-toggle-btn,
-    nav #permission-settings-btn {
+nav #cloud-preview-entry-btn,
+nav #print-pdf-btn,
+nav #admin-toggle-btn,
+nav #permission-settings-btn {
         width:
             auto !important;
 
@@ -3828,42 +3867,42 @@ and (max-width: 950px) {
     /*
      * 第二排。
      */
-    nav #load-json-btn,
-    nav #osai-platform-btn {
-        width:
-            auto !important;
+nav #export-json-btn,
+nav #load-json-btn,
+nav #osai-platform-btn {
+    width:
+        auto !important;
 
-        min-width:
-            92px !important;
+    min-width:
+        92px !important;
 
-        max-width:
-            none !important;
+    max-width:
+        none !important;
 
-        min-height:
-            32px !important;
+    min-height:
+        32px !important;
 
-        padding:
-            7px 10px !important;
+    padding:
+        7px 10px !important;
 
-        align-items:
-            center !important;
+    align-items:
+        center !important;
 
-        justify-content:
-            center !important;
+    justify-content:
+        center !important;
 
-        border-radius:
-            10px !important;
+    border-radius:
+        10px !important;
 
-        font-size:
-            10.5px !important;
+    font-size:
+        10.5px !important;
 
-        line-height:
-            1 !important;
+    line-height:
+        1 !important;
 
-        white-space:
-            nowrap !important;
-    }
-
+    white-space:
+        nowrap !important;
+}
 
     nav #osai-platform-btn,
     nav #osai-platform-btn span {
@@ -3897,11 +3936,10 @@ and (max-width: 950px) {
     /*
      * 第一排圖示。
      */
-    nav #cloud-preview-entry-btn i,
-    nav #export-json-btn i,
-    nav #print-pdf-btn i,
-    nav #admin-toggle-btn i,
-    nav #permission-settings-btn i {
+nav #cloud-preview-entry-btn i,
+nav #print-pdf-btn i,
+nav #admin-toggle-btn i,
+nav #permission-settings-btn i {
         display:
             inline-flex !important;
 
@@ -3934,35 +3972,38 @@ and (max-width: 950px) {
     /*
      * 第二排圖示。
      */
-    nav #load-json-btn i,
-    nav #osai-platform-btn i {
-        display:
-            inline-flex !important;
+nav #export-json-btn i,
+nav #load-json-btn i,
+nav #osai-platform-btn i {
+    display:
+        inline-flex !important;
 
-        align-items:
-            center !important;
+    align-items:
+        center !important;
 
-        justify-content:
-            center !important;
+    justify-content:
+        center !important;
 
-        width:
-            12px !important;
+    width:
+        12px !important;
 
-        min-width:
-            12px !important;
+    min-width:
+        12px !important;
 
-        height:
-            12px !important;
+    height:
+        12px !important;
 
-        font-size:
-            12px !important;
+    font-size:
+        12px !important;
 
-        line-height:
-            12px !important;
+    line-height:
+        12px !important;
 
-        flex:
-            0 0 12px !important;
-    }
+    flex:
+        0 0 12px !important;
+}
+
+/* 關閉手機橫式 @media */
 }
 
 
@@ -4311,107 +4352,107 @@ nav #load-json-btn {
     }
 
 
-    /* =====================================================
-       Editor
+/* =====================================================
+   Editor
 
-       登出
-       → 匯出資料
-       → 列印
-       → 雲端中心
-       → OSAI
-       → 載入資料
-    ===================================================== */
+   登出
+   → 列印
+   → 雲端中心
+   → OSAI
+   → 匯出資料
+   → 載入資料
+===================================================== */
 
-    body.editor-mode
-    nav #admin-toggle-btn {
-        order:
-            1 !important;
-    }
+body.editor-mode
+nav #admin-toggle-btn {
+    order:
+        1 !important;
+}
 
-    body.editor-mode
-    nav #export-json-btn {
-        order:
-            2 !important;
-    }
+body.editor-mode
+nav #print-pdf-btn {
+    order:
+        2 !important;
+}
 
-    body.editor-mode
-    nav #print-pdf-btn {
-        order:
-            3 !important;
-    }
+body.editor-mode
+nav #cloud-preview-entry-btn {
+    order:
+        3 !important;
+}
 
-    body.editor-mode
-    nav #cloud-preview-entry-btn {
-        order:
-            4 !important;
-    }
+body.editor-mode
+nav #osai-platform-btn {
+    order:
+        4 !important;
+}
 
-    body.editor-mode
-    nav #osai-platform-btn {
-        order:
-            5 !important;
-    }
+body.editor-mode
+nav #export-json-btn {
+    order:
+        5 !important;
+}
 
-    body.editor-mode
-    nav #load-json-btn {
-        order:
-            6 !important;
-    }
+body.editor-mode
+nav #load-json-btn {
+    order:
+        6 !important;
+}
 
 
-    /* =====================================================
-       Admin
+/* =====================================================
+   Admin
 
-       登出
-       → 權限設定
-       → 匯出資料
-       → 列印
-       → 雲端中心
-       → OSAI
-       → 匯入資料
-    ===================================================== */
+   登出
+   → 權限設定
+   → 列印
+   → 雲端中心
+   → OSAI
+   → 匯出資料
+   → 匯入資料
+===================================================== */
 
-    body.admin-mode
-    nav #admin-toggle-btn {
-        order:
-            1 !important;
-    }
+body.admin-mode
+nav #admin-toggle-btn {
+    order:
+        1 !important;
+}
 
-    body.admin-mode
-    nav #permission-settings-btn {
-        order:
-            2 !important;
-    }
+body.admin-mode
+nav #permission-settings-btn {
+    order:
+        2 !important;
+}
 
-    body.admin-mode
-    nav #export-json-btn {
-        order:
-            3 !important;
-    }
+body.admin-mode
+nav #print-pdf-btn {
+    order:
+        3 !important;
+}
 
-    body.admin-mode
-    nav #print-pdf-btn {
-        order:
-            4 !important;
-    }
+body.admin-mode
+nav #cloud-preview-entry-btn {
+    order:
+        4 !important;
+}
 
-    body.admin-mode
-    nav #cloud-preview-entry-btn {
-        order:
-            5 !important;
-    }
+body.admin-mode
+nav #osai-platform-btn {
+    order:
+        5 !important;
+}
 
-    body.admin-mode
-    nav #osai-platform-btn {
-        order:
-            6 !important;
-    }
+body.admin-mode
+nav #export-json-btn {
+    order:
+        6 !important;
+}
 
-    body.admin-mode
-    nav #load-json-btn {
-        order:
-            7 !important;
-    }
+body.admin-mode
+nav #load-json-btn {
+    order:
+        7 !important;
+}
 }
 
     </style>
@@ -4496,24 +4537,6 @@ nav #load-json-btn {
                aria-hidden="true"></i>
 
             <span>雲端中心</span>
-        </button>
-
-
-        <!--
-             匯出資料
-             功能定位等同證照管理系統「匯出總表」
-        -->
-        <button id="export-json-btn"
-                type="button"
-                onclick="openDataExportModal()"
-                class="db-action-btn hidden">
-
-            <i class="fas fa-file-export"
-               aria-hidden="true"></i>
-
-            <span id="export-json-label">
-                匯出資料
-            </span>
         </button>
 
 
@@ -4620,6 +4643,23 @@ nav #load-json-btn {
                class="hidden"
                onchange="handleJsonFileLoad(event)">
 
+<!--
+     匯出資料
+     Editor / Admin 顯示。
+     位置固定在載入／匯入資料左側。
+-->
+<button id="export-json-btn"
+        type="button"
+        onclick="openDataExportModal()"
+        class="db-action-btn hidden">
+
+    <i class="fas fa-share-nodes"
+       aria-hidden="true"></i>
+
+    <span id="export-json-label">
+        匯出資料
+    </span>
+</button>
 
         <!--
              Viewer：載入預覽／退出預覽
