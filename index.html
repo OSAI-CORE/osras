@@ -957,6 +957,66 @@ body:not(.edit-mode) table.osra-table textarea:focus {
 
 }
 
+
+/* =========================================================
+   風險評估系統－管理者垃圾桶統一樣式
+
+   比照證照管理系統：
+   1. Font Awesome fa-trash
+   2. 圖示統一 12px
+   3. 平常 Slate 灰色
+   4. Hover 僅垃圾桶變紅
+   5. 無底色、無外框、無陰影
+========================================================= */
+
+.risk-trash-btn {
+    padding: 0 !important;
+
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #94a3b8;
+
+    transition:
+        color 0.18s ease !important;
+}
+
+
+/* 所有垃圾桶統一 12px */
+.risk-trash-btn .fa-trash {
+    font-size: 12px !important;
+    line-height: 1 !important;
+
+    color: #94a3b8;
+
+    transition:
+        color 0.18s ease !important;
+}
+
+
+/* 桌機滑鼠：
+   Hover 只有垃圾桶本身變紅 */
+@media (hover: hover) and (pointer: fine) {
+
+    .risk-trash-btn:hover {
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+
+        transform: none !important;
+    }
+
+    .risk-trash-btn:hover .fa-trash {
+        color: #dc2626 !important;
+    }
+}
+
+
 .attachment-symbol {
     display: inline-flex;
     align-items: center;
@@ -13417,40 +13477,28 @@ ${toggleEnabledIconHtml}
         </button>
 
 
-        <!-- 永久刪除 -->
-        <button type="button"
-                data-preview-id="${previewId}"
-                data-preview-name="${previewName}"
-                onclick="deleteCloudPreviewFromButton(this)"
-                class="
-                    cloud-tooltip-btn
-                    w-7 h-7
-                    rounded-lg
-                    border border-red-100
-                    bg-red-50
-                    text-red-500
-                    hover:bg-red-100
-                    hover:border-red-200
-                    hover:text-red-600
-                    transition
-                    flex items-center
-                    justify-center
-                "
-                data-tooltip="刪除"
-                aria-label="刪除">
+<!-- 永久刪除 -->
+<button type="button"
+        data-preview-id="${previewId}"
+        data-preview-name="${previewName}"
+        onclick="deleteCloudPreviewFromButton(this)"
+        class="
+            cloud-tooltip-btn
+            system-tooltip-btn
+            risk-trash-btn
+            w-7 h-7
+            rounded-lg
+            transition
+            flex items-center
+            justify-center
+        "
+        data-tooltip="刪除"
+        aria-label="刪除">
 
-<svg viewBox="0 0 24 24"
-     class="w-[17px] h-[17px]"
-     aria-hidden="true">
+    <i class="fa-solid fa-trash"
+       aria-hidden="true"></i>
 
-    <path fill="currentColor"
-          d="M9 3.5h6l.8 1.7H20a1 1 0 1 1 0 2H4a1 1 0 0 1 0-2h4.2L9 3.5Z"></path>
-
-    <path fill="currentColor"
-          d="M6.2 8.7h11.6l-.8 10.1A2.5 2.5 0 0 1 14.5 21h-5a2.5 2.5 0 0 1-2.5-2.2L6.2 8.7Zm3.2 2.2a.8.8 0 0 0-.8.8l.3 5.6a.8.8 0 0 0 1.6-.1l-.3-5.6a.8.8 0 0 0-.8-.7Zm5.2 0a.8.8 0 0 0-.8.7l-.3 5.6a.8.8 0 1 0 1.6.1l.3-5.6a.8.8 0 0 0-.8-.8Z"></path>
-</svg>
-
-        </button>
+</button>
 
     </div>
 
@@ -19103,38 +19151,30 @@ return `
                                 </button>
 
 
-                                <!-- 永久刪除 -->
-                                <button
-                                    type="button"
-                                    data-workspace-id="${id}"
-                                    data-workspace-name="${name}"
-                                    onclick="deleteCloudWorkspaceFromButton(this)"
-                                    class="
-                                        cloud-tooltip-btn
-                                        w-7 h-7
-                                        rounded-lg
-                                        text-red-500
-                                        hover:text-red-600
-                                        transition
-                                        flex
-                                        items-center
-                                        justify-center
-                                    "
-                                    data-tooltip="刪除"
-                                    aria-label="刪除">
+<!-- 永久刪除 -->
+<button
+    type="button"
+    data-workspace-id="${id}"
+    data-workspace-name="${name}"
+    onclick="deleteCloudWorkspaceFromButton(this)"
+    class="
+        cloud-tooltip-btn
+        system-tooltip-btn
+        risk-trash-btn
+        w-7 h-7
+        rounded-lg
+        transition
+        flex
+        items-center
+        justify-center
+    "
+    data-tooltip="刪除"
+    aria-label="刪除">
 
-                                    <svg viewBox="0 0 24 24"
-                                         class="w-[17px] h-[17px]"
-                                         aria-hidden="true">
+    <i class="fa-solid fa-trash"
+       aria-hidden="true"></i>
 
-                                        <path fill="currentColor"
-                                              d="M9 3.5h6l.8 1.7H20a1 1 0 1 1 0 2H4a1 1 0 0 1 0-2h4.2L9 3.5Z"></path>
-
-                                        <path fill="currentColor"
-                                              d="M6.2 8.7h11.6l-.8 10.1A2.5 2.5 0 0 1 14.5 21h-5a2.5 2.5 0 0 1-2.5-2.2L6.2 8.7Zm3.2 2.2a.8.8 0 0 0-.8.8l.3 5.6a.8.8 0 0 0 1.6-.1l-.3-5.6a.8.8 0 0 0-.8-.7Zm5.2 0a.8.8 0 0 0-.8.7l-.3 5.6a.8.8 0 1 0 1.6.1l.3-5.6a.8.8 0 0 0-.8-.8Z"></path>
-                                    </svg>
-
-                                </button>
+</button>
                             `
                             : ''
                     }
@@ -24229,11 +24269,28 @@ window._tempAttachments = {};
                     renameBtn.title = "重新命名分頁";
                     renameBtn.onclick = (e) => { e.stopPropagation(); renameTab(sheet.id); };
 
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.innerHTML = '<i class="fa-solid fa-trash text-[10px]"></i>';
-                    deleteBtn.className = 'admin-delete-block text-slate-400 hover:text-red-600 transition';
-                    deleteBtn.title = "刪除分頁";
-                    deleteBtn.onclick = (e) => { e.stopPropagation(); deleteTab(sheet.id); };
+const deleteBtn = document.createElement('button');
+
+deleteBtn.innerHTML =
+    '<i class="fa-solid fa-trash" aria-hidden="true"></i>';
+
+deleteBtn.className =
+    'admin-delete-block risk-trash-btn system-tooltip-btn transition';
+
+deleteBtn.setAttribute(
+    'data-tooltip',
+    '刪除分頁'
+);
+
+deleteBtn.setAttribute(
+    'aria-label',
+    '刪除分頁'
+);
+
+deleteBtn.onclick = (e) => {
+    e.stopPropagation();
+    deleteTab(sheet.id);
+};
 
                     controls.appendChild(renameBtn);
                     if (workbook.sheets.length > 1) {
@@ -24702,11 +24759,12 @@ class="w-10 bg-white border border-slate-200 rounded text-center font-bold">
 
 <button
     onclick="deleteRow(${rowId})"
-    class="system-tooltip-btn text-slate-400 hover:text-red-600 transition"
+    class="risk-trash-btn system-tooltip-btn transition"
     data-tooltip="刪除此行"
     aria-label="刪除此行"
 >
-    <i class="fa-solid fa-trash"></i>
+    <i class="fa-solid fa-trash"
+       aria-hidden="true"></i>
 </button>
                     </div>
                 </td>
@@ -28110,16 +28168,21 @@ function closeAttachmentModalOutside(
                 const icon = att.type.includes('pdf') ? 'fa-file-pdf text-red-500' : 'fa-image text-blue-500';
                 list.innerHTML += `
                     <li class="flex items-center justify-between p-3 bg-white border border-slate-200 shadow-sm rounded-lg text-xs group hover:border-blue-300 transition">
-                        <div class="flex items-center gap-3 overflow-hidden cursor-pointer flex-1" onclick="previewAttachment('${att.id}')" title="點擊預覽檔案">
+                        <div class="flex items-center gap-3 overflow-hidden cursor-pointer flex-1" onclick="previewAttachment('${att.id}')">
                             <i class="fa-solid ${icon} text-xl w-6 text-center"></i>
                             <div class="flex flex-col truncate">
                                 <span class="truncate font-bold text-slate-700 group-hover:text-blue-600 transition">${att.name}</span>
                                 <span class="text-[10px] text-slate-400 mt-0.5">${(att.size / 1024).toFixed(1)} KB</span>
                             </div>
                         </div>
-                        <button onclick="removeAttachment('${att.id}')" class="admin-delete-block text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 p-2 rounded-lg transition ml-2 shrink-0" title="移除檔案">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+<button onclick="removeAttachment('${att.id}')"
+        class="admin-delete-block risk-trash-btn w-8 h-8 rounded-lg transition ml-2 shrink-0"
+        aria-label="移除檔案">
+
+    <i class="fa-solid fa-trash"
+       aria-hidden="true"></i>
+
+</button>
                     </li>
                 `;
             });
