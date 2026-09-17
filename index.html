@@ -2151,7 +2151,7 @@ nav p {
     flex: 0 0 36px;
 
     padding: 0;
-    border-radius: 10px;
+    border-radius: 12px;
 
     display: inline-flex;
     align-items: center;
@@ -4012,6 +4012,435 @@ nav #load-json-btn i {
 /* 關閉手機橫式 @media */
 }
 
+/* =========================================================
+   風險評估系統 Header
+   桌機／手機橫式最終排列
+   比照證照管理系統最終版
+
+   Viewer：
+   雲端中心｜列印｜OSAI｜權限登入
+                         載入／退出預覽
+
+   Editor：
+   雲端中心｜列印｜OSAI｜登出
+                    匯出｜載入
+
+   Admin：
+   雲端中心｜列印｜OSAI｜登出
+               齒輪｜匯出｜匯入
+
+   手機直式完全不修改
+========================================================= */
+
+
+/* =========================================================
+   一、桌機
+========================================================= */
+
+@media screen and (min-width: 951px) {
+
+    /*
+     * 第一、第二排維持證照系統相同間距。
+     */
+    nav .risk-header-main-actions,
+    nav .risk-header-data-actions {
+        gap: 7px !important;
+        margin: 0 !important;
+    }
+
+
+    /*
+     * 第一排四顆文字型按鈕固定 116 × 32。
+     */
+    nav #cloud-preview-entry-btn,
+    nav #print-pdf-btn,
+    nav #osai-platform-btn,
+    nav #admin-toggle-btn {
+        width: 116px !important;
+        min-width: 116px !important;
+        max-width: 116px !important;
+
+        height: 32px !important;
+        min-height: 32px !important;
+        max-height: 32px !important;
+
+        box-sizing: border-box !important;
+
+        align-items: center !important;
+        justify-content: center !important;
+
+        white-space: nowrap !important;
+    }
+
+
+    /*
+     * 雲端中心／列印／權限登入／登出：
+     * 與證照系統相同。
+     *
+     * 桌機文字 14px，
+     * 圖示與文字 gap 6px。
+     */
+    nav #cloud-preview-entry-btn,
+    nav #print-pdf-btn,
+    nav #admin-toggle-btn {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+
+        gap: 6px !important;
+
+        font-size: 14px !important;
+        line-height: 1 !important;
+    }
+
+
+    /*
+     * OSAI：
+     * 比照證照系統桌機最終版。
+     */
+    nav #osai-platform-btn {
+        padding: 0 12px !important;
+
+        gap: 6px !important;
+
+        border-radius: 12px !important;
+
+        font-size: 13px !important;
+        line-height: 1 !important;
+    }
+
+    nav #osai-platform-btn span {
+        font-size: 13px !important;
+        line-height: 1 !important;
+
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+    }
+
+
+    /*
+     * 第二排匯出／載入／匯入：
+     * 116 × 32；
+     * 字體與 OSAI 一致 13px；
+     * 圖文間距同樣 6px。
+     */
+    nav #export-json-btn,
+    nav #load-json-btn {
+        width: 116px !important;
+        min-width: 116px !important;
+        max-width: 116px !important;
+
+        height: 32px !important;
+        min-height: 32px !important;
+        max-height: 32px !important;
+
+        padding: 0 12px !important;
+
+        gap: 6px !important;
+
+        border-radius: 12px !important;
+
+        font-size: 13px !important;
+        line-height: 1 !important;
+
+        box-sizing: border-box !important;
+
+        align-items: center !important;
+        justify-content: center !important;
+
+        white-space: nowrap !important;
+    }
+
+
+    /*
+     * 第一排固定：
+     * 雲端中心 → 列印 → OSAI → 登入／登出
+     */
+    nav #cloud-preview-entry-btn {
+        order: 1 !important;
+    }
+
+    nav #print-pdf-btn {
+        order: 2 !important;
+    }
+
+    nav #osai-platform-btn {
+        order: 3 !important;
+    }
+
+    nav #admin-toggle-btn {
+        order: 4 !important;
+    }
+
+
+    /*
+     * 第二排基本順序：
+     * 齒輪 → 匯出 → 載入／匯入
+     */
+    nav #permission-settings-btn {
+        order: 1 !important;
+    }
+
+    nav #export-json-btn {
+        order: 2 !important;
+    }
+
+    nav #load-json-btn {
+        order: 3 !important;
+    }
+
+
+    /*
+     * Admin 權限設定：
+     * 與證照系統相同，
+     * 只保留齒輪。
+     */
+    body.admin-mode
+    nav #permission-settings-btn {
+        display: inline-flex !important;
+
+        width: 32px !important;
+        min-width: 32px !important;
+        max-width: 32px !important;
+
+        height: 32px !important;
+        min-height: 32px !important;
+        max-height: 32px !important;
+
+        padding: 0 !important;
+        gap: 0 !important;
+
+        align-items: center !important;
+        justify-content: center !important;
+
+        border-radius: 12px !important;
+
+        box-sizing: border-box !important;
+
+        /*
+         * 與證照系統最後定案相同：
+         * 齒輪右側與上方列印按鈕右側切齊。
+         *
+         * 116 - 32 = 84px
+         */
+        margin-left: 84px !important;
+        margin-right: 0 !important;
+    }
+
+
+    body.admin-mode
+    nav #permission-settings-btn span {
+        display: none !important;
+    }
+
+
+    /*
+     * Viewer / Editor 不顯示權限設定，
+     * 不產生第二排空白。
+     */
+    body:not(.admin-mode)
+    nav #permission-settings-btn {
+        display: none !important;
+    }
+
+
+    /*
+     * 第二排整體維持靠右。
+     *
+     * Viewer：
+     * 只有載入／退出預覽，
+     * 自然會對齊第一排最右邊的權限登入。
+     *
+     * Editor：
+     * 匯出 → 載入，
+     * 自然對齊 OSAI → 登出。
+     *
+     * Admin：
+     * 齒輪 → 匯出 → 匯入。
+     */
+    nav .risk-header-data-actions {
+        margin-right: 0 !important;
+    }
+}
+
+
+/* =========================================================
+   二、手機橫式
+========================================================= */
+
+@media screen
+and (orientation: landscape)
+and (max-width: 950px) {
+
+    nav .risk-header-main-actions,
+    nav .risk-header-data-actions {
+        gap: 7px !important;
+        margin: 0 !important;
+    }
+
+
+    /*
+     * 第一排：
+     * 全部比照證照系統手機橫式。
+     */
+    nav #cloud-preview-entry-btn,
+    nav #print-pdf-btn,
+    nav #osai-platform-btn,
+    nav #admin-toggle-btn {
+        width: auto !important;
+
+        min-width: 92px !important;
+        max-width: none !important;
+
+        min-height: 34px !important;
+
+        padding: 7px 10px !important;
+
+        gap: 6px !important;
+
+        align-items: center !important;
+        justify-content: center !important;
+
+        border-radius: 11px !important;
+
+        font-size: 11px !important;
+        line-height: 1 !important;
+
+        white-space: nowrap !important;
+    }
+
+
+    /*
+     * OSAI 保持單排。
+     */
+    nav #osai-platform-btn,
+    nav #osai-platform-btn span {
+        font-size: 11px !important;
+
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+    }
+
+
+    /*
+     * 第二排資料按鈕：
+     * 證照系統目前定案為 11px / gap 6px。
+     */
+    nav #export-json-btn,
+    nav #load-json-btn {
+        width: auto !important;
+
+        min-width: 92px !important;
+        max-width: none !important;
+
+        min-height: 32px !important;
+
+        padding: 7px 10px !important;
+
+        gap: 6px !important;
+
+        align-items: center !important;
+        justify-content: center !important;
+
+        border-radius: 10px !important;
+
+        font-size: 11px !important;
+        line-height: 1 !important;
+
+        white-space: nowrap !important;
+    }
+
+
+    /*
+     * 第一排固定：
+     * 雲端中心 → 列印 → OSAI → 登入／登出
+     */
+    nav #cloud-preview-entry-btn {
+        order: 1 !important;
+    }
+
+    nav #print-pdf-btn {
+        order: 2 !important;
+    }
+
+    nav #osai-platform-btn {
+        order: 3 !important;
+    }
+
+    nav #admin-toggle-btn {
+        order: 4 !important;
+    }
+
+
+    /*
+     * 第二排基本順序。
+     */
+    nav #permission-settings-btn {
+        order: 1 !important;
+    }
+
+    nav #export-json-btn {
+        order: 2 !important;
+    }
+
+    nav #load-json-btn {
+        order: 3 !important;
+    }
+
+
+    /*
+     * Admin 齒輪：
+     * 34 × 34；
+     * 只顯示圖示。
+     */
+    body.admin-mode
+    nav #permission-settings-btn {
+        display: inline-flex !important;
+
+        width: 34px !important;
+        min-width: 34px !important;
+        max-width: 34px !important;
+
+        height: 34px !important;
+        min-height: 34px !important;
+        max-height: 34px !important;
+
+        padding: 0 !important;
+        gap: 0 !important;
+
+        align-items: center !important;
+        justify-content: center !important;
+
+        border-radius: 11px !important;
+
+        box-sizing: border-box !important;
+
+        /*
+         * 與證照系統相同：
+         * 齒輪右側與列印右側切齊。
+         *
+         * 92 - 34 = 58px
+         */
+        margin-left: 58px !important;
+        margin-right: 0 !important;
+    }
+
+
+    body.admin-mode
+    nav #permission-settings-btn span {
+        display: none !important;
+    }
+
+
+    body:not(.admin-mode)
+    nav #permission-settings-btn {
+        display: none !important;
+    }
+
+
+    nav .risk-header-data-actions {
+        margin-right: 0 !important;
+    }
+}
 
 /* =========================================================
    九、手機直式
@@ -4571,32 +5000,18 @@ nav #load-json-btn {
         </button>
 
 
-        <!-- 管理者專用：權限設定 -->
-        <button id="permission-settings-btn"
-                type="button"
-                onclick="openPermissionSettingsModal()"
-                class="
-                    header-settings-btn
-                    hidden inline-flex
-                    items-center justify-center
-                    w-full sm:w-40
-                    gap-2 sm:gap-3
-                    py-2 sm:py-2.5
-                    bg-slate-600
-                    hover:bg-slate-700
-                    text-white
-                    rounded-xl
-                    text-xs sm:text-sm
-                    font-bold
-                    transition-colors
-                "
-                aria-label="權限與密碼設定">
+<!-- OSAI 管理平台 -->
+<button id="osai-platform-btn"
+        type="button"
+        onclick="openOsaiPlatform()"
+        class="db-action-btn"
+        aria-label="切換至 OSAI 管理平台">
 
-            <i class="fas fa-gear"
-               aria-hidden="true"></i>
+    <i class="fas fa-layer-group"
+       aria-hidden="true"></i>
 
-            <span>權限設定</span>
-        </button>
+    <span>OSAI 平台</span>
+</button>
 
 
         <!-- 權限登入／登出 -->
@@ -4649,6 +5064,34 @@ nav #load-json-btn {
                class="hidden"
                onchange="handleJsonFileLoad(event)">
 
+<!-- 管理者專用：權限設定 -->
+<button id="permission-settings-btn"
+        type="button"
+        onclick="openPermissionSettingsModal()"
+        class="
+            header-settings-btn
+            hidden inline-flex
+            items-center justify-center
+            w-full sm:w-40
+            gap-2 sm:gap-3
+            py-2 sm:py-2.5
+            bg-slate-600
+            hover:bg-slate-700
+            text-white
+            rounded-xl
+            text-xs sm:text-sm
+            font-bold
+            transition-colors
+        "
+        aria-label="權限與密碼設定">
+
+    <i class="fas fa-gear"
+       aria-hidden="true"></i>
+
+    <span>權限設定</span>
+</button>
+
+
 <!--
      匯出資料
      Editor / Admin 顯示。
@@ -4683,20 +5126,6 @@ nav #load-json-btn {
             <span id="load-json-label">
                 載入預覽
             </span>
-        </button>
-
-
-        <!-- OSAI 管理平台 -->
-        <button id="osai-platform-btn"
-                type="button"
-                onclick="openOsaiPlatform()"
-                class="db-action-btn"
-                aria-label="切換至 OSAI 管理平台">
-
-            <i class="fas fa-layer-group"
-               aria-hidden="true"></i>
-
-            <span>OSAI 平台</span>
         </button>
 
     </div>
