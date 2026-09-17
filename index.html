@@ -103,7 +103,14 @@
     visibility: hidden;
 }
 
-html.fa-icons-ready
+/*
+ * 必須同時符合：
+ * 1. Font Awesome 已完成
+ * 2. Risk 權限與版面初始化已完成
+ *
+ * 才一次顯示上方功能按鈕。
+ */
+html.fa-icons-ready.risk-ui-ready
 .risk-header-action-zone {
     visibility: visible;
 }
@@ -23507,10 +23514,53 @@ clearViewerWorkspace();
                 banner.querySelector('i').className = "fa-solid fa-cloud-bolt text-emerald-600 text-xl mt-0.5";
             }
 
-            // 更新管理員介面狀態 (預設訪客隱藏，登入後顯現)
-            updateAdminModeUI();
-            updateDashboardStats();
-        };
+// 更新管理員介面狀態 (預設訪客隱藏，登入後顯現)
+updateAdminModeUI();
+updateDashboardStats();
+
+
+/*
+ * Header 功能按鈕最後顯示。
+ *
+ * 等待：
+ * 1. Viewer / Editor / Admin 狀態完成
+ * 2. Google / Font Awesome 等字型完成
+ * 3. 瀏覽器完成一次版面更新
+ *
+ * 避免開啟頁面時按鈕尺寸、字體或排列瞬間變化。
+ */
+const revealRiskHeaderActions = () => {
+
+    requestAnimationFrame(() => {
+
+        document.documentElement.classList.add(
+            'risk-ui-ready'
+        );
+
+    });
+
+};
+
+if (
+    document.fonts &&
+    document.fonts.ready
+) {
+
+    document.fonts.ready
+        .then(
+            revealRiskHeaderActions
+        )
+        .catch(
+            revealRiskHeaderActions
+        );
+
+} else {
+
+    revealRiskHeaderActions();
+
+}
+
+};
 
 /*
  * 關閉目前最上層的 Cloud 視窗。
