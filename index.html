@@ -826,6 +826,37 @@ body:not(.edit-mode) table.osra-table textarea:focus {
     padding: 0 !important;
 }
 
+/* =========================================================
+   Cloud Center 垃圾桶
+   比照證照管理系統固定 12px
+========================================================= */
+
+.cloud-tooltip-btn > .fa-trash {
+    font-size:
+        12px !important;
+
+    line-height:
+        1 !important;
+
+    width:
+        12px !important;
+
+    height:
+        12px !important;
+
+    display:
+        inline-flex !important;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    flex:
+        0 0 12px;
+}
+
 @media (hover: hover) and (pointer: fine) {
 
     .cloud-tooltip-btn::after {
@@ -3376,13 +3407,12 @@ table.osra-table textarea::placeholder {
 
 /* =========================================================
    三、列印 / PDF
-
-   改用原本「匯出資料」的翡翠青綠配色。
+   比照證照管理系統：沉穩暖灰棕
 ========================================================= */
 
 #print-pdf-btn {
     background:
-        #0f766e !important;
+        #57534e !important;
 
     color:
         #ffffff !important;
@@ -3392,7 +3422,7 @@ table.osra-table textarea::placeholder {
 
     box-shadow:
         0 4px 6px -1px
-        rgba(15, 118, 110, 0.28) !important;
+        rgba(87, 83, 78, 0.28) !important;
 }
 
 
@@ -3400,14 +3430,14 @@ table.osra-table textarea::placeholder {
 
     #print-pdf-btn:hover {
         background:
-            #115e59 !important;
+            #44403c !important;
 
         color:
             #ffffff !important;
 
         box-shadow:
             0 7px 14px -3px
-            rgba(15, 118, 110, 0.34) !important;
+            rgba(87, 83, 78, 0.34) !important;
 
         transform:
             none !important;
@@ -3417,7 +3447,7 @@ table.osra-table textarea::placeholder {
 
 #print-pdf-btn:active {
     background:
-        #134e4a !important;
+        #292524 !important;
 
     color:
         #ffffff !important;
@@ -4274,25 +4304,25 @@ nav #load-json-btn i {
     }
 
 
-    /*
-     * 第一排固定：
-     * 雲端中心 → 列印 → OSAI → 登入／登出
-     */
-    nav #cloud-preview-entry-btn {
-        order: 1 !important;
-    }
+/*
+ * 第一排固定：
+ * 列印 → 雲端中心 → OSAI → 登入／登出
+ */
+nav #print-pdf-btn {
+    order: 1 !important;
+}
 
-    nav #print-pdf-btn {
-        order: 2 !important;
-    }
+nav #cloud-preview-entry-btn {
+    order: 2 !important;
+}
 
-    nav #osai-platform-btn {
-        order: 3 !important;
-    }
+nav #osai-platform-btn {
+    order: 3 !important;
+}
 
-    nav #admin-toggle-btn {
-        order: 4 !important;
-    }
+nav #admin-toggle-btn {
+    order: 4 !important;
+}
 
 
     /*
@@ -4312,48 +4342,64 @@ nav #load-json-btn i {
     }
 
 
+/*
+ * Admin 權限設定：
+ * 與證照系統相同，
+ * 只保留齒輪。
+ */
+body.admin-mode
+nav #permission-settings-btn {
+    display: inline-flex !important;
+
+    width: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
+
+    padding: 0 !important;
+    gap: 0 !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    border-radius: 12px !important;
+
+    box-sizing: border-box !important;
+
     /*
-     * Admin 權限設定：
-     * 與證照系統相同，
-     * 只保留齒輪。
+     * 與證照系統最後定案相同：
+     * 齒輪右側與上方列印按鈕右側切齊。
+     *
+     * 116 - 32 = 84px
      */
-    body.admin-mode
-    nav #permission-settings-btn {
-        display: inline-flex !important;
-
-        width: 32px !important;
-        min-width: 32px !important;
-        max-width: 32px !important;
-
-        height: 32px !important;
-        min-height: 32px !important;
-        max-height: 32px !important;
-
-        padding: 0 !important;
-        gap: 0 !important;
-
-        align-items: center !important;
-        justify-content: center !important;
-
-        border-radius: 12px !important;
-
-        box-sizing: border-box !important;
-
-        /*
-         * 與證照系統最後定案相同：
-         * 齒輪右側與上方列印按鈕右側切齊。
-         *
-         * 116 - 32 = 84px
-         */
-        margin-left: 84px !important;
-        margin-right: 0 !important;
-    }
+    margin-left: 84px !important;
+    margin-right: 0 !important;
+}
 
 
-    body.admin-mode
-    nav #permission-settings-btn span {
-        display: none !important;
-    }
+/* 權限設定齒輪大小：比照證照管理系統 */
+body.admin-mode
+nav #permission-settings-btn i {
+    width: 12px !important;
+    min-width: 12px !important;
+    height: 12px !important;
+
+    font-size: 12px !important;
+    line-height: 12px !important;
+
+    flex: 0 0 12px !important;
+
+    margin: 0 !important;
+}
+
+
+body.admin-mode
+nav #permission-settings-btn span {
+    display: none !important;
+}
 
 
     /*
@@ -4473,25 +4519,25 @@ and (max-width: 950px) {
     }
 
 
-    /*
-     * 第一排固定：
-     * 雲端中心 → 列印 → OSAI → 登入／登出
-     */
-    nav #cloud-preview-entry-btn {
-        order: 1 !important;
-    }
+/*
+ * 第一排固定：
+ * 列印 → 雲端中心 → OSAI → 登入／登出
+ */
+nav #print-pdf-btn {
+    order: 1 !important;
+}
 
-    nav #print-pdf-btn {
-        order: 2 !important;
-    }
+nav #cloud-preview-entry-btn {
+    order: 2 !important;
+}
 
-    nav #osai-platform-btn {
-        order: 3 !important;
-    }
+nav #osai-platform-btn {
+    order: 3 !important;
+}
 
-    nav #admin-toggle-btn {
-        order: 4 !important;
-    }
+nav #admin-toggle-btn {
+    order: 4 !important;
+}
 
 
     /*
@@ -4515,43 +4561,51 @@ and (max-width: 950px) {
      * 34 × 34；
      * 只顯示圖示。
      */
-    body.admin-mode
-    nav #permission-settings-btn {
-        display: inline-flex !important;
+body.admin-mode
+nav #permission-settings-btn {
+    display: inline-flex !important;
 
-        width: 34px !important;
-        min-width: 34px !important;
-        max-width: 34px !important;
+    width: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
 
-        height: 34px !important;
-        min-height: 34px !important;
-        max-height: 34px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
 
-        padding: 0 !important;
-        gap: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
 
-        align-items: center !important;
-        justify-content: center !important;
+    align-items: center !important;
+    justify-content: center !important;
 
-        border-radius: 11px !important;
+    border-radius: 11px !important;
 
-        box-sizing: border-box !important;
+    box-sizing: border-box !important;
 
-        /*
-         * 與證照系統相同：
-         * 齒輪右側與列印右側切齊。
-         *
-         * 92 - 34 = 58px
-         */
-        margin-left: 58px !important;
-        margin-right: 0 !important;
-    }
+    margin-left: 58px !important;
+    margin-right: 0 !important;
+}
 
 
     body.admin-mode
     nav #permission-settings-btn span {
         display: none !important;
     }
+
+body.admin-mode
+nav #permission-settings-btn i {
+    width: 12px !important;
+    min-width: 12px !important;
+    height: 12px !important;
+
+    font-size: 12px !important;
+    line-height: 12px !important;
+
+    flex: 0 0 12px !important;
+
+    margin: 0 !important;
+}    
 
 
     body:not(.admin-mode)
@@ -4879,36 +4933,35 @@ nav #load-json-btn {
        → 載入／退出預覽
     ===================================================== */
 
-    body:not(.admin-mode):not(.editor-mode)
-    nav #admin-toggle-btn {
-        order:
-            1 !important;
-    }
+body:not(.admin-mode):not(.editor-mode)
+nav #admin-toggle-btn {
+    order:
+        1 !important;
+}
 
-    body:not(.admin-mode):not(.editor-mode)
-    nav #print-pdf-btn {
-        order:
-            2 !important;
-    }
+body:not(.admin-mode):not(.editor-mode)
+nav #cloud-preview-entry-btn {
+    order:
+        2 !important;
+}
 
-    body:not(.admin-mode):not(.editor-mode)
-    nav #cloud-preview-entry-btn {
-        order:
-            3 !important;
-    }
+body:not(.admin-mode):not(.editor-mode)
+nav #osai-platform-btn {
+    order:
+        3 !important;
+}
 
-    body:not(.admin-mode):not(.editor-mode)
-    nav #osai-platform-btn {
-        order:
-            4 !important;
-    }
+body:not(.admin-mode):not(.editor-mode)
+nav #print-pdf-btn {
+    order:
+        4 !important;
+}
 
-    body:not(.admin-mode):not(.editor-mode)
-    nav #load-json-btn {
-        order:
-            5 !important;
-    }
-
+body:not(.admin-mode):not(.editor-mode)
+nav #load-json-btn {
+    order:
+        5 !important;
+}
 
 /* =====================================================
    Editor
@@ -4928,19 +4981,19 @@ nav #admin-toggle-btn {
 }
 
 body.editor-mode
-nav #print-pdf-btn {
+nav #cloud-preview-entry-btn {
     order:
         2 !important;
 }
 
 body.editor-mode
-nav #cloud-preview-entry-btn {
+nav #osai-platform-btn {
     order:
         3 !important;
 }
 
 body.editor-mode
-nav #osai-platform-btn {
+nav #print-pdf-btn {
     order:
         4 !important;
 }
@@ -4983,19 +5036,19 @@ nav #permission-settings-btn {
 }
 
 body.admin-mode
-nav #print-pdf-btn {
+nav #cloud-preview-entry-btn {
     order:
         3 !important;
 }
 
 body.admin-mode
-nav #cloud-preview-entry-btn {
+nav #osai-platform-btn {
     order:
         4 !important;
 }
 
 body.admin-mode
-nav #osai-platform-btn {
+nav #print-pdf-btn {
     order:
         5 !important;
 }
@@ -5107,8 +5160,8 @@ nav #load-json-btn {
                     w-full sm:w-40
                     gap-2 sm:gap-3
                     py-2 sm:py-2.5
-                    bg-slate-600
-                    hover:bg-slate-700
+                    bg-stone-600
+                    hover:bg-stone-700
                     text-white
                     rounded-xl
                     text-xs sm:text-sm
@@ -13538,16 +13591,14 @@ ${toggleEnabledIconHtml}
         data-preview-id="${previewId}"
         data-preview-name="${previewName}"
         onclick="deleteCloudPreviewFromButton(this)"
-        class="
-            cloud-tooltip-btn
-            system-tooltip-btn
-            risk-trash-btn
-            w-7 h-7
-            rounded-lg
-            transition
-            flex items-center
-            justify-center
-        "
+class="
+    cloud-tooltip-btn
+    w-7 h-7
+    rounded-lg
+    text-red-500
+    flex items-center
+    justify-center
+"
         data-tooltip="刪除"
         aria-label="刪除">
 
@@ -19213,17 +19264,15 @@ return `
     data-workspace-id="${id}"
     data-workspace-name="${name}"
     onclick="deleteCloudWorkspaceFromButton(this)"
-    class="
-        cloud-tooltip-btn
-        system-tooltip-btn
-        risk-trash-btn
-        w-7 h-7
-        rounded-lg
-        transition
-        flex
-        items-center
-        justify-center
-    "
+class="
+    cloud-tooltip-btn
+    w-7 h-7
+    rounded-lg
+    text-red-500
+    flex
+    items-center
+    justify-center
+"
     data-tooltip="刪除"
     aria-label="刪除">
 
