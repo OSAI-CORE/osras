@@ -3275,6 +3275,228 @@ table.osra-table textarea::placeholder {
 }
 
 /* =========================================================
+   手機版：編輯雲端預覽 datetime-local 修正
+========================================================= */
+
+@media screen and (max-width: 950px) {
+
+    #cloud-preview-edit-expiry-wrap {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    #cloud-preview-edit-expiry {
+        display: block !important;
+
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+
+        padding-left: 1rem !important;
+        padding-right: 2.5rem !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+
+        line-height: 1.25 !important;
+    }
+
+    #cloud-preview-edit-expiry::-webkit-date-and-time-value {
+        min-width: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+
+        text-align: left !important;
+
+        display: flex !important;
+        align-items: center !important;
+
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    #cloud-preview-edit-expiry::-webkit-datetime-edit {
+        min-width: 0 !important;
+        height: 100% !important;
+
+        display: flex !important;
+        align-items: center !important;
+
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    #cloud-preview-edit-expiry::-webkit-calendar-picker-indicator {
+        opacity: 0 !important;
+
+        width: 24px !important;
+        height: 24px !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+}
+
+
+/* =========================================================
+   桌機版：編輯雲端預覽有效期限
+========================================================= */
+
+@media screen and (min-width: 951px) {
+
+    #cloud-preview-edit-expiry-wrap
+    > .fa-calendar-days {
+        display: none !important;
+    }
+
+    #cloud-preview-edit-expiry {
+        padding-right: 1rem !important;
+        cursor: pointer;
+    }
+
+}
+
+/* =========================================================
+   手機橫式：雲端中心高度與觸控捲動最佳化
+
+   寬度維持原本 max-w-sm，
+   改由整個 Cloud Center Body 上下捲動。
+========================================================= */
+
+@media screen
+and (orientation: landscape)
+and (max-width: 950px) {
+
+    #cloud-preview-modal {
+        padding:
+            6px
+            16px !important;
+    }
+
+
+    #cloud-center-panel {
+        height:
+            calc(100svh - 12px) !important;
+
+        height:
+            calc(100dvh - 12px) !important;
+
+        max-height:
+            calc(100svh - 12px) !important;
+
+        max-height:
+            calc(100dvh - 12px) !important;
+    }
+
+
+    #cloud-center-body {
+        overflow-x:
+            hidden !important;
+
+        overflow-y:
+            auto !important;
+
+        -webkit-overflow-scrolling:
+            touch;
+
+        overscroll-behavior-y:
+            contain;
+
+        touch-action:
+            pan-y;
+    }
+
+
+    #cloud-preview-viewer-home:not(.hidden),
+    #cloud-preview-publisher-home:not(.hidden),
+    #cloud-preview-publish-view:not(.hidden),
+    #cloud-workspace-view:not(.hidden),
+    #cloud-preview-manage-view:not(.hidden),
+    #cloud-publisher-accounts-view:not(.hidden) {
+
+        flex:
+            0 0 auto !important;
+
+        min-height:
+            auto !important;
+
+        overflow:
+            visible !important;
+    }
+
+
+    #cloud-workspace-list,
+    #cloud-preview-manage-list,
+    #cloud-publisher-accounts-list {
+
+        flex:
+            0 0 auto !important;
+
+        max-height:
+            none !important;
+
+        overflow:
+            visible !important;
+    }
+
+}
+
+/* =========================================================
+   雲端工作資料：建立雲端工作資料
+   統一採用正式 Teal 配色
+========================================================= */
+
+#cloud-workspace-create-btn {
+    background:
+        #0f766e !important;
+
+    color:
+        #ffffff !important;
+
+    border-color:
+        transparent !important;
+
+    box-shadow:
+        0 4px 6px -1px
+        rgba(15, 118, 110, 0.28) !important;
+}
+
+
+/* 桌機滑鼠移入 */
+@media (hover: hover) and (pointer: fine) {
+
+    #cloud-workspace-create-btn:hover {
+        background:
+            #115e59 !important;
+
+        color:
+            #ffffff !important;
+
+        box-shadow:
+            0 7px 14px -3px
+            rgba(15, 118, 110, 0.34) !important;
+    }
+
+}
+
+
+/* 點擊狀態 */
+#cloud-workspace-create-btn:active {
+    background:
+        #134e4a !important;
+
+    color:
+        #ffffff !important;
+}
+
+/* =========================================================
    風險評估系統 Header
    證照管理系統最終統一版
 ========================================================= */
@@ -6819,22 +7041,22 @@ class="group relative overflow-visible
     <button type="button"
             id="cloud-workspace-create-btn"
             onclick="createCloudWorkspaceFromCurrentData()"
-            class="w-full min-w-0
-                   h-10 sm:h-9
-                   px-2
-                   rounded-xl
-                   border border-emerald-200
-                   bg-emerald-600
-                   hover:bg-emerald-700
-                   text-white
-                   text-[11px] sm:text-xs
-                   font-black
-                   whitespace-nowrap
-                   flex items-center
-                   justify-center
-                   gap-1.5
-                   transition
-                   shadow-sm">
+class="w-full min-w-0
+       h-10 sm:h-9
+       px-2
+       rounded-xl
+       border-0
+       bg-emerald-600
+       hover:bg-emerald-700
+       text-white
+       text-[11px] sm:text-xs
+       font-black
+       whitespace-nowrap
+       flex items-center
+       justify-center
+       gap-1.5
+       transition-all
+       shadow-sm">
 
         <svg viewBox="0 0 24 24"
              fill="none"
@@ -7993,56 +8215,55 @@ scale-in-center">
             </div>
 
 
-            <!-- 新預覽密碼 -->
-            <div>
+<!-- 有效期限 -->
+<div>
 
-                <label for="cloud-preview-edit-password"
-                       class="block text-xs
-                              font-bold text-slate-600 mb-1">
-                    新預覽密碼
-                </label>
+    <label for="cloud-preview-edit-expiry"
+           class="block text-xs
+                  font-bold text-slate-600 mb-1">
+        有效期限
+    </label>
 
-                <input type="password"
-                       id="cloud-preview-edit-password"
-                       autocomplete="new-password"
-                       class="w-full h-11 px-4
-                              bg-slate-100
-                              border-none
-                              rounded-xl
-                              focus:ring-2
-                              focus:ring-sky-500
-                              outline-none
-                              text-sm text-slate-700">
+    <div id="cloud-preview-edit-expiry-wrap"
+         class="relative
+                w-full min-w-0 max-w-full
+                overflow-hidden
+                rounded-xl">
 
-                <p class="mt-1 text-[10px]
-                          text-slate-400 leading-snug">
-                    如不需要變更密碼，請保持空白。
-                </p>
+        <input type="datetime-local"
+               id="cloud-preview-edit-expiry"
+               onclick="
+                   if (typeof this.showPicker === 'function') {
+                       try {
+                           this.showPicker();
+                       } catch (error) {}
+                   }
+               "
+               class="block
+                      w-full min-w-0 max-w-full
+                      h-11
+                      pl-4 pr-10
+                      box-border
+                      bg-slate-100
+                      border-none
+                      rounded-xl
+                      focus:ring-2
+                      focus:ring-sky-500
+                      outline-none
+                      text-sm text-slate-700">
 
-            </div>
+        <i class="fa-solid fa-calendar-days
+                  absolute
+                  right-3 top-1/2
+                  -translate-y-1/2
+                  text-slate-400
+                  text-sm
+                  pointer-events-none"
+           aria-hidden="true"></i>
 
+    </div>
 
-            <!-- 有效期限 -->
-            <div>
-
-                <label for="cloud-preview-edit-expiry"
-                       class="block text-xs
-                              font-bold text-slate-600 mb-1">
-                    有效期限
-                </label>
-
-                <input type="datetime-local"
-                       id="cloud-preview-edit-expiry"
-                       class="w-full h-11 px-4
-                              bg-slate-100
-                              border-none
-                              rounded-xl
-                              focus:ring-2
-                              focus:ring-sky-500
-                              outline-none
-                              text-sm text-slate-700">
-
-            </div>
+</div>
 
 
             <!-- 可開啟次數 -->
@@ -8140,7 +8361,7 @@ scale-in-center">
 </div>
 
 <!-- =========================================================
-     雲端預覽：重設預覽密碼
+     雲端預覽：變更預覽密碼
 ========================================================= -->
 <div id="cloud-preview-password-reset-modal"
      onpointerdown="closeCloudPreviewPasswordResetModalOutside(event)"
@@ -8212,7 +8433,7 @@ max-h-[calc(100svh-24px)]">
 </svg>
 
                 <h3 class="text-lg font-black">
-                    重設預覽密碼
+                    變更預覽密碼
                 </h3>
 
             </div>
@@ -8222,7 +8443,7 @@ max-h-[calc(100svh-24px)]">
                       text-slate-300
                       tracking-[0.14em]
                       font-semibold">
-                RESET PREVIEW PASSWORD
+                CHANGE PREVIEW PASSWORD
             </p>
 
         </div>
@@ -10411,44 +10632,44 @@ function setCloudPreviewViewerBusy(
             'cloud-preview-view-open-btn'
         );
 
-    if (!button) return;
+    if (!button) {
+        return;
+    }
 
     button.disabled =
         busy;
 
     if (busy) {
+
         button.classList.add(
             'opacity-60',
             'cursor-wait'
         );
 
         button.innerHTML = `
-            <span class="
-                w-4 h-4
-                rounded-full
-                border-2
-                border-white/40
-                border-t-white
-                animate-spin
-            "></span>
+            <i class="fas fa-cloud-arrow-down"
+               aria-hidden="true"></i>
 
-            <span>正在載入...</span>
+            <span>
+                正在載入...
+            </span>
         `;
 
     } else {
+
         button.classList.remove(
             'opacity-60',
             'cursor-wait'
         );
 
         button.innerHTML = `
-            <i data-lucide="cloud-download"
-               class="w-4 h-4"></i>
+            <i class="fas fa-cloud-arrow-down"
+               aria-hidden="true"></i>
 
-            <span>開啟雲端預覽</span>
+            <span>
+                開啟雲端預覽
+            </span>
         `;
-
-        lucide.createIcons();
     }
 }
 
@@ -13471,7 +13692,7 @@ const toggleEnabledClass =
     </div>
 
 
-<!-- 重設預覽密碼 -->
+<!-- 變更預覽密碼 -->
 <button type="button"
         data-preview-id="${previewId}"
         data-preview-name="${previewName}"
@@ -13490,8 +13711,8 @@ hover:border-indigo-200
             flex items-center
             justify-center
         "
-        data-tooltip="重設密碼"
-        aria-label="重設密碼">
+        data-tooltip="變更密碼"
+        aria-label="變更密碼">
 
 <svg viewBox="0 0 24 24"
      fill="none"
@@ -13944,7 +14165,7 @@ setCloudCenterHeaderRefreshBusy(
     }
 
 /* =========================================================
-   重設雲端預覽密碼
+   變更雲端預覽密碼
 ========================================================= */
 
 function setCloudPreviewPasswordResetStatus(
@@ -14015,7 +14236,7 @@ function openCloudPreviewPasswordResetModalFromButton(
         role !== 'editor'
     ) {
         showToast(
-            '目前權限無法重設雲端預覽密碼。',
+            '目前權限無法變更雲端預覽密碼。',
             'error'
         );
 
@@ -14039,7 +14260,7 @@ function openCloudPreviewPasswordResetModalFromButton(
 
     if (!previewId) {
         setCloudPreviewManageStatus(
-            '找不到要重設密碼的雲端預覽。',
+            '找不到要變更密碼的雲端預覽。',
             'error'
         );
 
@@ -14186,7 +14407,7 @@ async function submitCloudPreviewPasswordReset() {
         role !== 'editor'
     ) {
         showToast(
-            '目前權限無法重設雲端預覽密碼。',
+            '目前權限無法變更雲端預覽密碼。',
             'error'
         );
 
@@ -14249,7 +14470,7 @@ async function submitCloudPreviewPasswordReset() {
     if (!previewId) {
 
         setCloudPreviewPasswordResetStatus(
-            '找不到要重設密碼的雲端預覽。'
+            '找不到要變更密碼的雲端預覽。'
         );
 
         return;
@@ -14352,7 +14573,7 @@ async function submitCloudPreviewPasswordReset() {
     } catch (error) {
 
         console.error(
-            '重設雲端預覽密碼失敗：',
+            '變更雲端預覽密碼失敗：',
             error
         );
 
@@ -14365,7 +14586,7 @@ async function submitCloudPreviewPasswordReset() {
 
 
         let message =
-            '重設預覽密碼失敗，請稍後再試。';
+            '變更預覽密碼失敗，請稍後再試。';
 
 
         if (
@@ -14382,7 +14603,7 @@ async function submitCloudPreviewPasswordReset() {
         ) {
 
             message =
-                '此帳號沒有重設這筆雲端預覽密碼的權限。';
+                '此帳號沒有變更這筆雲端預覽密碼的權限。';
 
         } else if (
             error?.status ===
@@ -14620,12 +14841,6 @@ function openCloudPreviewEditModalFromButton(
         );
 
 
-    const passwordInput =
-        document.getElementById(
-            'cloud-preview-edit-password'
-        );
-
-
     const expiryInput =
         document.getElementById(
             'cloud-preview-edit-expiry'
@@ -14676,16 +14891,6 @@ function openCloudPreviewEditModalFromButton(
     if (nameInput) {
         nameInput.value =
             previewName;
-    }
-
-
-    /*
-     * 後端不會回傳原密碼，
-     * 因此預設保持空白。
-     */
-    if (passwordInput) {
-        passwordInput.value =
-            '';
     }
 
 
@@ -14758,18 +14963,6 @@ function closeCloudPreviewEditModal() {
         );
 
 
-    const passwordInput =
-        document.getElementById(
-            'cloud-preview-edit-password'
-        );
-
-
-    if (passwordInput) {
-        passwordInput.value =
-            '';
-    }
-
-
     setCloudPreviewEditStatus(
         ''
     );
@@ -14812,12 +15005,6 @@ async function submitCloudPreviewEdit() {
     const nameInput =
         document.getElementById(
             'cloud-preview-edit-name'
-        );
-
-
-    const passwordInput =
-        document.getElementById(
-            'cloud-preview-edit-password'
         );
 
 
@@ -14882,13 +15069,6 @@ async function submitCloudPreviewEdit() {
             nameInput?.value ||
             ''
         ).trim();
-
-
-    const previewPassword =
-        String(
-            passwordInput?.value ||
-            ''
-        );
 
 
     const expiresLocal =
@@ -15041,21 +15221,6 @@ async function submitCloudPreviewEdit() {
     ) {
         request.max_views =
             maxViews;
-
-        hasChanges =
-            true;
-    }
-
-
-    /*
-     * 密碼留白代表沿用舊密碼。
-     */
-    if (
-        previewPassword.length >
-        0
-    ) {
-        request.preview_password =
-            previewPassword;
 
         hasChanges =
             true;
@@ -17939,23 +18104,23 @@ function setCloudWorkspaceCreateBusy(
 
     if (busy) {
 
-        button.className =
-            `w-full min-w-0
-             h-10 sm:h-9
-             px-2
-             rounded-xl
-             border border-emerald-200
-             bg-emerald-600
-             text-white
-             text-[11px] sm:text-xs
-             font-black
-             whitespace-nowrap
-             flex items-center
-             justify-center
-             gap-1.5
-             cursor-wait
-             transition
-             shadow-sm`;
+button.className =
+    `w-full min-w-0
+     h-10 sm:h-9
+     px-2
+     rounded-xl
+     border-0
+     bg-emerald-600
+     text-white
+     text-[11px] sm:text-xs
+     font-black
+     whitespace-nowrap
+     flex items-center
+     justify-center
+     gap-1.5
+     cursor-wait
+     transition-all
+     shadow-sm`;
 
 
         button.innerHTML = `
@@ -17976,23 +18141,23 @@ function setCloudWorkspaceCreateBusy(
 
     } else {
 
-        button.className =
-            `w-full min-w-0
-             h-10 sm:h-9
-             px-2
-             rounded-xl
-             border border-emerald-200
-             bg-emerald-600
-             hover:bg-emerald-700
-             text-white
-             text-[11px] sm:text-xs
-             font-black
-             whitespace-nowrap
-             flex items-center
-             justify-center
-             gap-1.5
-             transition
-             shadow-sm`;
+button.className =
+    `w-full min-w-0
+     h-10 sm:h-9
+     px-2
+     rounded-xl
+     border-0
+     bg-emerald-600
+     hover:bg-emerald-700
+     text-white
+     text-[11px] sm:text-xs
+     font-black
+     whitespace-nowrap
+     flex items-center
+     justify-center
+     gap-1.5
+     transition-all
+     shadow-sm`;
 
 
         button.innerHTML = `
@@ -19320,18 +19485,18 @@ class="
                 }
 
 
-                <span class="
-                    shrink-0
-                    px-2 py-0.5
-                    rounded-full
-                    bg-emerald-100
-                    text-emerald-700
-                    text-[9px]
-                    font-black
-                    whitespace-nowrap
-                ">
-                    Revision ${revision}
-                </span>
+<span class="
+    shrink-0
+    px-2 py-0.5
+    rounded-full
+    bg-stone-200
+    text-stone-700
+    text-[9px]
+    font-black
+    whitespace-nowrap
+">
+    Revision ${revision}
+</span>
 
             </div>
 
