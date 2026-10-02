@@ -809,39 +809,6 @@ body:not(.edit-mode) table.osra-table textarea:focus {
         #f1f5f9;
 }
 
-
-/*
- * 可拖曳滑塊
- */
-*:not(html)::-webkit-scrollbar-thumb {
-    background:
-        #cbd5e1;
-
-    border-radius:
-        4px;
-}
-
-
-/*
- * 滑鼠靠近滑塊時稍微加深，
- * 與 Cloud Center 完全一致。
- */
-*:not(html)::-webkit-scrollbar-thumb:hover {
-    background:
-        #94a3b8;
-}
-
-
-/*
- * 同時有水平＋垂直捲軸時，
- * 右下角交界處保持同一底色，
- * 避免出現深色小方塊。
- */
-*:not(html)::-webkit-scrollbar-corner {
-    background:
-        #f1f5f9;
-}
-
 /* =========================================================
    OSRAS｜最外圍頁面捲動條
 
@@ -2897,7 +2864,7 @@ div:not(:first-child) > div > div + div {
     padding: 10px;
 
     overflow-y: auto;
-    overscroll-behavior: contain;
+    overscroll-behavior-y: auto;
     scrollbar-gutter: stable;
 }
 
@@ -50970,20 +50937,11 @@ let loginResult;
         return;
     }
 
-
     /*
      * 以下全部沿用原本登入後流程。
      */
     isRiskEditMode =
         false;
-
-
-    /*
-     * 以下全部沿用原本登入後流程。
-     */
-    isRiskEditMode =
-        false;
-
 
     /*
      * 登入驗證成功後，
