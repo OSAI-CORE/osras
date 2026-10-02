@@ -769,7 +769,7 @@ body:not(.edit-mode) table.osra-table textarea:focus {
 /*
  * Firefox
  */
-* {
+*:not(html):not(body) {
     scrollbar-width:
         thin;
 
@@ -778,15 +778,7 @@ body:not(.edit-mode) table.osra-table textarea:focus {
         #f1f5f9;
 }
 
-
-/*
- * Chrome、Edge、Safari
- *
- * 一般主內容捲動條：
- * - 垂直 8px
- * - 水平 8px
- */
-*::-webkit-scrollbar {
+*:not(html):not(body)::-webkit-scrollbar {
     width:
         8px;
 
@@ -794,11 +786,25 @@ body:not(.edit-mode) table.osra-table textarea:focus {
         8px;
 }
 
+*:not(html):not(body)::-webkit-scrollbar-track {
+    background:
+        #f1f5f9;
+}
 
-/*
- * 捲動條軌道
- */
-*::-webkit-scrollbar-track {
+*:not(html):not(body)::-webkit-scrollbar-thumb {
+    background:
+        #cbd5e1;
+
+    border-radius:
+        4px;
+}
+
+*:not(html):not(body)::-webkit-scrollbar-thumb:hover {
+    background:
+        #94a3b8;
+}
+
+*:not(html):not(body)::-webkit-scrollbar-corner {
     background:
         #f1f5f9;
 }
@@ -807,7 +813,7 @@ body:not(.edit-mode) table.osra-table textarea:focus {
 /*
  * 可拖曳滑塊
  */
-*::-webkit-scrollbar-thumb {
+*:not(html)::-webkit-scrollbar-thumb {
     background:
         #cbd5e1;
 
@@ -820,7 +826,7 @@ body:not(.edit-mode) table.osra-table textarea:focus {
  * 滑鼠靠近滑塊時稍微加深，
  * 與 Cloud Center 完全一致。
  */
-*::-webkit-scrollbar-thumb:hover {
+*:not(html)::-webkit-scrollbar-thumb:hover {
     background:
         #94a3b8;
 }
@@ -831,7 +837,7 @@ body:not(.edit-mode) table.osra-table textarea:focus {
  * 右下角交界處保持同一底色，
  * 避免出現深色小方塊。
  */
-*::-webkit-scrollbar-corner {
+*:not(html)::-webkit-scrollbar-corner {
     background:
         #f1f5f9;
 }
@@ -839,44 +845,30 @@ body:not(.edit-mode) table.osra-table textarea:focus {
 /* =========================================================
    OSRAS｜最外圍頁面捲動條
 
-   僅將瀏覽器最外圍 scrollbar 軌道
-   恢復為第一版較深色的視覺。
+   基準：
+   回到舊版瀏覽器／作業系統原生 scrollbar。
 
-   拉桿本身顏色維持目前新版：
-   #cbd5e1
+   不使用：
+   - ::-webkit-scrollbar-track
+   - ::-webkit-scrollbar-thumb
+   - 自訂 Track 顏色
+   - 自訂 Thumb 顏色
+   - 自訂圓角
+
+   因此拉桿類型、背底與互動方式
+   都由瀏覽器／作業系統原生樣式決定。
+
+   僅使用標準 scrollbar-width
+   稍微降低視覺厚度。
 ========================================================= */
 
-
-/*
- * Firefox：
- * 第一個色碼 = 拉桿
- * 第二個色碼 = 背底
- */
-html {
+html,
+body {
     scrollbar-color:
-        #cbd5e1
-        #334155;
-}
+        auto;
 
-
-/*
- * Chrome、Edge、Safari：
- * 最外圍捲動條背底改回深色。
- */
-html::-webkit-scrollbar-track {
-    background:
-        #334155;
-}
-
-
-/*
- * 右下角水平＋垂直捲動條交界處
- * 也同步使用深色，
- * 避免留下一個淡色方塊。
- */
-html::-webkit-scrollbar-corner {
-    background:
-        #334155;
+    scrollbar-width:
+        thin;
 }
 
 /*
@@ -926,7 +918,9 @@ html::-webkit-scrollbar-corner {
 }
 
 [id^="cloud-"][id$="-modal"] .fa-spin,
-[id^="cloud-"][id$="-modal"] .animate-spin {
+[id^="cloud-"][id$="-modal"] .animate-spin,
+#adminModal .fa-spin,
+#adminModal .animate-spin {
     display: inline-block !important;
 
     -webkit-animation:
@@ -6976,7 +6970,7 @@ class="group relative overflow-visible
     <i class="fa-solid fa-magnifying-glass text-white"></i>
 
 <span>
-    執行智慧稽核
+    智慧稽核分析
 </span>
 </span>
 </button>
@@ -6997,8 +6991,8 @@ class="group relative overflow-visible
                         <!-- 預設無稽核狀態 -->
                         <div class="text-center py-8 text-slate-400">
                             <i class="fa-solid fa-shield-virus text-4xl mb-2 text-slate-300"></i>
-                            <p class="text-xs">尚未執行風險稽核</p>
-                            <p class="text-[10px] text-slate-400 mt-1">請點選右上角「執行智慧稽核」啟動完整分析</p>
+                            <p class="text-xs">尚未執行風險稽核分析</p>
+                            <p class="text-[10px] text-slate-400 mt-1">請點選右上角「智慧稽核分析」</p>
                         </div>
                     </div>
                 </div>
@@ -7646,7 +7640,7 @@ class="group relative overflow-visible
                 text-slate-800
             "
         >
-            風險稽核
+            風險稽核分析
         </div>
 
         <span
@@ -7675,7 +7669,7 @@ class="group relative overflow-visible
             mt-0.5
         "
     >
-        需要 AI 深度交叉檢核時啟用
+        需要 AI 交叉檢核時啟用
     </div>
 
 </div>
@@ -17175,7 +17169,7 @@ function updateSmartFeatureUI() {
 
         auditStatLabel.textContent =
             useAiAudit
-                ? "AI 深度稽核待修正警告"
+                ? "AI 稽核待修正警告"
                 : "智慧稽核待修正警告";
     }
 
@@ -18285,16 +18279,14 @@ function setOsaiSystemAccessLoginPending(
          * 尺寸、顏色、Class 完全不變，
          * 只替換按鈕內部內容。
          */
-        button.innerHTML = `
-            <i
-                class="fas fa-circle-notch fa-spin w-4 h-4"
-                aria-hidden="true"
-            ></i>
+button.innerHTML = `
+    <i class="fas fa-spinner fa-spin text-sm"
+       aria-hidden="true"></i>
 
-            <span>
-                驗證中...
-            </span>
-        `;
+    <span>
+        驗證中...
+    </span>
+`;
 
 
     } else {
@@ -44547,7 +44539,7 @@ showToast(
  * 系統智慧稽核
  *
  * ON：
- * AI 深度稽核
+ * AI 稽核
  * =====================================================
  */
 
@@ -44557,8 +44549,8 @@ function getAuditRunLabel() {
         isSmartFeatureEnabled(
             "audit"
         )
-            ? "執行 AI 深度稽核"
-            : "執行智慧稽核"
+            ? "AI 稽核分析"
+            : "智慧稽核分析"
     );
 }
 
@@ -44571,7 +44563,7 @@ function getDefaultAuditEmptyHtml() {
     return `
         <div class="text-center py-8 text-slate-400">
             <i class="fa-solid fa-shield-virus text-4xl mb-2 text-slate-300"></i>
-            <p class="text-xs">尚未執行風險稽核</p>
+            <p class="text-xs">尚未執行風險稽核分析</p>
             <p class="text-[10px] text-slate-400 mt-1">
     請點選右上角「${auditActionLabel}」啟動完整分析
 </p>
@@ -44639,7 +44631,7 @@ const auditActionLabel =
     sheet.auditHtml = `
         <div class="text-center py-8 text-slate-400">
             <i class="fa-solid fa-shield-virus text-4xl mb-2 text-slate-300"></i>
-            <p class="text-xs">資料已變更，建議重新執行風險稽核</p>
+            <p class="text-xs">資料已變更，建議重新執行風險稽核分析</p>
             <p class="text-[10px] text-slate-400 mt-1">請點選右上角「${auditActionLabel}」更新目前分頁的稽核結果</p>
         </div>
     `;
@@ -47051,30 +47043,41 @@ clearAuditRowFocus();
     }
 
 /*
- * AI 深度稽核關閉時，
- * 直接使用系統智慧稽核。
+ * =====================================================
+ * 本次智慧稽核執行模式
+ *
+ * OFF：
+ * 本地智慧資料庫稽核
+ *
+ * ON：
+ * Local Core + AI Smart Assist
+ *
+ * 兩種模式共用完全相同的
+ * Spinner、按鈕跑馬燈、逐步分析畫面。
+ * =====================================================
+ */
+const useAiAudit =
+    isSmartFeatureEnabled(
+        "audit"
+    );
+
+
+const auditModeText =
+    useAiAudit
+        ? "AI"
+        : "智慧";
+
+
+/*
+ * 已經正在執行稽核時，
+ * 阻止再次觸發。
  */
 if (
-    !isSmartFeatureEnabled(
-        "audit"
-    )
+    btn &&
+    btn.disabled
 ) {
-
-    runLocalAudit();
-
     return;
 }
-
-    /*
-     * 已經正在執行稽核時，
-     * 阻止再次觸發。
-     */
-    if (
-        btn &&
-        btn.disabled
-    ) {
-        return;
-    }
 
 function resetAiAuditButton() {
 
@@ -47103,8 +47106,36 @@ function resetAiAuditButton() {
     updateAiAuditButtonState();
 }
 
+/*
+ * =====================================================
+ * 稽核分析動畫最低完整顯示時間
+ *
+ * 不論：
+ * - 本地智慧稽核
+ * - AI 混合稽核
+ *
+ * 都至少完整呈現 4.5 秒分析流程。
+ *
+ * AI 若實際分析超過 4.5 秒，
+ * 不會額外再等待 4.5 秒。
+ * =====================================================
+ */
+const auditMinimumDelay =
+    new Promise(
+        resolve =>
+            setTimeout(
+                resolve,
+                4500
+            )
+    );
+
     try {
-        showToast("AI 正在進行深度風險稽核...", "info");
+        showToast(
+    useAiAudit
+        ? "AI 正在進行風險稽核分析..."
+        : "智慧稽核正在進行風險分析...",
+    "info"
+);
 
         if (btn && btnContent) {
             btn.disabled = true;
@@ -47112,18 +47143,24 @@ function resetAiAuditButton() {
 
             btnContent.innerHTML = `
                 <i class="fa-solid fa-spinner fa-spin"></i>
-                <span>AI 深度稽核中...</span>
+                <span>${
+    useAiAudit
+        ? "AI 稽核中..."
+        : "智慧稽核中..."
+}</span>
             `;
 
             await new Promise(resolve => requestAnimationFrame(resolve));
 
-            const auditSteps = [
-                "正在分析風險矩陣...",
-                "正在檢查控制措施合理性...",
-                "正在比對職業安全衛生法規...",
-                "正在驗證控制後風險邏輯...",
-                "正在產生 AI 稽核建議..."
-            ];
+const auditSteps = [
+    "正在分析風險矩陣...",
+    "正在檢查控制措施合理性...",
+    "正在比對職業安全衛生法規...",
+    "正在驗證控制後風險邏輯...",
+    useAiAudit
+        ? "正在產生 AI 稽核建議..."
+        : "正在產生智慧稽核建議..."
+];
 
             let auditStepIndex = 0;
 
@@ -47159,9 +47196,11 @@ function resetAiAuditButton() {
             <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-5 text-center">
                 <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-indigo-600"></i>
 
-                <h4 class="font-bold text-sm text-indigo-900 mb-2">
-                    AI 正在執行深度風險稽核
-                </h4>
+<h4 class="font-bold text-sm text-indigo-900 mb-2">
+    ${useAiAudit
+        ? "AI 正在執行風險稽核分析"
+        : "正在執行智慧風險稽核分析"}
+</h4>
 
                 <div class="space-y-2 text-left max-w-sm mx-auto">
                     <div id="auditStep1" class="text-xs text-indigo-700 font-semibold">
@@ -47190,9 +47229,13 @@ function resetAiAuditButton() {
                     </div>
                 </div>
 
-                <p class="text-[10px] text-slate-400 mt-4">
-                    請稍候，AI 正在檢查風險邏輯與控制層級...
-                </p>
+<p class="text-[10px] text-slate-400 mt-4">
+    ${
+        useAiAudit
+            ? "請稍候，AI 正在檢查風險邏輯與控制層級..."
+            : "請稍候，智慧稽核正在檢查風險邏輯與控制層級..."
+    }
+</p>
             </div>
         `;
 
@@ -47233,6 +47276,38 @@ function resetAiAuditButton() {
                 }
             }
         }, 900);
+
+/*
+ * =====================================================
+ * AI 功能關閉：
+ *
+ * 完整跑完與 AI 稽核相同的 4.5 秒分析動畫後，
+ * 才正式執行本地智慧資料庫稽核。
+ *
+ * 不呼叫外部 API。
+ * =====================================================
+ */
+if (!useAiAudit) {
+
+    await auditMinimumDelay;
+
+
+    /*
+     * silent：
+     * 不再重新跳一次「系統智慧稽核正在...」Toast，
+     * 因為前面的共用動畫已經顯示分析狀態。
+     *
+     * 本地稽核結果、問題圖卡、警告統計、
+     * 儲存結果及完成 Toast 仍全部正常執行。
+     */
+    runLocalAudit({
+        silent:
+            true
+    });
+
+
+    return;
+}
 
 /*
  * =====================================================
@@ -47316,7 +47391,7 @@ const localLogs =
 
 
 showToast(
-    "系統智慧稽核初步分析已完成，正在進行 AI 深度交叉檢核...",
+    "系統智慧稽核初步分析已完成，正在進行 AI 交叉檢核...",
     "info"
 );
 
@@ -47339,6 +47414,14 @@ const smartAuditResponse =
             assessmentData
     });
 
+/*
+ * 即使 AI 回應速度很快，
+ * 仍完整保留既有 4.5 秒分析體感。
+ *
+ * 若 AI 本身已超過 4.5 秒，
+ * 此 Promise 已經完成，不會再增加等待時間。
+ */
+await auditMinimumDelay;    
 
 /*
  * Backend 已經回傳解析完成的 result，
@@ -47501,13 +47584,13 @@ const hybridCompletionMessage =
     warningCount > 0
         ? (
             informationCount > 0
-                ? `深度稽核完成！發現 ${warningCount} 項需修正事項，另有 ${informationCount} 項現場條件待確認。`
-                : `深度稽核完成！發現 ${warningCount} 項需修正事項。`
+                ? `稽核完成！發現 ${warningCount} 項需修正事項，另有 ${informationCount} 項現場條件待確認。`
+                : `稽核完成！發現 ${warningCount} 項需修正事項。`
         )
         : (
             informationCount > 0
-                ? `深度稽核完成！未發現明顯異常，另有 ${informationCount} 項現場條件待確認。`
-                : "深度稽核完成！未發現明顯異常。"
+                ? `稽核完成！未發現明顯異常，另有 ${informationCount} 項現場條件待確認。`
+                : "稽核完成！未發現明顯異常。"
         );
 
 
@@ -47525,10 +47608,25 @@ showToast(
         err
     );
 
+
+    /*
+     * 即使 AI 很快失敗，
+     * 仍完整保留 4.5 秒逐步分析畫面。
+     */
+    await auditMinimumDelay;
+
+
     /*
      * Local Core 永遠可以獨立完成工作。
+     *
+     * 共用分析動畫已顯示過，
+     * 因此 fallback 不再重複顯示起始 Toast。
      */
-    runLocalAudit();
+    runLocalAudit({
+        silent:
+            true
+    });
+
 } finally {
         if (auditLoadingTimer) {
             clearInterval(auditLoadingTimer);
@@ -49161,13 +49259,13 @@ const auditCompletionMessage =
     warningCount > 0
         ? (
             informationCount > 0
-                ? `風險稽核完成！發現 ${warningCount} 項需修正事項，另有 ${informationCount} 項現場條件待確認。`
-                : `風險稽核完成！發現 ${warningCount} 項需修正事項。`
+                ? `風險稽核分析完成！發現 ${warningCount} 項需修正事項，另有 ${informationCount} 項現場條件待確認。`
+                : `風險稽核分析完成！發現 ${warningCount} 項需修正事項。`
         )
         : (
             informationCount > 0
-                ? `風險稽核完成！未發現明顯異常，另有 ${informationCount} 項現場條件待確認。`
-                : "風險稽核完成！未發現明顯異常。"
+                ? `風險稽核分析完成！未發現明顯異常，另有 ${informationCount} 項現場條件待確認。`
+                : "風險稽核分析完成！未發現明顯異常。"
         );
 
 
@@ -49706,7 +49804,7 @@ const mappings = [
             "系統智慧稽核",
 
         onText:
-            "AI 深度稽核"
+            "AI 稽核"
     }
 ];
 
