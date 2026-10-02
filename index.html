@@ -50882,9 +50882,20 @@ let loginResult;
 
 } finally {
 
-    setOsaiSystemAccessLoginPending(
-        false
-    );
+    /*
+     * 驗證失敗時立即恢復登入按鈕。
+     *
+     * 驗證成功時先維持 Spinner，
+     * 等角色確認、正式資料載入完成，
+     * 並關閉登入視窗後再恢復。
+     */
+    if (
+        !loginResult
+    ) {
+        setOsaiSystemAccessLoginPending(
+            false
+        );
+    }
 }
 
 
@@ -50947,6 +50958,15 @@ let loginResult;
                 '';
         }
 
+        /*
+         * Backend 有回應但角色異常時，
+         * 登入視窗仍會保留，
+         * 因此必須恢復登入按鈕。
+         */
+        setOsaiSystemAccessLoginPending(
+            false
+        );
+
         return;
     }
 
@@ -50958,35 +50978,66 @@ let loginResult;
         false;
 
 
-    await loadFormalWorkbookIntoWorkspace();
+    /*
+     * 以下全部沿用原本登入後流程。
+     */
+    isRiskEditMode =
+        false;
 
 
-    if (
-        loginResult
-            .role ===
-        'admin'
-    ) {
-        showToast(
-            '管理者登入成功，已進入完整權限模式。',
-            'success'
+    /*
+     * 登入驗證成功後，
+     * Spinner 持續顯示至正式資料載入完成，
+     * 並在登入視窗關閉後才恢復原始按鈕。
+     *
+     * finally 同時作為防呆：
+     * 即使後續資料載入發生例外，
+     * 也不會讓登入按鈕永久停留在 Pending 狀態。
+     */
+    try {
+
+        await loadFormalWorkbookIntoWorkspace();
+
+
+        if (
+            loginResult
+                .role ===
+            'admin'
+        ) {
+            showToast(
+                '管理者登入成功，已進入完整權限模式。',
+                'success'
+            );
+
+        } else {
+            showToast(
+                '使用者登入成功，已進入資料檢視模式。',
+                'success'
+            );
+        }
+
+
+        /*
+         * 先關閉登入視窗，
+         * 再由 finally 恢復登入按鈕，
+         * 避免使用者看到原始圖示瞬間閃回。
+         */
+        closeAdminModal();
+
+
+        if (
+            inputElement
+        ) {
+            inputElement.value =
+                '';
+        }
+
+
+    } finally {
+
+        setOsaiSystemAccessLoginPending(
+            false
         );
-
-    } else {
-        showToast(
-            '使用者登入成功，已進入資料檢視模式。',
-            'success'
-        );
-    }
-
-
-    closeAdminModal();
-
-
-    if (
-        inputElement
-    ) {
-        inputElement.value =
-            '';
     }
 }
 
