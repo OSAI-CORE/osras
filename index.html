@@ -1392,6 +1392,119 @@ body {
     touch-action: manipulation;
 }
 
+/* =========================================================
+   OSRAS｜附件檔案預覽視窗捲動條（PDF 折衷版）
+
+   設計目標：
+   1. 有捲動條時維持清楚可辨，方便長 PDF 拖曳定位
+   2. 顏色不突兀，與深色預覽背景協調
+   3. Hover 時再稍微加強可視性
+   4. 僅作用於附件預覽內容區
+========================================================= */
+
+/*
+ * Firefox：
+ * 使用 thin，並指定柔和的深色系 Track / Thumb。
+ */
+.file-preview-body {
+    scrollbar-width:
+        thin;
+
+    scrollbar-color:
+        rgba(148, 163, 184, 0.58)
+        rgba(15, 23, 42, 0.22);
+}
+
+
+/*
+ * Chrome、Edge、Safari：
+ * 桌機版使用細捲動條樣式，方便拖曳。
+ */
+.file-preview-body::-webkit-scrollbar {
+    width:
+        10px;
+}
+
+
+/*
+ * 深色預覽背景上的低調 Track。
+ */
+.file-preview-body::-webkit-scrollbar-track {
+    background:
+        rgba(15, 23, 42, 0.20);
+
+    border-radius:
+        999px;
+}
+
+
+/*
+ * 平常狀態：
+ * 使用柔和 Slate 藍灰色，不會太亮也不會太隱形。
+ */
+.file-preview-body::-webkit-scrollbar-thumb {
+    background:
+        rgba(148, 163, 184, 0.52);
+
+    border-radius:
+        999px;
+
+    border:
+        2px solid rgba(15, 23, 42, 0.08);
+}
+
+
+/*
+ * 滑鼠移入時略微變亮，
+ * 讓使用者更容易感受到目前可拖曳。
+ */
+.file-preview-body::-webkit-scrollbar-thumb:hover {
+    background:
+        rgba(191, 219, 254, 0.68);
+}
+
+
+/*
+ * 拖曳中再比 Hover 稍微明顯一點，
+ * 但仍維持整體協調。
+ */
+.file-preview-body::-webkit-scrollbar-thumb:active {
+    background:
+        rgba(147, 197, 253, 0.82);
+}
+
+
+/*
+ * 手機／觸控裝置：
+ * 稍微再細一點，避免太佔空間。
+ */
+@media screen and (max-width: 950px),
+       (hover: none) and (pointer: coarse) {
+
+    .file-preview-body {
+        scrollbar-width:
+            thin;
+    }
+
+    .file-preview-body::-webkit-scrollbar {
+        width:
+            7px;
+    }
+
+    .file-preview-body::-webkit-scrollbar-track {
+        background:
+            rgba(15, 23, 42, 0.16);
+    }
+
+    .file-preview-body::-webkit-scrollbar-thumb {
+        background:
+            rgba(148, 163, 184, 0.46);
+
+        border:
+            1px solid rgba(15, 23, 42, 0.06);
+    }
+}
+
 #file-preview-stage {
     min-width: 100%;
     min-height: 100%;
