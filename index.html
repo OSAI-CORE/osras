@@ -3919,80 +3919,189 @@ div:nth-child(4) {
 
 /* =========================================================
    附件資料管理上傳框
-   比照績效管理系統的虛線與滑入效果
+   視覺比照證照管理系統
 ========================================================= */
+
 .attachment-upload-zone {
     width: 100%;
-    min-height: 108px;
+    min-height: 118px;
 
-    border: 2px dashed #bfdbfe;
-    background: #f8fbff;
-    border-radius: 16px;
+    border:
+        2px dashed #e2e8f0;
 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    background:
+        #ffffff;
 
-    gap: 6px;
-    padding: 16px;
+    border-radius:
+        16px;
 
-    color: #2563eb;
-    cursor: pointer;
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    padding:
+        20px;
+
+    cursor:
+        pointer;
 
     transition:
         border-color 0.2s ease,
         background-color 0.2s ease;
 }
 
+
 /*
- * 滑鼠移入及檔案拖入時，
- * 比照績效系統改為較明顯的藍色虛線。
+ * 滑鼠移入：
+ * 比照證照管理系統轉為 Indigo 藍色虛線。
  */
-.attachment-upload-zone:hover,
-#attachment-upload-zone.drag-over {
-    border-color: #60a5fa;
-    background: #eff6ff;
-    transform: none;
+.attachment-upload-zone:hover {
+    border-color:
+        #818cf8;
+
+    background:
+        #fafaff;
 }
 
-.attachment-upload-icon {
-    margin-bottom: 2px;
 
-    color: #60a5fa;
-    font-size: 24px;
+/*
+ * 檔案真正拖入時再加深。
+ */
+#attachment-upload-zone.drag-over {
+    border-color:
+        #6366f1;
+
+    background:
+        #f5f3ff;
+
+    transform:
+        none;
+}
+
+
+/*
+ * Upload Cloud 圖示圓形底。
+ */
+.attachment-upload-icon-wrap {
+    width:
+        44px;
+
+    height:
+        44px;
+
+    margin-bottom:
+        8px;
+
+    border-radius:
+        999px;
+
+    background:
+        #f8fafc;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    transition:
+        background-color 0.2s ease;
+}
+
+
+/*
+ * Lucide Upload Cloud。
+ */
+.attachment-upload-icon {
+    width:
+        20px;
+
+    height:
+        20px;
+
+    color:
+        #94a3b8;
 
     transition:
         color 0.2s ease;
 }
 
+
+/*
+ * Hover / Drag：
+ * 圓底與圖示同步變化。
+ */
+.attachment-upload-zone:hover
+.attachment-upload-icon-wrap,
+#attachment-upload-zone.drag-over
+.attachment-upload-icon-wrap {
+    background:
+        #eef2ff;
+}
+
+
 .attachment-upload-zone:hover
 .attachment-upload-icon,
 #attachment-upload-zone.drag-over
 .attachment-upload-icon {
-    color: #3b82f6;
+    color:
+        #6366f1;
 }
 
+
+/*
+ * 主文字刻意比原本 14px 稍微縮小。
+ */
 .attachment-upload-main {
-    margin: 0;
+    margin:
+        0;
 
-    color: #2563eb;
-    font-size: 14px;
-    line-height: 1.35;
-    font-weight: 700;
+    color:
+        #2563eb;
 
-    text-align: center;
+    font-size:
+        13px;
+
+    line-height:
+        1.3;
+
+    font-weight:
+        700;
+
+    text-align:
+        center;
 }
+
 
 .attachment-upload-sub {
-    margin: 0;
+    margin:
+        3px 0 0 0;
 
-    color: #64748b;
-    font-size: 11px;
-    line-height: 1.35;
-    font-weight: 500;
+    color:
+        #94a3b8;
 
-    text-align: center;
+    font-size:
+        10px;
+
+    line-height:
+        1.3;
+
+    font-weight:
+        500;
+
+    text-align:
+        center;
 }
 
 /* =========================================================
@@ -7371,13 +7480,17 @@ class="group relative overflow-visible
        class="permission-password-input">
                 </div>
 
-<label class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+<label
+    id="editorEnabledSettingRow"
+    class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 invisible"
+>
     <input
         type="checkbox"
         id="editorEnabledCheckbox"
         class="w-4 h-4 accent-indigo-600"
         disabled
     >
+
     <span class="text-sm font-bold text-slate-700">
         啟用使用者共用權限
     </span>
@@ -10287,18 +10400,6 @@ gap-1.5">
     ondragleave="handleDragLeave(event)"
     ondrop="handleDrop(event)"
 >
-    <i
-        class="fa-solid fa-cloud-arrow-up attachment-upload-icon"
-    ></i>
-
-    <p class="attachment-upload-main">
-        點擊或拖放檔案至此處上傳
-    </p>
-
-    <p class="attachment-upload-sub">
-        支援 PDF、PNG、JPG（單檔最大 5MB）
-    </p>
-
     <input
         type="file"
         id="attachmentInput"
@@ -10307,6 +10408,21 @@ gap-1.5">
         multiple
         onchange="handleFileUpload(event)"
     >
+
+    <div class="attachment-upload-icon-wrap">
+        <i
+            data-lucide="upload-cloud"
+            class="attachment-upload-icon"
+        ></i>
+    </div>
+
+    <p class="attachment-upload-main">
+        點擊或拖放檔案至此處上傳
+    </p>
+
+    <p class="attachment-upload-sub">
+        支援 PDF、PNG、JPG（單檔最大 5MB）
+    </p>
 </div>
 
             <!-- 附件列表 -->
@@ -34517,8 +34633,8 @@ aria-label="${
        border border-blue-200 hover:border-blue-300
        hover:shadow-sm
        transition"
-    data-tooltip="管理佐證附件"
-    aria-label="管理佐證附件"
+    data-tooltip="管理附件"
+    aria-label="管理附件"
 >
                                 <i id="attach-icon-${rowId}" class="fa-solid fa-folder-open"></i>
                             </button>
@@ -49618,6 +49734,10 @@ async function openPermissionSettingsModal() {
             'editorEnabledCheckbox'
         );
 
+const editorEnabledSettingRow =
+    document.getElementById(
+        'editorEnabledSettingRow'
+    );        
 
     document.getElementById(
         'oldPasswordInput'
@@ -49656,42 +49776,69 @@ async function openPermissionSettingsModal() {
         false;
 
 
-    /*
-     * 如果 Admin 登入後的 Prefetch
-     * 已取得一分鐘內的新鮮資料，
-     * Checkbox 立即可用。
-     */
+/*
+ * -----------------------------------------------------
+ * User Enabled 初始顯示狀態
+ * -----------------------------------------------------
+ *
+ * 有新鮮 Cache：
+ * 先套用正式值，再顯示。
+ *
+ * 沒有新鮮 Cache：
+ * 維持整列 invisible，
+ * 避免 Checkbox 暫時以 unchecked 狀態出現。
+ */
+const hasFreshSettingsCache =
+    hasFreshOsaiSystemAccessSettingsCache();
+
+
+if (
+    editorEnabledCheckbox &&
+    hasFreshSettingsCache
+) {
+
+    editorEnabledCheckbox.checked =
+        osaiSystemAccessSettingsCache
+            .editorEnabled;
+
+
+    editorEnabledCheckbox.disabled =
+        false;
+
+
     if (
-        editorEnabledCheckbox &&
-        hasFreshOsaiSystemAccessSettingsCache()
+        editorEnabledSettingRow
     ) {
-
-        editorEnabledCheckbox.checked =
-            osaiSystemAccessSettingsCache
-                .editorEnabled;
-
-
-        editorEnabledCheckbox.disabled =
-            false;
-
-
-        isOsaiSystemAccessSettingsReady =
-            true;
-
-
-    } else if (
-        editorEnabledCheckbox
-    ) {
-
-        /*
-         * 沒有 Cache 時先鎖住 Checkbox。
-         *
-         * Modal 本身仍立即顯示，
-         * 不會讓使用者覺得按鈕沒反應。
-         */
-        editorEnabledCheckbox.disabled =
-            true;
+        editorEnabledSettingRow
+            .classList
+            .remove(
+                'invisible'
+            );
     }
+
+
+    isOsaiSystemAccessSettingsReady =
+        true;
+
+
+} else if (
+    editorEnabledCheckbox
+) {
+
+    editorEnabledCheckbox.disabled =
+        true;
+
+
+    if (
+        editorEnabledSettingRow
+    ) {
+        editorEnabledSettingRow
+            .classList
+            .add(
+                'invisible'
+            );
+    }
+}
 
 
     isOsaiSystemAccessSettingsPending =
@@ -49709,19 +49856,37 @@ async function openPermissionSettingsModal() {
             await refreshOsaiSystemAccessSettingsCache();
 
 
-        if (
-            editorEnabledCheckbox
-        ) {
+if (
+    editorEnabledCheckbox
+) {
 
-            editorEnabledCheckbox.checked =
-                settings
-                    ?.editor_enabled ===
-                true;
+    /*
+     * 先套用中央正式值。
+     */
+    editorEnabledCheckbox.checked =
+        settings
+            ?.editor_enabled ===
+        true;
 
 
-            editorEnabledCheckbox.disabled =
-                false;
-        }
+    editorEnabledCheckbox.disabled =
+        false;
+
+
+    /*
+     * 正式值完成套用後，
+     * 才顯示 User Enabled 設定列。
+     */
+    if (
+        editorEnabledSettingRow
+    ) {
+        editorEnabledSettingRow
+            .classList
+            .remove(
+                'invisible'
+            );
+    }
+}
 
 
         isOsaiSystemAccessSettingsReady =
@@ -49819,13 +49984,28 @@ function closePermissionSettingsModal() {
             'editorEnabledCheckbox'
         );
 
+const editorEnabledSettingRow =
+    document.getElementById(
+        'editorEnabledSettingRow'
+    );        
 
-    if (
-        editorEnabledCheckbox
-    ) {
-        editorEnabledCheckbox.disabled =
-            true;
-    }
+if (
+    editorEnabledCheckbox
+) {
+    editorEnabledCheckbox.disabled =
+        true;
+}
+
+
+if (
+    editorEnabledSettingRow
+) {
+    editorEnabledSettingRow
+        .classList
+        .add(
+            'invisible'
+        );
+}
 
 isOsaiSystemAccessSettingsReady =
     false;
@@ -52398,13 +52578,40 @@ function updateAttachmentUI(rowId, attachments) {
     }
 }
 
-        function openAttachmentModal(rowId) {
-            currentAttachmentRowId = rowId;
-            document.getElementById('attach-modal-title').innerText = `(項次 ${getDisplayItemNo(rowId)})`;
-            const attachments = window._tempAttachments[rowId] || [];
-            renderAttachmentList(attachments);
-            document.getElementById('attachmentModal').classList.remove('hidden');
-        }
+function openAttachmentModal(rowId) {
+    currentAttachmentRowId = rowId;
+
+    document.getElementById(
+        'attach-modal-title'
+    ).innerText =
+        `(項次 ${getDisplayItemNo(rowId)})`;
+
+    const attachments =
+        window._tempAttachments[rowId] || [];
+
+    renderAttachmentList(
+        attachments
+    );
+
+    document
+        .getElementById(
+            'attachmentModal'
+        )
+        .classList
+        .remove(
+            'hidden'
+        );
+
+    /*
+     * 附件上傳區改用與證照管理系統相同的
+     * Lucide upload-cloud。
+     */
+    if (
+        window.lucide
+    ) {
+        lucide.createIcons();
+    }
+}
 
         function closeAttachmentModal() {
             document.getElementById('attachmentModal').classList.add('hidden');
