@@ -753,60 +753,188 @@ body:not(.edit-mode) table.osra-table textarea:focus {
 }
 
 /* =========================================================
-   OSRAS｜全系統捲動條視覺統一
-
-   視覺基準：
-   比照 Cloud Center 捲動條。
+   OSRAS｜系統內部 Scrollbar 統一規格
 
    原則：
-   1. 一般上下／左右捲動區統一視覺。
-   2. 不改變 overflow、觸控與捲動行為。
-   3. 小型輸入欄仍可由既有較高優先度樣式維持 5px。
-   4. 手機附件工具列原本隱藏捲動條的設定仍可覆蓋本規則。
+   - 系統內部所有 Scrollbar：取消頭尾箭頭
+   - 系統最外圍 html / body：完全不介入
+   - 一般內部 Scrollbar 基準：8px
+   - 各區域原本若已有自己的寬度，繼續優先保留
+   - 不修改既有 overflow、觸控與捲動行為
+   - 保留風險系統目前 Track / Thumb 配色
+
+   Chrome / Edge：
+   解除標準 scrollbar-width / scrollbar-color 接管，
+   改由 ::-webkit-scrollbar 系列正式控制。
 ========================================================= */
 
+@supports selector(::-webkit-scrollbar) {
 
-/*
- * Firefox
- */
-*:not(html):not(body) {
-    scrollbar-width:
-        thin;
+    /*
+     * 僅處理 body 裡面的系統內部元素。
+     *
+     * 不包含：
+     * html
+     * body
+     *
+     * 因此整個系統最外圍原生 Scrollbar
+     * 不會被這裡修改。
+     */
+    :where(body *) {
+        scrollbar-width:
+            auto !important;
 
-    scrollbar-color:
-        #cbd5e1
-        #f1f5f9;
-}
+        scrollbar-color:
+            auto !important;
+    }
 
-*:not(html):not(body)::-webkit-scrollbar {
-    width:
-        8px;
 
-    height:
-        8px;
-}
+    /*
+     * 一般內部 Scrollbar 基準尺寸。
+     *
+     * 後面如果某個區域已有自己的：
+     * 7px / 8px / 9px / 10px
+     *
+     * 仍會由專屬 selector 接管。
+     */
+    :where(body *)::-webkit-scrollbar {
+        width:
+            8px;
 
-*:not(html):not(body)::-webkit-scrollbar-track {
-    background:
-        #f1f5f9;
-}
+        height:
+            8px;
+    }
 
-*:not(html):not(body)::-webkit-scrollbar-thumb {
+
+    /*
+     * 保留風險系統原本淺色 Track。
+     */
+    :where(body *)::-webkit-scrollbar-track {
+        background:
+            #f1f5f9;
+    }
+
+
+    /*
+     * 保留風險系統原本 Thumb。
+     */
+:where(
+    body *:not(.osra-table-scroll):not(.file-preview-body)
+)::-webkit-scrollbar-thumb {
     background:
         #cbd5e1;
 
     border-radius:
         4px;
+
+    border:
+        1px solid #f1f5f9;
+
+    background-clip:
+        padding-box;
 }
 
-*:not(html):not(body)::-webkit-scrollbar-thumb:hover {
+
+:where(
+    body *:not(.osra-table-scroll):not(.file-preview-body)
+)::-webkit-scrollbar-thumb:hover {
     background:
         #94a3b8;
 }
 
-*:not(html):not(body)::-webkit-scrollbar-corner {
-    background:
-        #f1f5f9;
+
+    :where(body *)::-webkit-scrollbar-corner {
+        background:
+            #f1f5f9;
+    }
+
+
+    /*
+     * =====================================================
+     * 移除系統內部所有 Scrollbar 頭尾按鈕／箭頭
+     * =====================================================
+     */
+
+    :where(body *)::-webkit-scrollbar-button {
+        -webkit-appearance:
+            none !important;
+
+        appearance:
+            none !important;
+
+        display:
+            none !important;
+
+        width:
+            0 !important;
+
+        height:
+            0 !important;
+
+        min-width:
+            0 !important;
+
+        min-height:
+            0 !important;
+
+        margin:
+            0 !important;
+
+        padding:
+            0 !important;
+
+        border:
+            0 !important;
+
+        background:
+            transparent !important;
+    }
+
+
+    /*
+     * 垂直 Scrollbar：
+     * 上／下箭頭。
+     */
+    :where(body *)::-webkit-scrollbar-button:vertical:decrement,
+    :where(body *)::-webkit-scrollbar-button:vertical:increment {
+        display:
+            none !important;
+
+        width:
+            0 !important;
+
+        height:
+            0 !important;
+
+        -webkit-appearance:
+            none !important;
+
+        background:
+            transparent !important;
+    }
+
+
+    /*
+     * 水平 Scrollbar：
+     * 左／右箭頭。
+     */
+    :where(body *)::-webkit-scrollbar-button:horizontal:decrement,
+    :where(body *)::-webkit-scrollbar-button:horizontal:increment {
+        display:
+            none !important;
+
+        width:
+            0 !important;
+
+        height:
+            0 !important;
+
+        -webkit-appearance:
+            none !important;
+
+        background:
+            transparent !important;
+    }
 }
 
 /* =========================================================
@@ -4408,7 +4536,7 @@ span:first-child {
 
 /* Chrome、Edge、Safari 捲動條 */
 .qualification-auto-textarea::-webkit-scrollbar {
-    width: 5px;
+    width: 8px;
 }
 
 .qualification-auto-textarea::-webkit-scrollbar-track {
