@@ -838,6 +838,210 @@ body {
         thin;
 }
 
+/* =========================================================
+   OSRAS｜桌機版捲動條最終設定
+
+   1. 矩陣表外圍：
+      上下 / 左右統一 9px
+      顏色維持目前系統設定
+
+   2. 整個系統最外圍：
+      恢復瀏覽器 / 作業系統原生 Scrollbar
+
+   3. 手機版完全不變
+========================================================= */
+
+@media screen and (min-width: 1025px) {
+
+    /* =====================================================
+       一、矩陣表外圍 Scrollbar
+       ===================================================== */
+
+    /*
+     * Firefox：
+     * 無法指定精確 9px，
+     * 維持 thin 與原本顏色。
+     */
+    .osra-table-scroll {
+        scrollbar-width:
+            thin;
+
+        scrollbar-color:
+            #cbd5e1
+            #f1f5f9;
+    }
+
+
+    /*
+     * Chrome / Edge / Safari：
+     *
+     * 取消標準 scrollbar-width / color 對
+     * ::-webkit-scrollbar 的接管，
+     * 讓下面的 9px 真正生效。
+     */
+    @supports selector(::-webkit-scrollbar) {
+
+        .osra-table-scroll {
+            scrollbar-width:
+                auto;
+
+            scrollbar-color:
+                auto;
+        }
+    }
+
+
+    /*
+     * 上下與左右皆為 9px
+     */
+    .osra-table-scroll::-webkit-scrollbar {
+        width:
+            9px;
+
+        height:
+            9px;
+    }
+
+
+    /* Track 顏色維持原本 */
+    .osra-table-scroll::-webkit-scrollbar-track {
+        background:
+            #f1f5f9;
+    }
+
+
+    /* Thumb 顏色維持原本 */
+    .osra-table-scroll::-webkit-scrollbar-thumb {
+        background:
+            #cbd5e1;
+
+        border-radius:
+            4px;
+    }
+
+
+    /* Hover 顏色維持原本 */
+    .osra-table-scroll::-webkit-scrollbar-thumb:hover {
+        background:
+            #94a3b8;
+    }
+
+
+    .osra-table-scroll::-webkit-scrollbar-corner {
+        background:
+            #f1f5f9;
+    }   
+
+/* =========================================================
+   二、桌機版矩陣分頁標籤 Scrollbar
+
+   - 維持細版 8px
+   - 顏色維持目前系統樣式
+   - 移除左右兩端 Scrollbar Button / 小三角
+   - 手機不受影響
+========================================================= */
+
+/*
+ * Firefox：
+ * 維持 thin。
+ */
+#sheet-tabs-container {
+    scrollbar-width:
+        thin;
+
+    scrollbar-color:
+        #cbd5e1
+        #f1f5f9;
+}
+
+
+/* 分頁標籤維持 8px 細版 */
+#sheet-tabs-container::-webkit-scrollbar {
+    width:
+        8px !important;
+
+    height:
+        8px !important;
+}
+
+
+/* Track */
+#sheet-tabs-container::-webkit-scrollbar-track {
+    background:
+        #f1f5f9;
+}
+
+
+/* Thumb */
+#sheet-tabs-container::-webkit-scrollbar-thumb {
+    background:
+        #cbd5e1;
+
+    border-radius:
+        4px;
+}
+
+
+/* Hover */
+#sheet-tabs-container::-webkit-scrollbar-thumb:hover {
+    background:
+        #94a3b8;
+}
+
+
+/* =====================================================
+   移除 Scrollbar 左右兩端按鈕 / 小三角
+   ===================================================== */
+
+#sheet-tabs-container::-webkit-scrollbar-button,
+#sheet-tabs-container::-webkit-scrollbar-button:single-button,
+#sheet-tabs-container::-webkit-scrollbar-button:horizontal:decrement,
+#sheet-tabs-container::-webkit-scrollbar-button:horizontal:increment,
+#sheet-tabs-container::-webkit-scrollbar-button:vertical:decrement,
+#sheet-tabs-container::-webkit-scrollbar-button:vertical:increment {
+    -webkit-appearance:
+        none !important;
+
+    appearance:
+        none !important;
+
+    display:
+        none !important;
+
+    width:
+        0 !important;
+
+    height:
+        0 !important;
+
+    min-width:
+        0 !important;
+
+    min-height:
+        0 !important;
+
+    background:
+        transparent !important;
+
+    border:
+        0 !important;
+}
+
+    /* =====================================================
+       二、整個系統最外圍
+       完全恢復瀏覽器 / 作業系統原生 Scrollbar
+       ===================================================== */
+
+    html,
+    body {
+        scrollbar-width:
+            auto;
+
+        scrollbar-color:
+            auto;
+    }
+}
+
 /*
  * 下方關閉按鈕固定，不跟著圖卡清單捲動。
  */
