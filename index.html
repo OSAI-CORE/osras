@@ -7203,9 +7203,27 @@ aria-label="儲存記錄"
                     </div>
 
                     <!-- 分頁標籤容器 (Admin mode controlled) -->
-                    <div class="bg-slate-100 flex items-end px-2 pt-2 border-b border-slate-300 overflow-x-auto select-none min-h-[40px]" id="sheet-tabs-container">
-                        <!-- JS 動態渲染分頁 -->
-                    </div>
+<div
+    class="bg-slate-100 flex items-end px-2 pt-2 border-b border-slate-300 overflow-x-auto select-none min-h-[40px]"
+    id="sheet-tabs-container"
+>
+    <!--
+        Viewer 第一幀預設分頁。
+
+        後續仍由 renderTabs() 正式接管，
+        這裡只避免初始化前短暫空白。
+    -->
+    <div
+        class="flex items-center gap-2 px-4 py-2
+               border-t border-l border-r
+               rounded-t-lg text-xs
+               transition-colors mb-[-1px]
+               bg-white border-slate-300 border-b-white
+               text-indigo-700 font-bold z-10 shadow-sm"
+    >
+        <span>預設評估表</span>
+    </div>
+</div>
 
                     <!-- 表格滾動容器 -->
 <div class="osra-table-scroll border-t border-slate-200">
@@ -7215,32 +7233,38 @@ aria-label="儲存記錄"
                                 <tr class="text-slate-800 text-xs">
                                     <th colspan="2" class="sticky-left-band py-2 px-3 font-bold text-center bg-slate-100">公司名稱</th>
                                     <th colspan="3" class="py-2 px-3 font-normal bg-white">
-                                        <input
+<input
     type="text"
     id="meta-company-name"
     onchange="updateSheetMetaState()"
     class="w-full bg-transparent outline-none placeholder-slate-400"
-    placeholder="輸入公司名稱"
+    data-orig-placeholder="輸入公司名稱"
+    placeholder=""
+    readonly
 >
                                     </th>
                                     <th colspan="2" class="py-2 px-3 font-bold text-center bg-slate-100">部門名稱</th>
                                     <th colspan="3" class="py-2 px-3 font-normal bg-white">
-                                        <input
+<input
     type="text"
     id="meta-department-name"
     onchange="updateSheetMetaState()"
     class="w-full bg-transparent outline-none placeholder-slate-400"
-    placeholder="輸入部門名稱"
+    data-orig-placeholder="輸入部門名稱"
+    placeholder=""
+    readonly
 >
                                     </th>
                                     <th colspan="2" class="py-2 px-3 font-bold text-center bg-slate-100">評估人員</th>
                                     <th colspan="3" class="py-2 px-3 font-normal bg-white">
-                                        <input
+<input
     type="text"
     id="meta-evaluator"
     onchange="updateSheetMetaState()"
     class="w-full bg-transparent outline-none placeholder-slate-400"
-    placeholder="輸入姓名"
+    data-orig-placeholder="輸入姓名"
+    placeholder=""
+    readonly
 >
                                     </th>
                                     <th colspan="2" class="py-2 px-3 font-bold text-center bg-slate-100">評估日期</th>
@@ -7305,32 +7329,38 @@ aria-label="儲存記錄"
                                 <tr class="text-slate-800 text-xs">
                                     <td colspan="2" class="sticky-left-band py-2 px-3 font-bold text-center bg-slate-100">填表人</td>
                                     <td colspan="4" class="py-2 px-3 font-normal bg-white">
-                                        <input
+<input
     type="text"
     id="meta-prepared-by"
     onchange="updateSheetMetaState()"
     class="w-full bg-transparent outline-none placeholder-slate-400"
-    placeholder="填表人簽章"
+    data-orig-placeholder="填表人簽章"
+    placeholder=""
+    readonly
 >
                                     </td>
                                     <td colspan="2" class="py-2 px-3 font-bold text-center bg-slate-100">單位主管</td>
                                     <td colspan="5" class="py-2 px-3 font-normal bg-white">
-                                        <input
+<input
     type="text"
     id="meta-supervisor"
     onchange="updateSheetMetaState()"
     class="w-full bg-transparent outline-none placeholder-slate-400"
-    placeholder="主管簽章"
+    data-orig-placeholder="主管簽章"
+    placeholder=""
+    readonly
 >
                                     </td>
                                     <td colspan="2" class="py-2 px-3 font-bold text-center bg-slate-100">編號</td>
                                     <td colspan="5" class="py-2 px-3 font-normal bg-white">
-                                        <input
+<input
     type="text"
     id="meta-document-no"
     onchange="updateSheetMetaState()"
     class="w-full bg-transparent outline-none placeholder-slate-400"
-    placeholder="例如: OSRA-2026-001"
+    data-orig-placeholder="例如: OSRA-2026-001"
+    placeholder=""
+    readonly
 >
                                     </td>
                                 </tr>
@@ -7462,7 +7492,9 @@ aria-label="儲存記錄"
 <button
     id="aiAuditBtn"
     onclick="runAiAudit()"
-class="group relative overflow-visible
+    aria-disabled="true"
+class="ai-audit-locked
+       group relative overflow-visible
        bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500
        hover:from-indigo-500 hover:via-blue-500 hover:to-cyan-400
        text-white text-xs font-semibold
@@ -7513,7 +7545,9 @@ class="group relative overflow-visible
                         <div class="text-center py-8 text-slate-400">
                             <i class="fa-solid fa-shield-virus text-4xl mb-2 text-slate-300"></i>
                             <p class="text-xs">尚未執行風險稽核分析</p>
-                            <p class="text-[10px] text-slate-400 mt-1">請點選右上角「智慧稽核分析」</p>
+                            <p class="text-[10px] text-slate-400 mt-1">
+    請點選右上角「智慧稽核分析」啟動完整分析
+</p>
                         </div>
                     </div>
                 </div>
