@@ -713,6 +713,56 @@ body:not(.edit-mode) table.osra-table textarea:focus {
         #f1f5f9;
 }
 
+
+/* =========================================================
+   雲端工作資料｜選取圖卡背景顏色
+   僅調整選取後的底色，不影響其他圖卡
+========================================================= */
+
+
+/* 雲端工作資料：選取圖卡底色 */
+#cloud-workspace-list > [data-workspace-id].bg-sky-100 {
+    background-color: #EEE9E1;
+}
+
+
+/* 雲端工作資料：所有圖卡的最近更新時間統一文字顏色 */
+#cloud-workspace-list > [data-workspace-id] p.text-slate-400 {
+    color: #475569;
+}
+
+
+/* 管理雲端預覽：Preview ID 文字清晰度 */
+#cloud-preview-manage-list .font-mono.text-slate-400 {
+    color: #64748B;
+}
+
+/* 管理雲端預覽：開啟次數與有效期限標題 */
+#cloud-preview-manage-list .grid.grid-cols-2 > .bg-slate-50 > .text-slate-400 {
+    color: #64748B;
+}
+
+/* 雲端工作資料：選取圖卡分隔線顏色 */
+#cloud-workspace-list > [data-workspace-id].bg-sky-100 > .border-t {
+    border-top-color: #D6D3D1;
+}
+
+
+/* 雲端中心：管理者權限標籤 */
+#cloud-preview-role-label.bg-amber-100 {
+    background-color: #F5E8E3;
+    color: #8A4B3F;
+    box-shadow: inset 0 0 0 1px #E8CEC5;
+}
+
+/* 雲端中心：使用者權限標籤 */
+#cloud-preview-role-label.bg-emerald-100 {
+    background-color: #E4F0EB;
+    color: #2F6951;
+    box-shadow: inset 0 0 0 1px #C9DED3;
+}
+
+
 /*
  * Chrome、Edge、Safari：
  * 比照績效管理系統捲動條。
@@ -2912,6 +2962,38 @@ body.admin-mode
     border-color:
         #0d9488;
 }
+
+
+/* =========================================================
+   智慧功能設定｜香檳金啟用狀態
+
+   1. 僅調整三個狀態小框啟用時的顏色
+   2. 矩陣表設定按鈕在正式套用後變色
+   3. 不修改圖卡底色及切換開關顏色
+========================================================= */
+
+/* 三個智慧功能狀態小框：啟用金色 */
+.smart-feature-status-active {
+    background-color: #F7E8C4;
+    color: #79501D;
+
+    box-shadow:
+        inset 0 0 0 1px #EAD1A5;
+}
+
+/* 矩陣表智慧功能設定按鈕：啟用金色 */
+.matrix-smart-settings-btn.is-ai-active {
+    background: #A66A20;
+    border-color: #A66A20;
+    color: #FFFFFF;
+}
+
+/* 金色按鈕滑鼠移入 */
+.matrix-smart-settings-btn.is-ai-active:hover {
+    background: #8B571C;
+    border-color: #8B571C;
+}
+
 
 /* =========================================================
    智慧功能設定 Toggle
@@ -7269,10 +7351,12 @@ aria-label="儲存記錄"
                                     </th>
                                     <th colspan="2" class="py-2 px-3 font-bold text-center bg-slate-100">評估日期</th>
                                     <th colspan="3" class="py-2 px-3 font-normal bg-white">
-                                        <input
+<input
     type="date"
     id="meta-assessment-date"
     onchange="updateSheetMetaState()"
+    onclick="openRiskAssessmentDatePicker(this)"
+    data-tooltip="選擇評估日期"
     class="w-full bg-transparent outline-none text-slate-700"
 >
                                     </th>
@@ -8349,8 +8433,9 @@ class="ai-audit-locked
 
                 <div class="grid grid-cols-2 gap-3">
 
-                    <!-- 正式資料 -->
-                    <button onclick="exportFormalDataFromModal()"
+<!-- 正式資料 -->
+<button id="formal-json-export-btn"
+        onclick="exportFormalDataFromModal()"
                             class="min-h-[124px] rounded-xl border border-indigo-100 bg-indigo-50/60 hover:bg-indigo-50 hover:border-indigo-200 transition p-3 flex flex-col items-center justify-center text-center">
 
                         <div class="w-9 h-9 rounded-full bg-white border border-indigo-100 flex items-center justify-center mb-2 shadow-sm">
@@ -8981,7 +9066,7 @@ class="ai-audit-locked
                  flex items-center justify-center
                  shrink-0">
 
-<i class="fas fa-users text-indigo-600"></i>
+<i class="fas fa-user text-indigo-600"></i>
 
     </span>
 
@@ -17589,6 +17674,32 @@ function updateSmartFeatureUI() {
 
 
     /*
+     * 智慧功能設定按鈕：
+     * 任一項智慧功能正式套用啟用後，
+     * 按鈕顯示香檳金色。
+     * 全部關閉時恢復原本墨綠色。
+     */
+
+    const smartSettingsButton =
+        document.getElementById(
+            "smart-feature-settings-btn"
+        );
+
+    if (smartSettingsButton) {
+
+        const hasEnabledFeature =
+            useAiAutoComplete ||
+            useAiControlOptimize ||
+            useAiAudit;
+
+        smartSettingsButton.classList.toggle(
+            "is-ai-active",
+            hasEnabledFeature
+        );
+    }
+
+
+    /*
      * -------------------------------------------------
      * 1. 單筆智慧自動完成
      * -------------------------------------------------
@@ -18552,6 +18663,55 @@ let cloudPreviewExpiryTimer = null;
 let activeCloudWorkspaceId = '';
 let activeCloudWorkspaceName = '';
 let activeCloudWorkspaceRevision = 0;
+
+/*
+ * true：僅選擇既有 Workspace 作為儲存目標。
+ * 不代表已經載入該 Workspace 的資料。
+ */
+let activeCloudWorkspaceTargetOnly = false;
+
+/* =========================================================
+   OSRAS｜雲端操作互斥與附件讀取狀態
+
+   只限制互相衝突的雲端作業。
+   不修改任何後端 API 或資料結構。
+========================================================= */
+
+let riskCloudOperationInProgress = '';
+let pendingRiskAttachmentReads = 0;
+let pendingRiskJsonImports = 0;
+
+function beginRiskCloudOperation(name) {
+
+    if (riskCloudOperationInProgress) {
+        showToast(
+            '雲端作業進行中，請完成後再操作。',
+            'warning'
+        );
+        return false;
+    }
+
+if (
+    pendingRiskAttachmentReads > 0 ||
+    pendingRiskJsonImports > 0
+) {
+    showToast(
+        '附件或 JSON 正在讀取，請完成後再操作。',
+        'warning'
+    );
+    return false;
+}
+
+    riskCloudOperationInProgress = name;
+    return true;
+}
+
+function finishRiskCloudOperation(name) {
+
+    if (riskCloudOperationInProgress === name) {
+        riskCloudOperationInProgress = '';
+    }
+}
 
 
 /* =========================================================
@@ -20591,26 +20751,24 @@ function setCloudPreviewViewerBusy(
 
     if (busy) {
 
-        button.classList.add(
-            'opacity-60',
-            'cursor-wait'
-        );
+button.classList.add(
+    'cursor-wait'
+);
 
-        button.innerHTML = `
-            <i class="fas fa-cloud-arrow-down"
-               aria-hidden="true"></i>
+button.innerHTML = `
+    <i class="fas fa-spinner fa-spin text-[13px] leading-none"
+       aria-hidden="true"></i>
 
-            <span>
-                正在載入...
-            </span>
-        `;
+    <span>
+        載入中
+    </span>
+`;
 
     } else {
 
-        button.classList.remove(
-            'opacity-60',
-            'cursor-wait'
-        );
+button.classList.remove(
+    'cursor-wait'
+);
 
         button.innerHTML = `
             <i class="fas fa-cloud-arrow-down"
@@ -21189,28 +21347,28 @@ const configs = {
         color: 'text-sky-300'
     },
 
-    manage: {
-        icon: 'fa-sliders',
+manage: {
+    icon: 'fa-sliders',
 
-        title:
-            getCurrentRole() === 'admin'
-                ? '管理雲端預覽'
-                : '我的發布預覽',
+    title:
+        getCurrentRole() === 'admin'
+            ? '管理雲端預覽'
+            : '我的雲端預覽',
 
-        subtitle:
-            getCurrentRole() === 'admin'
-                ? 'MANAGE PREVIEWS'
-                : 'MY PREVIEWS',
+    subtitle:
+        getCurrentRole() === 'admin'
+            ? 'MANAGE PREVIEWS'
+            : 'MY CLOUD PREVIEWS',
 
-        color: 'text-indigo-300'
-    },
+    color: 'text-indigo-300'
+},
 
-    accounts: {
-        icon: 'fa-users',
-        title: '管理發布帳號',
-        subtitle: 'PUBLISHER ACCOUNTS',
-        color: 'text-violet-300'
-    }
+accounts: {
+    icon: 'fa-user',
+    title: '管理發布帳號',
+    subtitle: 'PUBLISHER ACCOUNTS',
+    color: 'text-violet-300'
+}
 
 };
 
@@ -21708,16 +21866,15 @@ roleIcon.className =
         }
 
 
-        if (manageCardTitle) {
-            manageCardTitle.textContent =
-                '我的發布預覽';
-        }
+if (manageCardTitle) {
+    manageCardTitle.textContent =
+        '我的雲端預覽';
+}
 
-
-        if (manageCardSubtitle) {
-            manageCardSubtitle.textContent =
-                'MY PREVIEWS';
-        }
+if (manageCardSubtitle) {
+    manageCardSubtitle.textContent =
+        'MY CLOUD PREVIEWS';
+}
 
 if (accountsCard) {
     accountsCard.classList.add(
@@ -22214,26 +22371,6 @@ async function openCloudPreviewPublishView() {
         return;
     }
 
-
-    /*
-     * 風險評估資料若仍有尚未儲存的修改，
-     * 先要求使用者完成儲存。
-     *
-     * 避免畫面上的修改與正式發布內容不同步。
-     */
-    if (
-        hasUnsavedRiskChanges()
-    ) {
-
-        showToast(
-            '請先儲存目前的風險評估修改後再發布。',
-            'error'
-        );
-
-        return;
-    }
-
-
     /*
      * 第二層：
      * 先完成 Cloud Publisher 驗證，
@@ -22657,6 +22794,315 @@ function isRiskAssessmentLocalCloudAttachment(
     );
 }
 
+/*
+ * 計算正式 JSON 需要重新下載的
+ * 雲端附件數量。
+ *
+ * 已有完整 DataURL 的本機附件
+ * 不需要重新下載。
+ */
+function countRiskAssessmentCloudFilesForFormalBackup(
+    value
+) {
+    const keys = new Set();
+
+    function walk(item) {
+
+        if (
+            !item ||
+            typeof item !== 'object'
+        ) {
+            return;
+        }
+
+        if (Array.isArray(item)) {
+            item.forEach(walk);
+            return;
+        }
+
+        if (
+            isRiskAssessmentLocalCloudAttachment(item)
+        ) {
+            return;
+        }
+
+        if (item.cloud_file_id) {
+
+            keys.add(
+                String(item.cloud_workspace_id || '') +
+                ':' +
+                String(item.cloud_file_id)
+            );
+
+            return;
+        }
+
+        Object.values(item).forEach(walk);
+    }
+
+    walk(value);
+
+    return keys.size;
+}
+
+/* =========================================================
+   OSRAS｜雲端附件完整 DataURL 封裝
+
+   1. 本機 DataURL 直接保留
+   2. 雲端附件重新取得有效 Signed URL
+   3. 下載完整附件並轉成 DataURL
+   4. 同一來源附件只下載一次
+   5. 來源不明或讀取失敗時停止作業
+
+   只使用既有 cloud-workspace API。
+========================================================= */
+
+async function materializeRiskAssessmentCloudAttachments(
+    value,
+    cache = new Map(),
+    progress = null
+) {
+
+    if (
+        !value ||
+        typeof value !== 'object'
+    ) {
+        return value;
+    }
+
+    if (Array.isArray(value)) {
+
+        const output = [];
+
+        for (const item of value) {
+            output.push(
+await materializeRiskAssessmentCloudAttachments(
+    item,
+    cache,
+    progress
+)
+            );
+        }
+
+        return output;
+    }
+
+    /*
+     * 本機附件已經包含完整 DataURL。
+     */
+    if (isRiskAssessmentLocalCloudAttachment(value)) {
+        return value;
+    }
+
+    /*
+     * 已登記的 Cloud Workspace 附件。
+     */
+    if (value.cloud_file_id) {
+
+        const workspaceId =
+            String(
+                value.cloud_workspace_id || ''
+            ).trim();
+
+        const fileId =
+            String(
+                value.cloud_file_id
+            ).trim();
+
+        if (!workspaceId || !fileId) {
+            throw new Error(
+                'CLOUD_ATTACHMENT_SOURCE_MISSING'
+            );
+        }
+
+const key =
+    workspaceId + ':' + fileId;
+
+const firstRead =
+    !cache.has(key);
+
+/*
+ * 用 Promise 快取：
+         * 同一來源檔案只需重新取得一次。
+         */
+        if (!cache.has(key)) {
+
+            cache.set(key, (async () => {
+
+                const result =
+                    await cloudWorkspaceRequest({
+                        action: 'signed-read-batch',
+                        system_type: OSH_CLOUD_SYSTEM_TYPE,
+                        workspace_id: workspaceId,
+                        file_ids: [fileId]
+                    });
+
+                const info =
+                    Array.isArray(result?.files)
+                        ? result.files.find(
+                            f => String(f.id) === fileId
+                        )
+                        : null;
+
+                if (!info?.signed_url) {
+                    throw new Error(
+                        'CLOUD_ATTACHMENT_READ_FAILED'
+                    );
+                }
+
+                const response =
+                    await fetch(
+                        info.signed_url,
+                        {
+                            method: 'GET',
+                            cache: 'no-store'
+                        }
+                    );
+
+                if (!response.ok) {
+                    throw new Error(
+                        'CLOUD_ATTACHMENT_DOWNLOAD_FAILED'
+                    );
+                }
+
+                const downloaded =
+                    await response.blob();
+
+                if (
+                    !downloaded.size ||
+                    downloaded.size > 5 * 1024 * 1024
+                ) {
+                    throw new Error(
+                        'CLOUD_ATTACHMENT_SIZE_INVALID'
+                    );
+                }
+
+                if (
+                    Number(value.size || 0) > 0 &&
+                    downloaded.size !== Number(value.size)
+                ) {
+                    throw new Error(
+                        'CLOUD_ATTACHMENT_SIZE_MISMATCH'
+                    );
+                }
+
+                const mime =
+                    getRiskAssessmentCloudAttachmentMimeType(
+                        value
+                    );
+
+                const typedBlob =
+                    new Blob(
+                        [downloaded],
+                        { type: mime }
+                    );
+
+                return await new Promise(
+                    (resolve, reject) => {
+
+                        const reader =
+                            new FileReader();
+
+                        reader.onload = () =>
+                            resolve(
+                                String(reader.result || '')
+                            );
+
+                        reader.onerror = () =>
+                            reject(
+                                new Error(
+                                    'CLOUD_ATTACHMENT_READ_FAILED'
+                                )
+                            );
+
+                        reader.onabort =
+                            reader.onerror;
+
+                        reader.readAsDataURL(
+                            typedBlob
+                        );
+                    }
+                );
+
+            })());
+        }
+
+        const dataURL =
+            await cache.get(key);
+
+        if (!dataURL.startsWith('data:')) {
+            throw new Error(
+                'CLOUD_ATTACHMENT_READ_FAILED'
+            );
+        }
+
+/*
+ * 雲端附件成功下載及轉換後，
+ * 才更新正式備份進度。
+ *
+ * 已快取的相同附件不重複計數。
+ */
+if (firstRead && progress) {
+
+    progress.done += 1;
+
+    progress.onChange(
+        progress.done,
+        progress.total
+    );
+}
+
+        /*
+         * 只轉換新快照，不修改原工作資料。
+         */
+        const {
+            cloud_file_id,
+            cloud_workspace_id,
+            signed_url,
+            url,
+            is_cloud_file,
+            data,
+            ...metadata
+        } = value;
+
+        return {
+            ...metadata,
+
+            dataURL,
+
+            name:
+                value.name || '附件',
+
+            type:
+                getRiskAssessmentCloudAttachmentMimeType(
+                    value
+                ),
+
+            size:
+                Number(value.size) || 0
+        };
+    }
+
+    /*
+     * 保留原本 workbook、
+     * sheets、data 等結構。
+     */
+    const output = {};
+
+    for (
+        const [key, child]
+        of Object.entries(value)
+    ) {
+        output[key] =
+await materializeRiskAssessmentCloudAttachments(
+    child,
+    cache,
+    progress
+)
+    }
+
+    return output;
+}
 
 function collectUniqueRiskAssessmentCloudAttachments(
     value,
@@ -22847,20 +23293,39 @@ function buildRiskAssessmentWorkspaceSavePayload(
         );
     }
 
+if (
+    value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    value.cloud_file_id
+) {
+
+    /*
+     * 只有確認屬於目前 Workspace 的
+     * 附件 ID，才允許直接保留。
+     *
+     * 其他 Workspace 的附件必須經過
+     * 後續的正式轉移及去重程序。
+     */
     if (
-        value &&
-        typeof value === 'object' &&
-        !Array.isArray(value) &&
-        value.cloud_file_id
+        !value.cloud_workspace_id ||
+        String(value.cloud_workspace_id) !==
+            String(activeCloudWorkspaceId)
     ) {
-        const {
-            dataURL,
-            data,
-            url,
-            signed_url,
-            is_cloud_file,
-            ...metadata
-        } = value;
+        throw new Error(
+            'CLOUD_ATTACHMENT_SOURCE_MISSING'
+        );
+    }
+
+    const {
+        dataURL,
+        data,
+        url,
+        signed_url,
+        is_cloud_file,
+        cloud_workspace_id,
+        ...metadata
+    } = value;
 
         return {
             ...metadata,
@@ -22913,7 +23378,8 @@ function buildRiskAssessmentWorkspaceSavePayload(
 
 function hydrateRiskAssessmentCloudPayload(
     value,
-    cloudFileMap
+    cloudFileMap,
+    sourceWorkspaceId = ''
 ) {
     if (
         value &&
@@ -22980,6 +23446,13 @@ function hydrateRiskAssessmentCloudPayload(
             cloud_file_id:
                 cloudFileId,
 
+            ...(sourceWorkspaceId
+                ? {
+                    cloud_workspace_id:
+                        String(sourceWorkspaceId)
+                }
+                : {}),
+
             is_cloud_file:
                 true
         };
@@ -22992,10 +23465,11 @@ function hydrateRiskAssessmentCloudPayload(
     ) {
         return value.map(
             item =>
-                hydrateRiskAssessmentCloudPayload(
-                    item,
-                    cloudFileMap
-                )
+hydrateRiskAssessmentCloudPayload(
+    item,
+    cloudFileMap,
+    sourceWorkspaceId
+)
         );
     }
 
@@ -23010,10 +23484,11 @@ function hydrateRiskAssessmentCloudPayload(
         ).forEach(
             ([key, child]) => {
                 output[key] =
-                    hydrateRiskAssessmentCloudPayload(
-                        child,
-                        cloudFileMap
-                    );
+hydrateRiskAssessmentCloudPayload(
+    child,
+    cloudFileMap,
+    sourceWorkspaceId
+)
             }
         );
 
@@ -23139,6 +23614,8 @@ function updateActiveCloudWorkspaceUI() {
 }
 
 function clearActiveCloudWorkspace() {
+
+    activeCloudWorkspaceTargetOnly = false;
 
     activeCloudWorkspaceId =
         '';
@@ -23458,8 +23935,12 @@ function renderCloudPreviewManageList(
     }
 
 
-    const showAdminActions =
-        getCurrentRole() === 'admin';
+const showAdminActions =
+    getCurrentRole() === 'admin';
+
+const showPreviewManageActions =
+    showAdminActions ||
+    getCurrentRole() === 'editor';
 
 
     if (
@@ -23687,7 +24168,7 @@ hover:border-indigo-200
     <!-- 右側：管理操作 -->
     <div class="
         shrink-0
-        ${showAdminActions ? 'flex' : 'hidden'}
+        ${showPreviewManageActions ? 'flex' : 'hidden'}
         items-center
         gap-1
     ">
@@ -24704,20 +25185,24 @@ function setCloudPreviewEditStatus(
 function openCloudPreviewEditModalFromButton(
     button
 ) {
-    /*
-     * 介面層僅允許管理者。
-     */
-    if (
-        getCurrentRole() !==
-        'admin'
-    ) {
-        showToast(
-            '僅管理者可編輯雲端預覽。',
-            'error'
-        );
+/*
+ * 管理者可依權限管理預覽。
+ * 使用者僅可管理本人發布的預覽。
+ * 實際所有權由 Cloud 後端驗證。
+ */
+const role = getCurrentRole();
 
-        return;
-    }
+if (
+    role !== 'admin' &&
+    role !== 'editor'
+) {
+    showToast(
+        '目前權限無法編輯雲端預覽。',
+        'error'
+    );
+
+    return;
+}
 
 
     const previewId =
@@ -24933,17 +25418,19 @@ function closeCloudPreviewEditModalOutside(
 
 async function submitCloudPreviewEdit() {
 
-    if (
-        getCurrentRole() !==
-        'admin'
-    ) {
-        showToast(
-            '僅管理者可編輯雲端預覽。',
-            'error'
-        );
+const role = getCurrentRole();
 
-        return;
-    }
+if (
+    role !== 'admin' &&
+    role !== 'editor'
+) {
+    showToast(
+        '目前權限無法編輯雲端預覽。',
+        'error'
+    );
+
+    return;
+}
 
 
     const modal =
@@ -25345,21 +25832,25 @@ async function toggleCloudPreviewEnabledFromButton(
     button
 ) {
 
-    /*
-     * 介面層只允許管理者操作。
-     */
-    if (
-        getCurrentRole() !==
-        'admin'
-    ) {
+/*
+ * 管理者與使用者均可操作。
+ * 使用者僅限本人發布的預覽。
+ * 後端仍須驗證 Publisher 所有權。
+ */
+const role = getCurrentRole();
 
-        showToast(
-            '僅管理者可變更雲端預覽狀態。',
-            'error'
-        );
+if (
+    role !== 'admin' &&
+    role !== 'editor'
+) {
 
-        return;
-    }
+    showToast(
+        '目前權限無法變更雲端預覽狀態。',
+        'error'
+    );
+
+    return;
+}
 
 
     const previewId =
@@ -25596,21 +26087,25 @@ async function deleteCloudPreviewFromButton(
     button
 ) {
 
-    /*
-     * 介面層只允許管理者操作。
-     */
-    if (
-        getCurrentRole() !==
-        'admin'
-    ) {
+/*
+ * 管理者與使用者均可操作。
+ * 使用者僅能刪除本人發布的預覽。
+ * 真正的刪除權限由 Cloud 後端判斷。
+ */
+const role = getCurrentRole();
 
-        showToast(
-            '僅管理者可刪除雲端預覽。',
-            'error'
-        );
+if (
+    role !== 'admin' &&
+    role !== 'editor'
+) {
 
-        return;
-    }
+    showToast(
+        '目前權限無法刪除雲端預覽。',
+        'error'
+    );
+
+    return;
+}
 
 
     const previewId =
@@ -28073,21 +28568,14 @@ button.className =
      shadow-sm`;
 
 
-        button.innerHTML = `
-            <span class="
-                w-3.5 h-3.5
-                shrink-0
-                rounded-full
-                border-2
-                border-white/40
-                border-t-white
-                animate-spin
-            "></span>
+button.innerHTML = `
+    <i class="fas fa-spinner fa-spin text-[13px] leading-none"
+       aria-hidden="true"></i>
 
-            <span>
-                ${text || '正在建立...'}
-            </span>
-        `;
+    <span>
+        ${text || '正在建立...'}
+    </span>
+`;
 
     } else {
 
@@ -29054,6 +29542,112 @@ if (
     }
 }
 
+/*
+ * 只選擇既有 Workspace 作為儲存目標。
+ * 不載入、不覆蓋目前 JSON 或 workbook。
+ */
+function selectRiskCloudWorkspaceSaveTarget(card, event) {
+
+    /* 圖卡內原本的功能按鈕維持原樣。 */
+    if (event?.target?.closest('button')) {
+        return;
+    }
+
+    if (
+        riskCloudOperationInProgress ||
+        pendingRiskAttachmentReads > 0 ||
+        pendingRiskJsonImports > 0
+    ) {
+        setCloudWorkspaceStatus(
+            '請先完成目前的資料操作。',
+            'warning'
+        );
+        return;
+    }
+
+    const role = getCurrentRole();
+
+    if (
+        (role !== 'admin' && role !== 'editor') ||
+        isPreviewDataMode ||
+        card?.dataset?.workspaceEnabled !== 'true'
+    ) {
+        return;
+    }
+
+    const id =
+        String(card.dataset.workspaceId || '').trim();
+
+    const revision =
+        Number(card.dataset.workspaceRevision);
+
+    if (
+        !id ||
+        !Number.isInteger(revision) ||
+        revision < 1
+    ) {
+        setCloudWorkspaceStatus(
+            '儲存目標或版本資訊無效，請更新清單。',
+            'error'
+        );
+        return;
+    }
+
+    if (
+        id === activeCloudWorkspaceId &&
+        !activeCloudWorkspaceTargetOnly
+    ) {
+        setCloudWorkspaceStatus(
+            '此工作資料已是目前的儲存目標。',
+            'success'
+        );
+        return;
+    }
+
+    /*
+     * 只記住儲存目標。
+     * 不呼叫 Workspace Load，
+     * 不修改目前的 workbook。
+     */
+    activeCloudWorkspaceId = id;
+
+    activeCloudWorkspaceName =
+        card.dataset.workspaceName ||
+        '雲端工作資料';
+
+    activeCloudWorkspaceRevision = revision;
+
+    activeCloudWorkspaceTargetOnly = true;
+
+    updateActiveCloudWorkspaceUI();
+
+    /*
+     * 直接更新圖卡選取顏色，
+     * 不重新整理資料清單。
+     */
+    document.querySelectorAll(
+        '#cloud-workspace-list > [data-workspace-id]'
+    ).forEach(item => {
+
+        const selected = item === card;
+
+        item.classList.toggle(
+            'bg-sky-100',
+            selected
+        );
+
+        item.classList.toggle(
+            'bg-sky-50',
+            !selected
+        );
+    });
+
+    setCloudWorkspaceStatus(
+        `已選擇「${activeCloudWorkspaceName}」作為儲存目標。`,
+        'success'
+    );
+}
+
 function renderCloudWorkspaceList(
     workspaces
 ) {
@@ -29208,6 +29802,7 @@ const isSameWorkspace =
 
 const isCurrentWorkspace =
     isSameWorkspace &&
+    !activeCloudWorkspaceTargetOnly &&
     Number(
         activeCloudWorkspaceRevision
     ) ===
@@ -29253,10 +29848,16 @@ const hasNewerWorkspaceRevision =
 
 
 return `
-    <div class="
+    <div
+        data-workspace-id="${id}"
+        data-workspace-name="${name}"
+        data-workspace-revision="${revision}"
+        data-workspace-enabled="${enabled ? 'true' : 'false'}"
+        onclick="selectRiskCloudWorkspaceSaveTarget(this, event)"
+        class="
         rounded-xl
         border border-sky-100
-        bg-sky-50
+        ${isSameWorkspace && activeCloudWorkspaceTargetOnly ? 'bg-sky-100' : 'bg-sky-50'}
         px-3.5 py-3
         shadow-sm
     ">
@@ -29506,7 +30107,7 @@ ${
             ? `
                 <button type="button"
                         data-workspace-id="${id}"
-                        onclick="loadCloudWorkspaceIntoSystem('${id}')"
+                        onclick="loadCloudWorkspaceIntoSystem('${id}', this)"
                         class="
                             w-full h-8
                             rounded-lg
@@ -29592,7 +30193,7 @@ ${
             : `
                 <button type="button"
                         data-workspace-id="${id}"
-                        onclick="loadCloudWorkspaceIntoSystem('${id}')"
+                        onclick="loadCloudWorkspaceIntoSystem('${id}', this)"
 class="
     w-full h-8
     rounded-lg
@@ -30454,23 +31055,6 @@ async function submitCloudPreviewPublish() {
         return;
     }
 
-
-    /*
-     * 風險評估資料還有未儲存修改時，
-     * 不允許發布。
-     */
-    if (
-        hasUnsavedRiskChanges()
-    ) {
-        setCloudPreviewPublishStatus(
-            '請先儲存目前的風險評估修改後再發布。',
-            'error'
-        );
-
-        return;
-    }
-
-
     const nameInput =
         document.getElementById(
             'cloud-preview-publish-name'
@@ -30591,13 +31175,16 @@ async function submitCloudPreviewPublish() {
     let previewId =
         '';
 
-    let rollbackFailed =
-        false;
+let rollbackFailed =
+    false;
 
+if (!beginRiskCloudOperation('publish')) {
+    return;
+}
 
-    try {
+try {
 
-        setCloudPreviewPublishBusy(
+    setCloudPreviewPublishBusy(
             true
         );
 
@@ -30614,8 +31201,23 @@ async function submitCloudPreviewPublish() {
          * 建立風險評估系統正式 unified-data。
          * =====================================================
          */
-        const sourceData =
-            buildRiskAssessmentExportData();
+/*
+ * 同步目前尚未手動儲存的矩陣內容。
+ */
+await manualSaveRecords(false);
+
+/*
+ * 固定資料快照並完整封裝附件。
+ * 不修改目前正在編輯的 workbook。
+ */
+const sourceData =
+    await materializeRiskAssessmentCloudAttachments(
+        JSON.parse(
+            JSON.stringify(
+                buildRiskAssessmentExportData()
+            )
+        )
+    );
 
 
         /*
@@ -31076,12 +31678,14 @@ async function submitCloudPreviewPublish() {
         );
 
 
-    } finally {
+} finally {
 
-        setCloudPreviewPublishBusy(
-            false
-        );
-    }
+    setCloudPreviewPublishBusy(
+        false
+    );
+
+    finishRiskCloudOperation('publish');
+}
 }
 
 async function uploadCloudWorkspaceAttachment(
@@ -31655,13 +32259,6 @@ setCloudWorkspaceStatus(
     'info'
 );
 
-
-setCloudWorkspaceCreateBusy(
-    true,
-    `上傳 ${percent}%`
-);
-
-
             } catch (error) {
 
                 if (
@@ -31889,10 +32486,14 @@ async function createCloudWorkspaceFromCurrentData() {
         return;
     }
 
-    let workspaceId = '';
-    let creationCompleted = false;
+if (!beginRiskCloudOperation('create')) {
+    return;
+}
 
-    try {
+let workspaceId = '';
+let creationCompleted = false;
+
+try {
         setCloudWorkspaceStatus(
             '正在整理目前風險評估資料...',
             'info'
@@ -31911,8 +32512,20 @@ async function createCloudWorkspaceFromCurrentData() {
          */
         await manualSaveRecords(false);
 
-        const localPayload =
-            buildRiskAssessmentExportData();
+const rawCreateSnapshot =
+    JSON.parse(
+        JSON.stringify(
+            buildRiskAssessmentExportData()
+        )
+    );
+
+const snapshotSerial =
+    riskMatrixChangeSerial;
+
+const localPayload =
+    await materializeRiskAssessmentCloudAttachments(
+        rawCreateSnapshot
+    );
 
         const attachmentMap =
             collectUniqueRiskAssessmentCloudAttachments(
@@ -31928,8 +32541,45 @@ async function createCloudWorkspaceFromCurrentData() {
             new Date()
                 .getFullYear();
 
-        const workspaceName =
-            `${currentYear}年度風險評估工作資料`;
+const baseWorkspaceName =
+    `${currentYear}年度風險評估工作資料`;
+
+/*
+ * 建立前重新取得雲端最新 Workspace 名稱。
+ * 不使用畫面上可能過期的清單。
+ */
+const listResult =
+    await cloudWorkspaceRequest({
+        action: 'list',
+        system_type: OSH_CLOUD_SYSTEM_TYPE
+    });
+
+if (!Array.isArray(listResult?.workspaces)) {
+    throw new Error(
+        'WORKSPACE_LIST_INVALID'
+    );
+}
+
+const existingNames =
+    new Set(
+        listResult.workspaces.map(
+            item =>
+                String(
+                    item?.workspace_name || ''
+                ).trim()
+        )
+    );
+
+let workspaceName = baseWorkspaceName;
+
+for (
+    let suffix = 2;
+    existingNames.has(workspaceName);
+    suffix++
+) {
+    workspaceName =
+        `${baseWorkspaceName}(${suffix})`;
+}
 
         /*
          * 第一步：
@@ -32077,22 +32727,45 @@ async function createCloudWorkspaceFromCurrentData() {
                 workspaceName
             );
 
-        activeCloudWorkspaceRevision =
-            Number(
-                savedWorkspace.revision
-            ) || 1;
+activeCloudWorkspaceRevision =
+    Number(
+        savedWorkspace.revision
+    ) || 1;
 
-        updateActiveCloudWorkspaceUI();
+activeCloudWorkspaceTargetOnly = false;
+
+try {
+
+    preserveTransferredRiskAttachmentsLocally(
+        rawCreateSnapshot,
+        localPayload,
+        activeCloudWorkspaceId
+    );
+
+} catch (rebindError) {
+
+    console.error(
+        '新 Workspace 附件來源同步失敗：',
+        rebindError
+    );
+
+    showToast(
+        '雲端建立成功；請重新載入此 Workspace 後再繼續操作。',
+        'warning'
+    );
+}
+
+updateActiveCloudWorkspaceUI();
 
         /*
          * Cloud 已完成正式儲存，
          * Risk 目前沒有尚未儲存修改。
          */
-        riskMatrixDirty =
-            false;
+riskMatrixDirty =
+    riskMatrixChangeSerial !== snapshotSerial;
 
-        /*
-         * 但 Cloud Workspace Save
+/*
+ * 但 Cloud Workspace Save
          * 不等於正式 JSON 已匯出。
          */
         sessionNeedsExport =
@@ -32208,11 +32881,14 @@ async function createCloudWorkspaceFromCurrentData() {
             await loadCloudWorkspaceList();
         } catch (_) {}
 
-    } finally {
-        setCloudWorkspaceCreateBusy(
-            false
-        );
-    }
+} finally {
+
+    setCloudWorkspaceCreateBusy(
+        false
+    );
+
+    finishRiskCloudOperation('create');
+}
 }
 
 /*
@@ -32445,7 +33121,8 @@ async function loadCloudWorkspaceSignedFiles(
  * =========================================================
  */
 async function loadCloudWorkspaceIntoSystem(
-    workspaceId
+    workspaceId,
+    sourceButton = null
 ) {
     const role =
         getCurrentRole();
@@ -32491,16 +33168,54 @@ async function loadCloudWorkspaceIntoSystem(
             )
             : '';
 
-    if (
-        !confirm(
-            '載入雲端工作資料將覆蓋目前工作區內容，確定要繼續嗎？' +
-            pendingWarning
-        )
-    ) {
-        return;
-    }
+if (
+riskCloudOperationInProgress ||
+pendingRiskAttachmentReads > 0 ||
+pendingRiskJsonImports > 0
+) {
+    showToast(
+        '請先完成目前的雲端操作或附件讀取。',
+        'warning'
+    );
+    return;
+}
 
-    try {
+if (
+    !confirm(
+        '載入雲端工作資料將覆蓋目前工作區內容，確定要繼續嗎？' +
+        pendingWarning
+    )
+) {
+    return;
+}
+
+if (!beginRiskCloudOperation('load')) {
+    return;
+}
+
+/*
+ * 使用者確認後才啟動動畫。
+ * 不修改原有的 Cloud LOAD 請求。
+ */
+const originalLoadButtonHTML =
+    sourceButton?.innerHTML || '';
+
+if (sourceButton) {
+
+    sourceButton.disabled =
+        true;
+
+    sourceButton.innerHTML = `
+        <i class="fas fa-spinner fa-spin text-[13px] leading-none"
+           aria-hidden="true"></i>
+
+        <span>
+            載入中
+        </span>
+    `;
+}
+
+try {
         setCloudWorkspaceStatus(
             '正在讀取雲端工作資料...',
             'info'
@@ -32631,15 +33346,16 @@ async function loadCloudWorkspaceIntoSystem(
          * ↓
          * 放回附件 url。
          */
-        const hydratedPayload =
-            hydrateRiskAssessmentCloudPayload(
-                sourcePayload,
-                cloudFileMap
-            );
+const hydratedPayload =
+    hydrateRiskAssessmentCloudPayload(
+        sourcePayload,
+        cloudFileMap,
+        workspaceId
+    );
 
-        /*
-         * 使用 Risk 自己正式資料載入流程。
-         */
+/*
+ * 使用 Risk 自己正式資料載入流程。
+ */
         applyImportedRiskAssessmentData(
             hydratedPayload
         );
@@ -32682,6 +33398,8 @@ async function loadCloudWorkspaceIntoSystem(
             Number(
                 workspace.revision
             ) || 1;
+
+        activeCloudWorkspaceTargetOnly = false;
 
         updateActiveCloudWorkspaceUI();
 
@@ -32764,13 +33482,473 @@ async function loadCloudWorkspaceIntoSystem(
                 '雲端工作資料中的附件資訊不完整。'
         };
 
-        setCloudWorkspaceStatus(
-            messages[code] ||
-            code ||
-            '載入雲端工作資料失敗。',
-            'error'
+setCloudWorkspaceStatus(
+    messages[code] ||
+    code ||
+    '載入雲端工作資料失敗。',
+    'error'
+);
+
+} finally {
+
+    finishRiskCloudOperation('load');
+
+    if (
+        sourceButton &&
+        sourceButton.isConnected
+    ) {
+        sourceButton.disabled =
+            false;
+
+        sourceButton.innerHTML =
+            originalLoadButtonHTML;
+    }
+}
+}
+
+/*
+ * Cloud Workspace 成功建立或儲存後：
+ * 將跨 Workspace 轉移的附件保留為完整 DataURL。
+ *
+ * 不重新載入工作表。
+ * 不修改後端。
+ * 不影響儲存期間產生的新編輯。
+ */
+function preserveTransferredRiskAttachmentsLocally(
+    originalSnapshot,
+    preparedSnapshot,
+    destinationWorkspaceId
+) {
+    const dataUrlsBySource = new Map();
+
+    const target =
+        String(destinationWorkspaceId || '').trim();
+
+    function collect(original, prepared) {
+
+        if (
+            !original ||
+            typeof original !== 'object' ||
+            !prepared ||
+            typeof prepared !== 'object'
+        ) {
+            return;
+        }
+
+        if (
+            !Array.isArray(original) &&
+            original.cloud_file_id &&
+            original.cloud_workspace_id &&
+            String(original.cloud_workspace_id) !== target
+        ) {
+
+            const dataUrl =
+                getRiskAssessmentCloudAttachmentDataUrl(
+                    prepared
+                );
+
+            if (!dataUrl) {
+                throw new Error(
+                    'WORKSPACE_REBIND_SOURCE_INVALID'
+                );
+            }
+
+            dataUrlsBySource.set(
+                `${original.cloud_workspace_id}:${original.cloud_file_id}`,
+                dataUrl
+            );
+
+            return;
+        }
+
+        if (
+            Array.isArray(original) &&
+            Array.isArray(prepared)
+        ) {
+
+            original.forEach(
+                (item, i) =>
+                    collect(item, prepared[i])
+            );
+
+        } else if (
+            !Array.isArray(original) &&
+            !Array.isArray(prepared)
+        ) {
+
+            for (const key of Object.keys(original)) {
+
+                if (
+                    Object.prototype.hasOwnProperty.call(
+                        prepared,
+                        key
+                    )
+                ) {
+                    collect(
+                        original[key],
+                        prepared[key]
+                    );
+                }
+            }
+        }
+    }
+
+    collect(
+        originalSnapshot,
+        preparedSnapshot
+    );
+
+    if (dataUrlsBySource.size === 0) {
+        return;
+    }
+
+    function apply(current) {
+
+        if (
+            !current ||
+            typeof current !== 'object'
+        ) {
+            return;
+        }
+
+        if (
+            !Array.isArray(current) &&
+            current.cloud_file_id &&
+            current.cloud_workspace_id
+        ) {
+
+            const key =
+                `${current.cloud_workspace_id}:${current.cloud_file_id}`;
+
+            const dataUrl =
+                dataUrlsBySource.get(key);
+
+            if (dataUrl) {
+
+                current.dataURL = dataUrl;
+                current.data = dataUrl;
+                current.url = dataUrl;
+
+                delete current.cloud_file_id;
+                delete current.cloud_workspace_id;
+                delete current.signed_url;
+                delete current.is_cloud_file;
+
+                return;
+            }
+        }
+
+        if (Array.isArray(current)) {
+
+            current.forEach(apply);
+
+        } else {
+
+            Object.values(current).forEach(apply);
+        }
+    }
+
+    /*
+     * 同步工作簿、目前分頁及附件視窗。
+     */
+    apply(workbook);
+    apply(osraData);
+    apply(window._tempAttachments);
+}
+
+/*
+ * Workspace Save 附件來源準備。
+ *
+ * 目標 Workspace 已登記的附件直接保留。
+ * 其他 Workspace 附件轉回 DataURL，
+ * 後續再與目標附件進行內容去重。
+ */
+async function prepareRiskWorkspaceSaveSources(
+    value,
+    targetId,
+    targetFiles,
+    cache = new Map()
+) {
+
+    if (!value || typeof value !== 'object') {
+        return value;
+    }
+
+    if (Array.isArray(value)) {
+
+        const output = [];
+
+        for (const item of value) {
+            output.push(
+                await prepareRiskWorkspaceSaveSources(
+                    item,
+                    targetId,
+                    targetFiles,
+                    cache
+                )
+            );
+        }
+
+        return output;
+    }
+
+    if (isRiskAssessmentLocalCloudAttachment(value)) {
+        return value;
+    }
+
+    if (value.cloud_file_id) {
+
+        const id =
+            String(value.cloud_file_id).trim();
+
+        const source =
+            String(value.cloud_workspace_id || '').trim();
+
+        /*
+         * 已屬於目標 Workspace，
+         * 且確實存在於目標附件清單。
+         */
+        if (
+            targetFiles.has(id) &&
+            (!source || source === targetId)
+        ) {
+            return {
+                ...value,
+                cloud_workspace_id: targetId
+            };
+        }
+
+        /*
+         * 來源不明，不能直接沿用。
+         */
+        if (!source) {
+            throw new Error(
+                'CLOUD_ATTACHMENT_SOURCE_MISSING'
+            );
+        }
+
+        /*
+         * 其他 Workspace 的附件，
+         * 使用前一階段的正式封裝函式。
+         */
+        return await materializeRiskAssessmentCloudAttachments(
+            value,
+            cache
         );
     }
+
+    const output = {};
+
+    for (const [key, child] of Object.entries(value)) {
+
+        output[key] =
+            await prepareRiskWorkspaceSaveSources(
+                child,
+                targetId,
+                targetFiles,
+                cache
+            );
+    }
+
+    return output;
+}
+
+
+/*
+ * Workspace Save：SHA-256 附件去重。
+ *
+ * 只處理 Workspace 儲存。
+ * Cloud Preview 仍維持每次完整重上傳。
+ */
+async function planRiskWorkspaceSaveAttachments(
+    targetId,
+    registeredFiles,
+    uniqueAttachmentMap,
+    cloudFileIdMap
+) {
+
+    const knownHashes = new Map();
+    const existingHashes = new Map();
+    const aliases = new Map();
+    const uploadList = [];
+
+    let signedMap = null;
+
+    async function fingerprint(blob) {
+
+        const digest =
+            await crypto.subtle.digest(
+                'SHA-256',
+                await blob.arrayBuffer()
+            );
+
+        const hex =
+            Array.from(
+                new Uint8Array(digest),
+                byte =>
+                    byte.toString(16).padStart(2, '0')
+            ).join('');
+
+        return `${blob.size}:${hex}`;
+    }
+
+    for (const [dataUrl, item] of uniqueAttachmentMap) {
+
+        const blob =
+            cloudWorkspaceAttachmentToBlob(item);
+
+        if (
+            !blob.size ||
+            blob.size > 5 * 1024 * 1024
+        ) {
+            throw new Error(
+                'WORKSPACE_FILE_SIZE_INVALID'
+            );
+        }
+
+        const hash =
+            await fingerprint(blob);
+
+        /*
+         * 同一次儲存中內容相同的附件，
+         * 只處理第一筆。
+         */
+        if (knownHashes.has(hash)) {
+
+            const earlier =
+                knownHashes.get(hash);
+
+            if (earlier.id) {
+                cloudFileIdMap.set(
+                    dataUrl,
+                    earlier.id
+                );
+            } else {
+                aliases.set(
+                    dataUrl,
+                    earlier.key
+                );
+            }
+
+            continue;
+        }
+
+        let reusedId = '';
+
+        /*
+         * 檢查目標 Workspace 已有的檔案。
+         */
+        for (const existing of registeredFiles) {
+
+            const size =
+                Number(existing.file_size || 0);
+
+            if (
+                size > 0 &&
+                size !== blob.size
+            ) {
+                continue;
+            }
+
+            const id =
+                String(existing.id);
+
+            let oldHash =
+                existingHashes.get(id);
+
+            if (!oldHash) {
+
+                try {
+
+                    if (!signedMap) {
+                        signedMap =
+                            await loadCloudWorkspaceSignedFiles(
+                                targetId,
+                                registeredFiles
+                            );
+                    }
+
+                    const url =
+                        signedMap.get(id)?.signed_url;
+
+                    if (!url) {
+                        throw new Error(
+                            'NO_SIGNED_URL'
+                        );
+                    }
+
+                    const response =
+                        await fetch(url, {
+                            method: 'GET',
+                            cache: 'no-store'
+                        });
+
+                    if (!response.ok) {
+                        throw new Error(
+                            'FETCH_FAILED'
+                        );
+                    }
+
+                    const oldBlob =
+                        await response.blob();
+
+                    if (
+                        size > 0 &&
+                        oldBlob.size !== size
+                    ) {
+                        throw new Error(
+                            'SIZE_MISMATCH'
+                        );
+                    }
+
+                    oldHash =
+                        await fingerprint(oldBlob);
+
+                    existingHashes.set(
+                        id,
+                        oldHash
+                    );
+
+                } catch (_) {
+
+                    throw new Error(
+                        'WORKSPACE_DEDUP_CHECK_FAILED'
+                    );
+                }
+            }
+
+            if (oldHash === hash) {
+
+                reusedId = id;
+                break;
+            }
+        }
+
+        if (reusedId) {
+
+            cloudFileIdMap.set(
+                dataUrl,
+                reusedId
+            );
+
+            knownHashes.set(hash, {
+                id: reusedId
+            });
+
+        } else {
+
+            uploadList.push(item);
+
+            knownHashes.set(hash, {
+                key: dataUrl
+            });
+        }
+    }
+
+    return {
+        uploadList,
+        aliases
+    };
 }
 
 /*
@@ -32826,18 +34004,22 @@ async function saveCurrentCloudWorkspace() {
      * Viewer 預覽資料
      * 永遠不能寫回正式 Workspace。
      */
-    if (
-        isPreviewDataMode
-    ) {
-        setCloudWorkspaceStatus(
-            '預覽資料不能儲存至雲端工作資料。',
-            'error'
-        );
+if (
+    isPreviewDataMode
+) {
+    setCloudWorkspaceStatus(
+        '預覽資料不能儲存至雲端工作資料。',
+        'error'
+    );
 
-        return;
-    }
+    return;
+}
 
-    const button =
+if (!beginRiskCloudOperation('save')) {
+    return;
+}
+
+const button =
         document.getElementById(
             'cloud-workspace-save-btn'
         );
@@ -32865,21 +34047,14 @@ button.classList.add(
     'cursor-wait'
 );
 
-            button.innerHTML = `
-<span class="
-    w-3.5 h-3.5
-    shrink-0
-    rounded-full
-                    border-2
-                    border-white/40
-                    border-t-white
-                    animate-spin
-                "></span>
+button.innerHTML = `
+    <i class="fas fa-spinner fa-spin text-[13px] leading-none"
+       aria-hidden="true"></i>
 
-                <span>
-                    正在儲存...
-                </span>
-            `;
+    <span>
+        正在儲存...
+    </span>
+`;
         }
 
         /*
@@ -32897,8 +34072,88 @@ button.classList.add(
          * 建立目前正式
          * Risk unified-data。
          */
-        const localPayload =
-            buildRiskAssessmentExportData();
+/*
+ * 先固定資料與修改版本。
+ * 後面的網路請求及附件下載
+ * 不再重新讀取目前 workbook。
+ */
+const rawSnapshot =
+    JSON.parse(
+        JSON.stringify(
+            buildRiskAssessmentExportData()
+        )
+    );
+
+const snapshotSerial =
+    riskMatrixChangeSerial;
+
+/*
+ * 只讀取儲存目標，
+ * 不把目標 Payload 載入目前工作區。
+ */
+const destinationResult =
+    await cloudWorkspaceRequest({
+        action: 'load',
+        system_type: OSH_CLOUD_SYSTEM_TYPE,
+        workspace_id: activeCloudWorkspaceId
+    });
+
+const destination =
+    destinationResult?.workspace;
+
+if (
+    !destination ||
+    String(destination.system_type) !==
+        OSH_CLOUD_SYSTEM_TYPE
+) {
+    throw new Error(
+        'WORKSPACE_SYSTEM_MISMATCH'
+    );
+}
+
+if (destination.enabled === false) {
+    throw new Error(
+        'WORKSPACE_DISABLED'
+    );
+}
+
+/*
+ * 正式上傳前先比對最新 Revision。
+ * 後端原有版本鎖仍然保留。
+ */
+if (
+    Number(destination.revision) !==
+    Number(activeCloudWorkspaceRevision)
+) {
+    throw new Error(
+        'WORKSPACE_REVISION_CONFLICT'
+    );
+}
+
+const destinationFiles =
+    Array.isArray(destination.files)
+        ? destination.files.filter(
+            f => f?.id
+        )
+        : [];
+
+const destinationFileIds =
+    new Set(
+        destinationFiles.map(
+            f => String(f.id)
+        )
+    );
+
+/*
+ * 跨 Workspace 附件轉成完整 DataURL。
+ * 同 Workspace 已存在的附件 ID 保留。
+ */
+const localPayload =
+    await prepareRiskWorkspaceSaveSources(
+        rawSnapshot,
+        activeCloudWorkspaceId,
+        destinationFileIds
+    );
 
         /*
          * =====================================================
@@ -32915,34 +34170,65 @@ button.classList.add(
                 localPayload
             );
 
-        const uniqueAttachments =
-            Array.from(
-                attachmentMap.values()
-            );
+const newCloudFileIdMap =
+    new Map();
 
-        const newCloudFileIdMap =
-            new Map();
+/*
+ * 先進行 SHA-256 內容比對。
+ */
+const {
+    uploadList,
+    aliases
+} = await planRiskWorkspaceSaveAttachments(
+    activeCloudWorkspaceId,
+    destinationFiles,
+    attachmentMap,
+    newCloudFileIdMap
+);
 
-        /*
-         * 有新附件才上傳。
-         */
-        if (
-            uniqueAttachments.length >
-            0
-        ) {
+/*
+ * 只有真正新增的附件才上傳。
+ */
+if (uploadList.length > 0) {
 
-            setCloudWorkspaceStatus(
-                `準備上傳 ${uniqueAttachments.length} 個新附件...`,
-                'info'
-            );
+    setCloudWorkspaceStatus(
+        `準備上傳 ${uploadList.length} 個真正新增的附件...`,
+        'info'
+    );
 
-            await uploadCloudWorkspaceSaveAttachmentsWithConcurrency(
-                activeCloudWorkspaceId,
-                uniqueAttachments,
-                newCloudFileIdMap,
-                newlyRegisteredFiles
-            );
-        }
+    await uploadCloudWorkspaceSaveAttachmentsWithConcurrency(
+        activeCloudWorkspaceId,
+        uploadList,
+        newCloudFileIdMap,
+        newlyRegisteredFiles
+    );
+}
+
+/*
+ * 同一次儲存中內容重複的附件，
+ * 全部對應到同一個合法 Cloud File ID。
+ */
+for (
+    const [duplicateDataUrl, primaryDataUrl]
+    of aliases
+) {
+
+    const id =
+        newCloudFileIdMap.get(
+            primaryDataUrl
+        );
+
+    if (!id) {
+        throw new Error(
+            'CLOUD_FILE_ID_MISSING'
+        );
+    }
+
+    newCloudFileIdMap.set(
+        duplicateDataUrl,
+        id
+    );
+}
 
         /*
          * =====================================================
@@ -33032,16 +34318,39 @@ button.classList.add(
                 savedWorkspace.workspace_name;
         }
 
-        updateActiveCloudWorkspaceUI();
+activeCloudWorkspaceTargetOnly = false;
 
-        /*
-         * 雲端已正式完成本次儲存。
-         */
-        riskMatrixDirty =
-            false;
+try {
 
-        /*
-         * Cloud Workspace Save
+    preserveTransferredRiskAttachmentsLocally(
+        rawSnapshot,
+        localPayload,
+        activeCloudWorkspaceId
+    );
+
+} catch (rebindError) {
+
+    console.error(
+        'Workspace 附件來源同步失敗：',
+        rebindError
+    );
+
+    showToast(
+        '雲端儲存成功；請重新載入此 Workspace 後再繼續操作。',
+        'warning'
+    );
+}
+
+updateActiveCloudWorkspaceUI();
+
+/*
+ * 雲端已正式完成本次儲存。
+ */
+riskMatrixDirty =
+    riskMatrixChangeSerial !== snapshotSerial;
+
+/*
+ * Cloud Workspace Save
          * 不等於正式 JSON 已匯出。
          */
         sessionNeedsExport =
@@ -33180,8 +34489,32 @@ button.classList.add(
             WORKSPACE_STORAGE_UPLOAD_FAILED:
                 '附件上傳失敗，請稍後重試。',
 
-            WORKSPACE_FILE_REGISTER_FAILED:
-                '附件上傳失敗，請稍後重試。'
+WORKSPACE_FILE_REGISTER_FAILED:
+    '附件上傳失敗，請稍後重試。',
+
+CLOUD_ATTACHMENT_SOURCE_MISSING:
+    '附件缺少有效的來源工作資料資訊，已停止儲存。',
+
+CLOUD_ATTACHMENT_READ_FAILED:
+    '無法取得來源附件的讀取權限。',
+
+CLOUD_ATTACHMENT_DOWNLOAD_FAILED:
+    '來源附件下載失敗，已停止儲存。',
+
+CLOUD_ATTACHMENT_SIZE_INVALID:
+    '來源附件大小不符合限制。',
+
+CLOUD_ATTACHMENT_SIZE_MISMATCH:
+    '來源附件大小與原始登記不符。',
+
+WORKSPACE_DEDUP_CHECK_FAILED:
+    '無法完成目標 Workspace 的附件內容比對，已停止儲存。',
+
+CLOUD_FILE_ID_MISSING:
+    '部分附件尚未完成雲端登記，已停止儲存。',
+
+WORKSPACE_SYSTEM_MISMATCH:
+    '儲存目標不屬於目前風險評估系統。'
         };
 
         setCloudWorkspaceStatus(
@@ -33252,11 +34585,13 @@ button.classList.add(
             );
         }
 
-    } finally {
+} finally {
 
-        /*
-         * 無論成功或失敗，
-         * 恢復「儲存至雲端」按鈕。
+    finishRiskCloudOperation('save');
+
+    /*
+     * 無論成功或失敗，
+     * 恢復「儲存至雲端」按鈕。
          *
          * Workspace 已被停用或刪除時，
          * 儲存按鈕必須維持停用。
@@ -33491,6 +34826,7 @@ let isRiskEditMode = false;
  * - 附件新增／刪除
  */
 let riskMatrixDirty = false;
+let riskMatrixChangeSerial = 0;
 
 
 /*
@@ -33525,6 +34861,7 @@ function markRiskMatrixDirty() {
         canEditRiskMatrixNow()
     ) {
         riskMatrixDirty = true;
+        riskMatrixChangeSerial += 1;
     }
 }
 
@@ -35277,10 +36614,13 @@ async function manualSaveRecords(
     /*
      * 記住儲存前是否真的有修改。
      */
-    const hadChanges =
-        riskMatrixDirty;
+const hadChanges =
+    riskMatrixDirty;
 
-    const rows =
+const serialAtSaveStart =
+    riskMatrixChangeSerial;
+
+const rows =
         document.querySelectorAll(
             '#tableBody tr'
         );
@@ -35309,14 +36649,19 @@ async function manualSaveRecords(
      * 有實際修改才標記：
      * 最新 Session 尚未匯出 JSON。
      */
-    if (hadChanges) {
-        sessionNeedsExport = true;
-    }
+const changedWhileSaving =
+    riskMatrixChangeSerial !== serialAtSaveStart;
 
-    /*
-     * 本次矩陣編輯已完成段落儲存。
-     */
-    riskMatrixDirty = false;
+if (hadChanges || changedWhileSaving) {
+    sessionNeedsExport = true;
+}
+
+/*
+ * 儲存期間若有新修改，
+ * 不可清除新修改的 Dirty 狀態。
+ */
+riskMatrixDirty =
+    changedWhileSaving;
 
     if (showNotification) {
         showToast(
@@ -50468,18 +51813,20 @@ status.textContent =
         : item.offText;
 
 
+
 status.className =
     enabled
         ? (
             "inline-flex flex-shrink-0 px-2 py-0.5 " +
             "rounded-full text-[9px] font-black " +
-            "bg-indigo-100 text-indigo-700"
+            "smart-feature-status-active"
         )
         : (
             "inline-flex flex-shrink-0 px-2 py-0.5 " +
             "rounded-full text-[9px] font-black " +
             "bg-slate-200 text-slate-600"
         );
+
         }
     );
 }
@@ -50790,6 +52137,43 @@ function updateJsonActionButtons() {
 }
 
 /* =========================================================
+   風險評估：評估日期整框開啟原生日曆
+
+   保留：
+   1. 原本日期圖示點擊功能
+   2. 原有 onchange 資料同步
+   3. 管理者／使用者編輯權限
+   4. Viewer 唯讀保護
+========================================================= */
+
+function openRiskAssessmentDatePicker(input) {
+
+    if (
+        !input ||
+        !canEditRiskMatrixNow() ||
+        input.readOnly ||
+        input.disabled
+    ) {
+        return;
+    }
+
+    if (
+        typeof input.showPicker ===
+        'function'
+    ) {
+        try {
+            input.showPicker();
+
+        } catch (_) {
+            /*
+             * 瀏覽器不允許程式開啟時，
+             * 保留原生日期圖示操作。
+             */
+        }
+    }
+}
+
+/* =========================================================
    矩陣功能按鈕浮動 Tooltip
 
    不修改矩陣 Header 的 overflow / z-index，
@@ -50827,12 +52211,13 @@ function initMatrixFloatingTooltips() {
         );
     }
 
-    const buttonIds = [
-        'bulk-generate-btn',
-        'add-row-btn',
-        'risk-edit-toggle-btn',
-        'save-records-btn'
-    ];
+const buttonIds = [
+    'smart-feature-settings-btn',
+    'bulk-generate-btn',
+    'add-row-btn',
+    'risk-edit-toggle-btn',
+    'save-records-btn'
+];
 
     function hideTooltip() {
         tooltip.classList.remove(
@@ -50907,6 +52292,61 @@ function initMatrixFloatingTooltips() {
             hideTooltip
         );
     });
+
+/*
+ * 評估日期原生圖示 Tooltip。
+ *
+ * 只有滑鼠靠近日期框右側
+ * 日曆圖示區域時才顯示。
+ *
+ * 共用「儲存記錄」浮動 Tooltip，
+ * 不變動日期欄位及表格樣式。
+ */
+const assessmentDateInput =
+    document.getElementById(
+        'meta-assessment-date'
+    );
+
+if (assessmentDateInput) {
+
+    assessmentDateInput.addEventListener(
+        'mousemove',
+        event => {
+
+            const rect =
+                assessmentDateInput
+                    .getBoundingClientRect();
+
+            if (
+                !canEditRiskMatrixNow() ||
+                event.clientX <
+                    rect.right - 32
+            ) {
+                hideTooltip();
+                return;
+            }
+
+            showTooltip(
+                assessmentDateInput
+            );
+
+            tooltip.style.left =
+                `${rect.right - 16}px`;
+        }
+    );
+
+    [
+        'mouseleave',
+        'mousedown',
+        'click'
+    ].forEach(type => {
+
+        assessmentDateInput.addEventListener(
+            type,
+            hideTooltip
+        );
+    });
+}
 
 /*
  * 矩陣資料列內的動態功能按鈕。
@@ -52218,6 +53658,17 @@ function openDataExportModal() {
 
 function closeDataExportModal() {
 
+    /*
+     * 正式 JSON 備份期間，
+     * 不允許提前關閉進度視窗。
+     */
+    if (
+        riskCloudOperationInProgress ===
+        'json-export'
+    ) {
+        return;
+    }
+
     document
         .getElementById(
             'data-export-modal'
@@ -52295,11 +53746,8 @@ function backToDataExportChoice() {
 /*
  * 正式 JSON 完全沿用原本 exportToJson()。
  */
-function exportFormalDataFromModal() {
-
-    closeDataExportModal();
-
-    exportToJson();
+async function exportFormalDataFromModal() {
+    await exportToJson();
 }
 
 
@@ -52522,7 +53970,7 @@ function exportPreviewJson() {
     );
 }        
 
-        function exportToJson() {
+async function exportToJson() {
     if (!canExportReviewData()) {
         showToast(
             "請先登入權限後再匯出資料。",
@@ -52533,39 +53981,118 @@ function exportPreviewJson() {
         return;
     }
 
-    /*
-     * 尚有未完成「儲存記錄」的修改時，
-     * 不允許直接匯出正式 JSON。
-     */
-    if (hasUnsavedRiskChanges()) {
-        showToast(
-            "目前仍有尚未儲存的風險評估修改，請先按下綠色「儲存記錄」後再匯出資料檔案。",
-            "warning"
-        );
+/*
+ * 防止 JSON 匯出與其他 Cloud 操作重疊。
+ */
+if (!beginRiskCloudOperation('json-export')) {
+    return;
+}
 
+/*
+ * 記錄正式資料按鈕原始狀態。
+ */
+const button =
+    document.getElementById(
+        'formal-json-export-btn'
+    );
+
+const originalHtml =
+    button?.innerHTML || '';
+
+const originalDisabled =
+    button?.disabled || false;
+
+let exportSucceeded = false;
+
+/*
+ * 與績效、證照系統統一：
+ * Spinner ＋ 附件備份進度。
+ */
+function showFormalBackupProgress(
+    completed,
+    total
+) {
+    if (!button) {
         return;
     }
 
-    syncWorkbook();
+    button.disabled = true;
 
-    const exportDate = new Date().toISOString().slice(0, 10);
+    button.innerHTML =
+        '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i>' +
+        (
+            total > 0
+                ? `<span>備份附件 ${completed}/${total}</span>`
+                : '<span>正在整理備份資料...</span>'
+        );
+}
 
-    const exportData = {
-        version: "risk-assessment-system-json-v2",
-        exportType: "unified-data",
-        exportedAt: new Date().toISOString(),
+showFormalBackupProgress(0, 0);
 
-        workbook: workbook,
+try {
 
-        /*
-         * 統一版 JSON 不匯出：
-         * admin_password
-         * editor_password
-         * editor_enabled
-         * apiKey
-         */
-        config: {}
-    };
+    /*
+     * 先讓瀏覽器繪製 Spinner，
+     * 再進行正式 JSON 封裝。
+     */
+    await new Promise(resolve =>
+        requestAnimationFrame(() =>
+            requestAnimationFrame(resolve)
+        )
+    );
+
+    /*
+     * 自動同步最新風險矩陣資料。
+     */
+    await manualSaveRecords(false);
+
+    const snapshotSerial =
+        riskMatrixChangeSerial;
+
+    const exportDate =
+        new Date().toISOString().slice(0, 10);
+
+    /*
+     * 保留原有 unified-data 資料格式，
+     * 但將全部雲端附件封裝成永久 DataURL。
+     */
+/*
+ * 固定本次正式 JSON 資料快照。
+ */
+const backupSnapshot =
+    JSON.parse(
+        JSON.stringify(
+            buildRiskAssessmentExportData()
+        )
+    );
+
+/*
+ * 計算需重新下載的雲端附件數量。
+ */
+const total =
+    countRiskAssessmentCloudFilesForFormalBackup(
+        backupSnapshot
+    );
+
+showFormalBackupProgress(
+    0,
+    total
+);
+
+/*
+ * 完整封裝附件，
+ * 並同步更新正式資料按鈕進度。
+ */
+const exportData =
+    await materializeRiskAssessmentCloudAttachments(
+        backupSnapshot,
+        new Map(),
+        {
+            done: 0,
+            total,
+            onChange: showFormalBackupProgress
+        }
+    );
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], {
         type: 'application/json'
@@ -52585,12 +54112,65 @@ document.body.removeChild(a);
  * 最新正式 Session
  * 已完成 JSON 匯出。
  */
-sessionNeedsExport = false;
+/*
+ * 匯出期間若有新的資料修改，
+ * 不得誤清除尚未備份狀態。
+ */
+if (
+    riskMatrixChangeSerial === snapshotSerial
+) {
+    sessionNeedsExport = false;
+}
 
 showToast(
-    "資料檔案已匯出。",
-    "success"
+    '資料檔案已匯出。',
+    'success'
 );
+
+exportSucceeded = true;
+
+} catch (error) {
+
+    console.error(
+        '正式 JSON 附件封裝失敗：',
+        error
+    );
+
+    showToast(
+        '正式 JSON 匯出失敗：' +
+        (error?.message || '未知錯誤'),
+        'error'
+    );
+
+} finally {
+
+    finishRiskCloudOperation(
+        'json-export'
+    );
+
+    /*
+     * 不論成功或失敗，
+     * 恢復正式資料按鈕。
+     */
+    if (button) {
+
+        button.innerHTML =
+            originalHtml;
+
+        button.disabled =
+            originalDisabled;
+    }
+
+    /*
+     * 成功才關閉匯出視窗。
+     *
+     * 失敗時保留視窗，
+     * 方便使用者重新操作。
+     */
+    if (exportSucceeded) {
+        closeDataExportModal();
+    }
+}
 }
 
 function applyImportedRiskAssessmentData(importedData) {
@@ -52820,10 +54400,26 @@ async function importFromJson(event) {
         return;
     }
 
-    const file = event.target.files[0];
-    if (!file) return;
+if (
+    riskCloudOperationInProgress ||
+    pendingRiskAttachmentReads > 0 ||
+    pendingRiskJsonImports > 0
+) {
+    showToast(
+        '請先完成雲端操作與附件讀取，再匯入 JSON。',
+        'warning'
+    );
 
-    const reader = new FileReader();
+    event.target.value = '';
+    return;
+}
+
+const file = event.target.files[0];
+if (!file) return;
+
+pendingRiskJsonImports += 1;
+
+const reader = new FileReader();
 
     reader.onload = async function(e) {
         try {
@@ -52878,6 +54474,14 @@ if (
             applyImportedRiskAssessmentData(importedData);
 
 /*
+ * 正式匯入不同資料來源後，
+ * 解除之前 Workspace 的關聯。
+ *
+ * 不清除本次匯入的 workbook。
+ */
+clearActiveCloudWorkspace();
+
+/*
  * 正式載入 / 匯入不處理：
  * admin_password
  * editor_password
@@ -52912,12 +54516,52 @@ await clearPersistedRiskSystemData();
         } catch (err) {
             console.error("載入資料失敗：", err);
             showToast(`載入失敗：${err.message}`, "error");
-        } finally {
-            event.target.value = '';
-        }
+} finally {
+
+    event.target.value = '';
+
+    pendingRiskJsonImports =
+        Math.max(
+            0,
+            pendingRiskJsonImports - 1
+        );
+}
     };
 
+reader.onerror = reader.onabort = function() {
+
+    pendingRiskJsonImports =
+        Math.max(
+            0,
+            pendingRiskJsonImports - 1
+        );
+
+    event.target.value = '';
+
+    showToast(
+        'JSON 檔案讀取未完成。',
+        'error'
+    );
+};
+
+try {
     reader.readAsText(file);
+
+} catch (error) {
+
+    pendingRiskJsonImports =
+        Math.max(
+            0,
+            pendingRiskJsonImports - 1
+        );
+
+    event.target.value = '';
+
+    showToast(
+        'JSON 檔案無法讀取。',
+        'error'
+    );
+}
 }
 
         // ----------------------------------------------------
@@ -53118,8 +54762,21 @@ function processFiles(files) {
         return;
     }
 
-    if (!currentAttachmentRowId) return;
-            const validTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
+if (!currentAttachmentRowId) return;
+
+if (riskCloudOperationInProgress) {
+    showToast(
+        '雲端操作期間請勿新增附件。',
+        'warning'
+    );
+    return;
+}
+
+/* 固定本次附件原本所屬的項次與分頁。 */
+const targetRowId = currentAttachmentRowId;
+const targetSheet = getActiveSheet();
+
+const validTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
             const maxMB = 5;
 
             Array.from(files).forEach(file => {
@@ -53132,25 +54789,113 @@ function processFiles(files) {
                     return;
                 }
 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    if (!window._tempAttachments[currentAttachmentRowId]) {
-                        window._tempAttachments[currentAttachmentRowId] = [];
-                    }
-                    window._tempAttachments[currentAttachmentRowId].push({
-                        id: 'att_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-                        name: file.name,
-                        type: file.type,
-                        size: file.size,
-                        dataURL: e.target.result
-                    });
-                    
-                    updateAttachmentUI(currentAttachmentRowId, window._tempAttachments[currentAttachmentRowId]);
-                    updateRowState(currentAttachmentRowId); // 同步至目前工作階段
-                    renderAttachmentList(window._tempAttachments[currentAttachmentRowId]);
-                    showToast(`附件 ${file.name} 已成功上傳！`, 'success');
-                };
-                reader.readAsDataURL(file);
+const reader = new FileReader();
+
+pendingRiskAttachmentReads += 1;
+
+reader.onload = function(e) {
+
+    /*
+     * 如果資料已切換到其他分頁，
+     * 或原項次已不存在，
+     * 不得將附件誤加到目前項次。
+     */
+    if (
+        getActiveSheet() !== targetSheet ||
+        !document.querySelector(
+            `#tableBody tr[data-row-id="${targetRowId}"]`
+        )
+    ) {
+        showToast(
+            `附件 ${file.name} 讀取期間已切換資料，未加入附件。`,
+            'warning'
+        );
+        return;
+    }
+
+    if (!window._tempAttachments[targetRowId]) {
+        window._tempAttachments[targetRowId] = [];
+    }
+
+    window._tempAttachments[targetRowId].push({
+        id:
+            'att_' +
+            Date.now() +
+            '_' +
+            Math.random().toString(36).substr(2, 5),
+
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        dataURL: e.target.result
+    });
+
+    updateAttachmentUI(
+        targetRowId,
+        window._tempAttachments[targetRowId]
+    );
+
+    updateRowState(targetRowId);
+
+    /*
+     * 只有附件視窗仍顯示相同項次時，
+     * 才更新目前附件清單。
+     */
+    if (
+        currentAttachmentRowId === targetRowId &&
+        !document
+            .getElementById('attachmentModal')
+            ?.classList.contains('hidden')
+    ) {
+        renderAttachmentList(
+            window._tempAttachments[targetRowId]
+        );
+    }
+
+    showToast(
+        `附件 ${file.name} 已成功上傳！`,
+        'success'
+    );
+};
+
+reader.onerror = function() {
+    showToast(
+        `附件 ${file.name} 讀取失敗。`,
+        'error'
+    );
+};
+
+reader.onabort = function() {
+    showToast(
+        `附件 ${file.name} 讀取已取消。`,
+        'warning'
+    );
+};
+
+reader.onloadend = function() {
+    pendingRiskAttachmentReads =
+        Math.max(
+            0,
+            pendingRiskAttachmentReads - 1
+        );
+};
+
+try {
+    reader.readAsDataURL(file);
+
+} catch (error) {
+
+    pendingRiskAttachmentReads =
+        Math.max(
+            0,
+            pendingRiskAttachmentReads - 1
+        );
+
+    showToast(
+        `附件 ${file.name} 無法讀取。`,
+        'error'
+    );
+}
             });
             
             document.getElementById('attachmentInput').value = ''; // 重置 input 讓下次同檔名也能觸發
@@ -53321,6 +55066,11 @@ function revokeCurrentPreviewObjectUrl() {
 function resetFilePreviewContent() {
     const { frame, image, pdfPages, toolbar } = getFilePreviewElements();
 
+    if (filePreviewImageViewportTimer !== null) {
+        clearTimeout(filePreviewImageViewportTimer);
+        filePreviewImageViewportTimer = null;
+    }
+
     filePreviewPdfRenderSerial++;
 
     if (filePreviewPdfRenderTimer) {
@@ -53393,11 +55143,11 @@ function getImageFitPreviewScale(image) {
     const { body } = getFilePreviewElements();
     const naturalWidth = image?.naturalWidth || 1;
     const naturalHeight = image?.naturalHeight || 1;
-    const availableWidth = Math.max(260, (body?.clientWidth || window.innerWidth) - 36);
-    const availableHeight = Math.max(260, (body?.clientHeight || window.innerHeight) - 36);
+    const availableWidth = Math.max(1, (body?.clientWidth || window.innerWidth) - 36);
+    const availableHeight = Math.max(1, (body?.clientHeight || window.innerHeight) - 36);
     const fitScale = Math.min(availableWidth / naturalWidth, availableHeight / naturalHeight, 1);
 
-    return clampPreviewScale(fitScale, 0.15, 1);
+    return clampPreviewScale(fitScale, 0.01, 1);
 }
 
 function applyPreviewImageScale() {
@@ -53503,8 +55253,26 @@ function schedulePreviewPdfScaleApply() {
     });
 }
 
+function getFilePreviewScaleLimits() {
+    const baseScale = Math.max(0.01, filePreviewDefaultScale || 1);
+
+    const isMobile = window.matchMedia(
+        '(max-width: 900px), (hover: none) and (pointer: coarse)'
+    ).matches;
+
+    return {
+        min: Math.max(0.005, baseScale * 0.5),
+        max: Math.min(4, baseScale * (isMobile ? 2 : 4))
+    };
+}
+
 function setFilePreviewScale(nextScale) {
-    filePreviewScale = clampPreviewScale(nextScale);
+    // JPG/JPEG/PNG 使用相對於適合畫面的縮放限制；PDF 沿用原本限制。
+    const limits = filePreviewMode === 'image'
+        ? getFilePreviewScaleLimits()
+        : { min: 0.25, max: 4 };
+
+    filePreviewScale = clampPreviewScale(nextScale, limits.min, limits.max);
 
     if (filePreviewMode === 'image') {
         applyPreviewImageScale();
@@ -53846,6 +55614,34 @@ if (
     setFilePreviewLoading(false);
 }
 
+function refreshImagePreviewForViewport() {
+    if (filePreviewMode !== 'image') return;
+
+    const { modal, image, body } = getFilePreviewElements();
+    if (
+        !modal || modal.classList.contains('hidden') ||
+        !image || !image.naturalWidth || !image.naturalHeight
+    ) return;
+
+    const baseScale = getImageFitPreviewScale(image);
+
+    const isDesktopPreview = window.matchMedia(
+        '(min-width: 901px) and (hover: hover) and (pointer: fine)'
+    ).matches;
+
+    filePreviewDefaultScale = baseScale;
+    filePreviewScale = isDesktopPreview
+        ? Math.min(baseScale * 1.25, 1.25)
+        : baseScale;
+
+    applyPreviewImageScale();
+
+    if (body) {
+        body.scrollTop = 0;
+        body.scrollLeft = 0;
+    }
+}
+
 function openImagePreview(file) {
     const { frame, image, pdfPages, toolbar } = getFilePreviewElements();
 
@@ -53863,26 +55659,17 @@ function openImagePreview(file) {
     if (!image) return;
 
     setFilePreviewLoading(true, '圖片載入中...', 1000);
-    image.classList.remove('hidden');
 
-image.onload = () => {
-    const baseImageScale = getImageFitPreviewScale(image);
-    const isDesktopPreview = window.matchMedia('(min-width: 901px)').matches;
+    // 完成載入及縮放計算前不顯示圖片，避免 JPG/PNG 開啟瞬間閃現。
+    image.classList.add('hidden');
 
-    /*
-     * 附件圖片預覽初始比例：
-     * 1. 手機版：維持適合畫面，避免超出與誤觸。
-     * 2. 桌機版：保留略放大，避免圖片太小。
-     * 3. 最高限制 125%，避免開啟後跳到 160% 以上。
-     */
-    filePreviewDefaultScale = baseImageScale;
-    filePreviewScale = isDesktopPreview
-        ? Math.min(baseImageScale * 1.25, 1.25)
-        : baseImageScale;
+    image.onload = () => {
+        if (filePreviewMode !== 'image') return;
 
-    applyPreviewImageScale();
-    setFilePreviewLoading(false);
-};
+        refreshImagePreviewForViewport();
+        image.classList.remove('hidden');
+        setFilePreviewLoading(false);
+    };
 
     image.onerror = () => {
         setFilePreviewLoading(false);
@@ -53954,6 +55741,27 @@ function closeFilePreviewByBackdrop(event) {
         closeFilePreviewModal();
     }
 }
+
+// 手機旋轉／視窗大小變化後重新計算圖片的適合畫面比例。
+// 只處理 JPG/JPEG/PNG，不修改 PDF。
+let filePreviewImageViewportTimer = null;
+
+function scheduleImagePreviewViewportFit() {
+    if (filePreviewMode !== 'image') return;
+
+    clearTimeout(filePreviewImageViewportTimer);
+    filePreviewImageViewportTimer = setTimeout(() => {
+        filePreviewImageViewportTimer = null;
+        requestAnimationFrame(() => {
+            if (filePreviewMode === 'image') {
+                refreshImagePreviewForViewport();
+            }
+        });
+    }, 180);
+}
+
+window.addEventListener('resize', scheduleImagePreviewViewportFit, { passive: true });
+window.addEventListener('orientationchange', scheduleImagePreviewViewportFit, { passive: true });
 
 function previewAttachment(attId) {
     if (!currentAttachmentRowId) return;
