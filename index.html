@@ -1571,6 +1571,77 @@ body {
     display: block;
 }
 
+/* =========================================================
+   OSRAS｜附件專用列印
+   不影響原有風險評估矩陣表列印
+========================================================= */
+
+#file-preview-print-btn.hidden {
+    display: none !important;
+}
+
+#osras-attachment-print-root {
+    display: none;
+}
+
+@media print {
+
+    body.osras-attachment-print
+    > :not(#osras-attachment-print-root) {
+        display: none !important;
+    }
+
+    body.osras-attachment-print
+    #osras-attachment-print-root {
+        display: block !important;
+        position: static !important;
+
+        width: 100% !important;
+        height: auto !important;
+
+        overflow: visible !important;
+        background: white !important;
+    }
+
+    body.osras-attachment-print
+    .osras-attachment-print-page {
+        display: flex !important;
+
+        align-items: center;
+        justify-content: center;
+
+        width: 100% !important;
+        height: auto !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+
+        break-inside: avoid-page;
+        page-break-inside: avoid;
+    }
+
+    body.osras-attachment-print
+    .osras-attachment-print-page
+    + .osras-attachment-print-page {
+        break-before: page;
+        page-break-before: always;
+    }
+
+    body.osras-attachment-print
+    .osras-attachment-print-page img {
+        display: block !important;
+
+        width: auto !important;
+        height: auto !important;
+        max-width: 100% !important;
+
+        object-fit: contain !important;
+
+        margin: 0 auto !important;
+        box-shadow: none !important;
+    }
+}
+
 /* 手機 / 桌機共用：附件檔案預覽視窗 */
 .file-preview-modal {
     position: fixed;
@@ -10930,7 +11001,17 @@ gap-1.5">
 
     <button type="button" class="file-preview-tool-btn" onclick="fitFilePreviewToScreen()">
         <i data-lucide="maximize" class="w-4 h-4"></i>
-        <span>適合畫面</span>
+        <span>適合</span>
+    </button>
+
+    <button id="file-preview-print-btn"
+            type="button"
+            class="file-preview-tool-btn hidden"
+            onclick="printPreviewAttachment()"
+            title="列印附件"
+            aria-label="列印附件">
+        <i data-lucide="printer" class="w-4 h-4"></i>
+        <span>列印</span>
     </button>
 </div>
 
@@ -34911,6 +34992,21 @@ function canEditData() {
     return isAdminAuthenticated || isEditorAuthenticated;
 }
 
+function canPrintPreviewAttachment() {
+    return canEditData() && !isPreviewDataMode;
+}
+
+function updateFilePreviewPrintButton() {
+    const button = document.getElementById('file-preview-print-btn');
+
+    if (button) {
+        button.classList.toggle(
+            'hidden',
+            !canPrintPreviewAttachment()
+        );
+    }
+}
+
 /*
  * 真正可編輯矩陣的條件：
  *
@@ -52786,6 +52882,7 @@ if (
  */
 applyRiskMatrixReadOnlyState();
 
+updateFilePreviewPrintButton();
 updateJsonActionButtons();
 
 /*
@@ -54970,6 +55067,7 @@ let filePreviewTouchScale = 1;
 let filePreviewPdfDocument = null;
 let filePreviewPdfRenderSerial = 0;
 let filePreviewPdfAppliedRelativeScale = 1;
+let filePreviewPdfPrintReady = false;
 let filePreviewGesturesReady = false;
 let filePreviewPdfJsLoadingPromise = null;
 let filePreviewPdfRenderTimer = null;
@@ -55101,6 +55199,7 @@ imagePreviewDefaultScale = 1;
 filePreviewTouchDistance = null;
 filePreviewTouchScale = 1;
 filePreviewPdfAppliedRelativeScale = 1;
+filePreviewPdfPrintReady = false;
 
     revokeCurrentPreviewObjectUrl();
 
@@ -55389,6 +55488,7 @@ async function renderPdfPreviewPages() {
     if (!pdfPages || !filePreviewPdfDocument) return;
 
     const renderSerial = ++filePreviewPdfRenderSerial;
+    filePreviewPdfPrintReady = false;
     const pdf = filePreviewPdfDocument;
     const scale = filePreviewScale;
     const outputScale = Math.min(Math.max(window.devicePixelRatio || 1, 1.5), 2.5);
@@ -55440,6 +55540,11 @@ async function renderPdfPreviewPages() {
                 transform: outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null
             }).promise;
         }
+
+        if (renderSerial === filePreviewPdfRenderSerial) {
+            filePreviewPdfPrintReady = true;
+        }
+
     } catch (err) {
         if (renderSerial === filePreviewPdfRenderSerial) {
             console.warn('PDF preview render failed', err);
@@ -55708,6 +55813,8 @@ function viewFileDirectly(file, subtitleText = '') {
 
     if (toolbar) toolbar.classList.remove('hidden');
 
+    updateFilePreviewPrintButton();
+
     document.body.classList.add('file-preview-open');
     modal.classList.remove('hidden');
 
@@ -55729,6 +55836,7 @@ function viewFileDirectly(file, subtitleText = '') {
 function closeFilePreviewModal() {
     const { modal } = getFilePreviewElements();
 
+    cleanupAttachmentPrint();
     resetFilePreviewContent();
 
     if (modal) modal.classList.add('hidden');
@@ -55739,6 +55847,233 @@ function closeFilePreviewModal() {
 function closeFilePreviewByBackdrop(event) {
     if (event && event.target && event.target.id === 'file-preview-modal') {
         closeFilePreviewModal();
+    }
+}
+
+// =========================================================
+// OSRAS｜附件專用列印
+// 與原有風險評估矩陣報表列印完全分離。
+// =========================================================
+
+function cleanupAttachmentPrint() {
+    document.getElementById('osras-attachment-print-root')?.remove();
+    document.getElementById('osras-attachment-print-page-style')?.remove();
+
+    document.body.classList.remove('osras-attachment-print');
+}
+
+let osrasAttachmentPrintPreparing = false;
+
+async function printPreviewAttachment() {
+
+    // 避免重複點擊造成多個列印程序。
+    if (osrasAttachmentPrintPreparing) return;
+
+    // 管理者及使用者才允許列印附件。
+    if (!canPrintPreviewAttachment()) {
+        updateFilePreviewPrintButton();
+        return;
+    }
+
+    const { modal, image, pdfPages } = getFilePreviewElements();
+
+    if (!modal || modal.classList.contains('hidden')) {
+        return;
+    }
+
+    const isImage = filePreviewMode === 'image';
+    const isPdf = filePreviewMode === 'pdf';
+
+    // 圖片必須完成載入。
+    if (
+        isImage &&
+        (!image || !image.complete || !image.naturalWidth)
+    ) {
+        alert('圖片尚未載入完成，請稍後再列印。');
+        return;
+    }
+
+    // PDF.js 備援 iframe 模式暫不使用附件列印。
+    if (filePreviewMode === 'pdf-frame') {
+        alert(
+            '目前 PDF 使用瀏覽器備援預覽，無法使用內建附件列印，請稍後重新載入。'
+        );
+        return;
+    }
+
+    // 取得已完成繪製的 PDF Canvas。
+    const pdfCanvases = isPdf && pdfPages
+        ? Array.from(
+            pdfPages.querySelectorAll('.pdf-preview-page-canvas')
+        )
+        : [];
+
+    // 確認所有 PDF 頁面均已完成繪製。
+    if (
+        isPdf &&
+        (
+            !filePreviewPdfPrintReady ||
+            !filePreviewPdfDocument ||
+            pdfCanvases.length !== filePreviewPdfDocument.numPages ||
+            pdfCanvases.some(
+                canvas => !canvas.width || !canvas.height
+            )
+        )
+    ) {
+        alert('PDF 頁面尚未全部載入完成，請稍後再列印。');
+        return;
+    }
+
+    if (!isImage && !isPdf) return;
+
+    cleanupAttachmentPrint();
+
+    // 依附件首張圖片或 PDF 首頁判斷紙張方向。
+    const firstWidth = isImage
+        ? image.naturalWidth
+        : pdfCanvases[0].width;
+
+    const firstHeight = isImage
+        ? image.naturalHeight
+        : pdfCanvases[0].height;
+
+    const landscape = firstWidth > firstHeight;
+    const maxHeight = landscape ? '185mm' : '270mm';
+
+    osrasAttachmentPrintPreparing = true;
+
+    try {
+
+        // 建立附件專用列印區。
+        const printRoot = document.createElement('div');
+        printRoot.id = 'osras-attachment-print-root';
+
+        const addPage = (src, number) => {
+
+            const page = document.createElement('section');
+            page.className = 'osras-attachment-print-page';
+
+            const picture = document.createElement('img');
+
+            picture.src = src;
+            picture.alt = `附件第 ${number} 頁`;
+            picture.style.maxHeight = maxHeight;
+
+            page.appendChild(picture);
+            printRoot.appendChild(page);
+        };
+
+        if (isImage) {
+
+            // 使用完整原始圖片，不列印預覽局部放大畫面。
+            addPage(image.currentSrc || image.src, 1);
+
+        } else {
+
+            // PDF 各頁轉為獨立列印圖片。
+            pdfCanvases.forEach((canvas, index) => {
+                addPage(
+                    canvas.toDataURL('image/png'),
+                    index + 1
+                );
+            });
+        }
+
+        // 附件自己的 A4 紙張設定。
+        const pageStyle = document.createElement('style');
+        pageStyle.id = 'osras-attachment-print-page-style';
+
+        pageStyle.textContent = `@page {
+            size: A4 ${landscape ? 'landscape' : 'portrait'};
+            margin: 10mm;
+            @bottom-center { content: none; }
+        }`;
+
+        document.head.appendChild(pageStyle);
+        document.body.appendChild(printRoot);
+
+        document.body.classList.add('osras-attachment-print');
+
+        // 先等待所有列印圖片完成載入與解碼。
+        // 避免 PDF 第一次列印預覽出現空白。
+        const printImages = Array.from(
+            printRoot.querySelectorAll('img')
+        );
+
+        await Promise.all(
+            printImages.map(async (img) => {
+
+                if (typeof img.decode === 'function') {
+                    await img.decode();
+                    return;
+                }
+
+                // 相容未支援 decode() 的瀏覽器。
+                await new Promise((resolve, reject) => {
+
+                    if (img.complete) {
+
+                        if (img.naturalWidth > 0) {
+                            resolve();
+                        } else {
+                            reject(
+                                new Error('附件列印圖片載入失敗')
+                            );
+                        }
+
+                        return;
+                    }
+
+                    img.addEventListener(
+                        'load',
+                        resolve,
+                        { once: true }
+                    );
+
+                    img.addEventListener(
+                        'error',
+                        () => {
+                            reject(
+                                new Error('附件列印圖片載入失敗')
+                            );
+                        },
+                        { once: true }
+                    );
+                });
+            })
+        );
+
+        // 等待瀏覽器完成列印版面更新。
+        await new Promise(resolve => {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(resolve);
+            });
+        });
+
+        // 等待期間若已關閉視窗或失去權限，取消列印。
+        if (
+            !canPrintPreviewAttachment() ||
+            modal.classList.contains('hidden') ||
+            printRoot.parentNode !== document.body
+        ) {
+            cleanupAttachmentPrint();
+            return;
+        }
+
+        // 所有列印圖片準備完成後才啟動列印。
+        window.print();
+
+    } catch (error) {
+
+        console.error('附件列印準備失敗', error);
+
+        cleanupAttachmentPrint();
+
+        alert('無法準備附件列印，請確認檔案是否完整。');
+
+    } finally {
+
+        osrasAttachmentPrintPreparing = false;
     }
 }
 
@@ -55783,6 +56118,11 @@ function previewAttachment(attId) {
  * 列印前都強制退出矩陣編輯模式。
  */
 function prepareRiskMatrixForPrint() {
+
+    if (document.body.classList.contains('osras-attachment-print')) {
+        return;
+    }
+
     if (!isRiskEditMode) {
         return;
     }
@@ -55804,6 +56144,7 @@ function prepareRiskMatrixForPrint() {
  * 表頭「列印 / PDF」按鈕使用。
  */
 function printRiskAssessment() {
+    cleanupAttachmentPrint();
     prepareRiskMatrixForPrint();
 
     /*
@@ -55827,6 +56168,11 @@ window.addEventListener(
 );
 
 function expandTextareasForPrint() {
+
+    if (document.body.classList.contains('osras-attachment-print')) {
+        return;
+    }
+
     document.querySelectorAll('#osraTable textarea').forEach(textarea => {
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + 'px';
@@ -55837,6 +56183,12 @@ function expandTextareasForPrint() {
 window.addEventListener('beforeprint', expandTextareasForPrint);
 
 window.addEventListener('afterprint', () => {
+
+    // 附件列印不處理風險矩陣欄位高度。
+    if (document.body.classList.contains('osras-attachment-print')) {
+        return;
+    }
+
     document.querySelectorAll('#osraTable textarea').forEach(textarea => {
         textarea.style.height = '';
         textarea.style.overflow = '';
@@ -55844,6 +56196,11 @@ window.addEventListener('afterprint', () => {
 });
 
 function prepareTextareaPrintView() {
+
+    if (document.body.classList.contains('osras-attachment-print')) {
+        return;
+    }
+
     document.querySelectorAll('#osraTable textarea').forEach(textarea => {
         if (textarea.dataset.printPrepared === 'true') return;
 
@@ -55872,6 +56229,8 @@ function restoreTextareaPrintView() {
 
 window.addEventListener('beforeprint', prepareTextareaPrintView);
 window.addEventListener('afterprint', restoreTextareaPrintView);
+
+window.addEventListener('afterprint', cleanupAttachmentPrint);
 
     </script>
 <footer class="system-footer">
