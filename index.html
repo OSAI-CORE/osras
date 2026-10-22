@@ -1966,6 +1966,20 @@ body {
     justify-content: center;
 }
 
+/* =========================================================
+   OSRAS｜附件預覽置中縮放及完整捲動範圍
+
+   PDF 與 JPG／JPEG／PNG 共用。
+   小於視窗時維持置中；
+   大於視窗時讓舞台隨內容擴展。
+   不影響 PDF iframe 備援預覽。
+========================================================= */
+
+#file-preview-stage:has(> #pdf-preview-pages:not(.hidden)),
+#file-preview-stage:has(> #file-preview-image:not(.hidden)) {
+    width: max-content;
+}
+
 #file-preview-image {
     display: block;
     width: auto;
@@ -55442,30 +55456,153 @@ function getImageFitPreviewScale(image) {
     return clampPreviewScale(fitScale, 0.01, 1);
 }
 
-function applyPreviewImageScale() {
-    const { image } = getFilePreviewElements();
-    if (!image || !image.naturalWidth || !image.naturalHeight) return;
+function applyPreviewImageScale(options = {}) {
 
-    const displayWidth = Math.max(1, Math.round(image.naturalWidth * filePreviewScale));
-    const displayHeight = Math.max(1, Math.round(image.naturalHeight * filePreviewScale));
-    const isSideways = Math.abs(filePreviewRotation % 180) === 90;
+    const { body, image } = getFilePreviewElements();
+
+    if (
+        !image ||
+        !image.naturalWidth ||
+        !image.naturalHeight
+    ) {
+        return;
+    }
+
+    // =====================================================
+    // 一、縮放前記錄目前畫面中心
+    // =====================================================
+
+    const preserveScroll =
+        options.preserveScroll !== false;
+
+    let zoomAnchor = null;
+
+    // 圖片尚未載入完成或仍處於隱藏狀態時，
+    // 不進行捲動補償，避免影響防閃現機制。
+    if (
+        preserveScroll &&
+        body &&
+        !image.classList.contains('hidden')
+    ) {
+
+        const oldRect =
+            image.getBoundingClientRect();
+
+        const bodyRect =
+            body.getBoundingClientRect();
+
+        if (
+            oldRect.width > 0 &&
+            oldRect.height > 0
+        ) {
+
+            const centerX =
+                bodyRect.left +
+                body.clientWidth / 2;
+
+            const centerY =
+                bodyRect.top +
+                body.clientHeight / 2;
+
+            // 記錄目前視窗中心對應圖片的相對座標。
+            zoomAnchor = {
+                x: (centerX - oldRect.left) /
+                    oldRect.width,
+
+                y: (centerY - oldRect.top) /
+                    oldRect.height
+            };
+        }
+    }
+
+    // =====================================================
+    // 二、保留原本圖片尺寸及旋轉計算
+    // =====================================================
+
+    const displayWidth = Math.max(
+        1,
+        Math.round(
+            image.naturalWidth * filePreviewScale
+        )
+    );
+
+    const displayHeight = Math.max(
+        1,
+        Math.round(
+            image.naturalHeight * filePreviewScale
+        )
+    );
+
+    const isSideways =
+        Math.abs(filePreviewRotation % 180) === 90;
 
     image.style.width = `${displayWidth}px`;
     image.style.height = `${displayHeight}px`;
-    image.style.transform = `rotate(${filePreviewRotation}deg)`;
-    image.style.transformOrigin = 'center center';
+
+    image.style.transform =
+        `rotate(${filePreviewRotation}deg)`;
+
+    image.style.transformOrigin =
+        'center center';
 
     if (isSideways) {
-        const horizontalMargin = Math.max(0, (displayHeight - displayWidth) / 2);
-        const verticalMargin = Math.max(0, (displayWidth - displayHeight) / 2);
-        image.style.margin = `${verticalMargin}px ${horizontalMargin}px`;
+
+        const horizontalMargin = Math.max(
+            0,
+            (displayHeight - displayWidth) / 2
+        );
+
+        const verticalMargin = Math.max(
+            0,
+            (displayWidth - displayHeight) / 2
+        );
+
+        image.style.margin =
+            `${verticalMargin}px ${horizontalMargin}px`;
+
     } else {
+
         image.style.margin = '';
     }
 
+    // 保留原有的圖片縮放狀態與百分比顯示。
     imagePreviewScale = filePreviewScale;
     imagePreviewDefaultScale = filePreviewDefaultScale;
+
     updateFilePreviewZoomLabel();
+
+    // =====================================================
+    // 三、縮放後補償水平及垂直捲動位置
+    // =====================================================
+
+    if (zoomAnchor && body) {
+
+        const newRect =
+            image.getBoundingClientRect();
+
+        const bodyRect =
+            body.getBoundingClientRect();
+
+        const centerX =
+            bodyRect.left +
+            body.clientWidth / 2;
+
+        const centerY =
+            bodyRect.top +
+            body.clientHeight / 2;
+
+        // 水平補償：維持原本閱讀中心。
+        body.scrollLeft +=
+            newRect.left +
+            zoomAnchor.x * newRect.width -
+            centerX;
+
+        // 垂直補償：維持原本閱讀位置。
+        body.scrollTop +=
+            newRect.top +
+            zoomAnchor.y * newRect.height -
+            centerY;
+    }
 }
 
 function applyPreviewFrameScale() {
@@ -55484,53 +55621,198 @@ function applyPreviewFrameScale() {
 }
 
 function applyPreviewPdfScale(options = {}) {
+
     const { body, pdfPages } = getFilePreviewElements();
+
     if (!pdfPages) return;
 
-    const preserveScroll = options.preserveScroll !== false;
-    const baseScale = filePreviewDefaultScale || 1;
-    const relativeScale = Math.max(0.05, filePreviewScale / baseScale);
-    const previousRelativeScale = filePreviewPdfAppliedRelativeScale || 1;
+    const preserveScroll =
+        options.preserveScroll !== false;
 
-    let anchorX = null;
-    let anchorY = null;
+    const baseScale =
+        filePreviewDefaultScale || 1;
 
-    if (preserveScroll && body) {
-        anchorX = (body.scrollLeft + (body.clientWidth / 2)) / previousRelativeScale;
-        anchorY = (body.scrollTop + (body.clientHeight / 2)) / previousRelativeScale;
+    const relativeScale = Math.max(
+        0.05,
+        filePreviewScale / baseScale
+    );
+
+    const shells = Array.from(
+        pdfPages.querySelectorAll(
+            '.pdf-preview-page-shell'
+        )
+    );
+
+    // =====================================================
+    // 一、縮放前記錄目前閱讀位置
+    // =====================================================
+
+    let zoomAnchor = null;
+
+    if (preserveScroll && body && shells.length) {
+
+        const bodyRect =
+            body.getBoundingClientRect();
+
+        const centerX =
+            bodyRect.left + body.clientWidth / 2;
+
+        const centerY =
+            bodyRect.top + body.clientHeight / 2;
+
+        let activeShell = null;
+        let shortestDistance = Infinity;
+
+        // 找出最接近目前視窗中心的 PDF 頁面。
+        shells.forEach(shell => {
+
+            const rect =
+                shell.getBoundingClientRect();
+
+            const distance = Math.max(
+                rect.top - centerY,
+                0,
+                centerY - rect.bottom
+            );
+
+            if (distance < shortestDistance) {
+
+                shortestDistance = distance;
+                activeShell = shell;
+
+            }
+        });
+
+        // 記錄視窗中心相對於該 PDF 頁面的座標。
+        if (activeShell) {
+
+            const rect =
+                activeShell.getBoundingClientRect();
+
+            zoomAnchor = {
+
+                shell: activeShell,
+
+                x: rect.width > 0
+                    ? (centerX - rect.left) / rect.width
+                    : 0.5,
+
+                y: rect.height > 0
+                    ? (centerY - rect.top) / rect.height
+                    : 0.5
+
+            };
+        }
     }
 
-    pdfPages.style.gap = `${Math.max(10, Math.round(18 * relativeScale))}px`;
+    // =====================================================
+    // 二、沿用原有 PDF 頁面縮放方式
+    // =====================================================
 
-    pdfPages.querySelectorAll('.pdf-preview-page-shell').forEach(shell => {
-        const baseWidth = Number(shell.dataset.baseWidth || shell.offsetWidth || 1);
-        const baseHeight = Number(shell.dataset.baseHeight || shell.offsetHeight || 1);
-        const scaledWidth = Math.max(1, Math.round(baseWidth * relativeScale));
-        const scaledHeight = Math.max(1, Math.round(baseHeight * relativeScale));
+    pdfPages.style.gap =
+        `${Math.max(10, Math.round(18 * relativeScale))}px`;
 
-        shell.style.width = `${scaledWidth}px`;
-        shell.style.height = `${scaledHeight}px`;
+    shells.forEach(shell => {
 
-        const canvas = shell.querySelector('.pdf-preview-page-canvas');
+        const baseWidth = Number(
+            shell.dataset.baseWidth ||
+            shell.offsetWidth ||
+            1
+        );
+
+        const baseHeight = Number(
+            shell.dataset.baseHeight ||
+            shell.offsetHeight ||
+            1
+        );
+
+        const scaledWidth = Math.max(
+            1,
+            Math.round(baseWidth * relativeScale)
+        );
+
+        const scaledHeight = Math.max(
+            1,
+            Math.round(baseHeight * relativeScale)
+        );
+
+        shell.style.width =
+            `${scaledWidth}px`;
+
+        shell.style.height =
+            `${scaledHeight}px`;
+
+        const canvas = shell.querySelector(
+            '.pdf-preview-page-canvas'
+        );
+
         if (canvas) {
-            canvas.style.width = `${scaledWidth}px`;
-            canvas.style.height = `${scaledHeight}px`;
+
+            canvas.style.width =
+                `${scaledWidth}px`;
+
+            canvas.style.height =
+                `${scaledHeight}px`;
+
         }
 
-        const badge = shell.querySelector('.pdf-preview-page-number');
+        // 保留原有 PDF 頁碼大小調整。
+        const badge = shell.querySelector(
+            '.pdf-preview-page-number'
+        );
+
         if (badge) {
-            const badgeScale = Math.max(0.72, Math.min(1, 1 / relativeScale));
-            badge.style.transform = `scale(${badgeScale})`;
-            badge.style.transformOrigin = 'top right';
+
+            const badgeScale = Math.max(
+                0.72,
+                Math.min(1, 1 / relativeScale)
+            );
+
+            badge.style.transform =
+                `scale(${badgeScale})`;
+
+            badge.style.transformOrigin =
+                'top right';
         }
     });
 
-    filePreviewPdfAppliedRelativeScale = relativeScale;
+    filePreviewPdfAppliedRelativeScale =
+        relativeScale;
+
     updateFilePreviewZoomLabel();
 
-    if (preserveScroll && body && Number.isFinite(anchorX) && Number.isFinite(anchorY)) {
-        body.scrollLeft = Math.max(0, (anchorX * relativeScale) - (body.clientWidth / 2));
-        body.scrollTop = Math.max(0, (anchorY * relativeScale) - (body.clientHeight / 2));
+    // =====================================================
+    // 三、縮放後恢復原本的視窗中心位置
+    // =====================================================
+
+    if (zoomAnchor && body) {
+
+        // 重新取得 PDF 頁面放大後的實際座標。
+        const nextRect =
+            zoomAnchor.shell.getBoundingClientRect();
+
+        const bodyRect =
+            body.getBoundingClientRect();
+
+        const centerX =
+            bodyRect.left + body.clientWidth / 2;
+
+        const centerY =
+            bodyRect.top + body.clientHeight / 2;
+
+        // 水平方向：
+        // 依實際頁面位置補償，不使用單純倍率公式。
+        body.scrollLeft +=
+            nextRect.left +
+            zoomAnchor.x * nextRect.width -
+            centerX;
+
+        // 垂直方向：
+        // 保留正在閱讀的頁面及所在位置。
+        body.scrollTop +=
+            nextRect.top +
+            zoomAnchor.y * nextRect.height -
+            centerY;
     }
 }
 
