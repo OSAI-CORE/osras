@@ -6973,6 +6973,106 @@ nav #load-json-btn {
 }
 }
 
+/* =========================================================
+   OSRAS｜矩陣評估日期選擇器
+
+   圖示比照危害識別系統：
+   Font Awesome fa-calendar-days
+
+   桌機編輯模式：
+   自訂日曆圖示與 Tooltip
+
+   手機／不支援 showPicker 的瀏覽器：
+   保留原生日期選擇器
+
+   列印：
+   不顯示自訂圖示
+========================================================= */
+
+.risk-assessment-date-wrap {
+    position: relative;
+    min-width: 0;
+}
+
+.risk-assessment-calendar-btn {
+    display: none;
+}
+
+/* 桌機滑鼠裝置 */
+@media screen and (min-width: 951px)
+and (hover: hover) and (pointer: fine) {
+
+    body.edit-mode
+    .risk-assessment-date-wrap.risk-picker-supported
+    #meta-assessment-date {
+        padding-right: 40px !important;
+    }
+
+    /* 隱藏 Chromium / Safari 原生日期圖示 */
+    body.edit-mode
+    .risk-assessment-date-wrap.risk-picker-supported
+    #meta-assessment-date::-webkit-calendar-picker-indicator {
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    /* 自訂日曆圖示 */
+    body.edit-mode
+    .risk-assessment-date-wrap.risk-picker-supported
+    .risk-assessment-calendar-btn {
+        position: absolute;
+
+        right: 6px;
+        top: 50%;
+
+        transform: translateY(-50%);
+
+        width: 30px;
+        height: 30px;
+
+        padding: 0;
+
+        border: 0;
+        border-radius: 6px;
+
+        background: #f8fafc;
+        color: #64748b;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        cursor: pointer;
+        z-index: 2;
+    }
+
+    body.edit-mode
+    .risk-assessment-calendar-btn i {
+        font-size: 14px;
+        line-height: 1;
+    }
+
+    /* Hover 顏色比照危害識別系統 */
+    body.edit-mode
+    .risk-assessment-calendar-btn:hover {
+        color: #334155;
+    }
+
+    body.edit-mode
+    .risk-assessment-date-wrap:focus-within
+    .risk-assessment-calendar-btn {
+        background: #ffffff;
+    }
+
+}
+
+/* 列印時不顯示自訂功能圖示 */
+@media print {
+    .risk-assessment-calendar-btn {
+        display: none !important;
+    }
+}
+
     </style>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col">
@@ -7422,14 +7522,28 @@ aria-label="儲存記錄"
                                     </th>
                                     <th colspan="2" class="py-2 px-3 font-bold text-center bg-slate-100">評估日期</th>
                                     <th colspan="3" class="py-2 px-3 font-normal bg-white">
-<input
-    type="date"
-    id="meta-assessment-date"
-    onchange="updateSheetMetaState()"
-    onclick="openRiskAssessmentDatePicker(this)"
-    data-tooltip="選擇評估日期"
-    class="w-full bg-transparent outline-none text-slate-700"
->
+<div class="risk-assessment-date-wrap">
+
+    <input
+        type="date"
+        id="meta-assessment-date"
+        onchange="updateSheetMetaState()"
+        onclick="openRiskAssessmentDatePicker(this)"
+        class="w-full bg-transparent outline-none text-slate-700"
+    >
+
+    <button
+        id="risk-assessment-calendar-btn"
+        type="button"
+        class="risk-assessment-calendar-btn"
+        data-tooltip="選擇評估日期"
+        aria-label="選擇評估日期"
+        onclick="openRiskAssessmentDatePicker(document.getElementById('meta-assessment-date'))"
+    >
+        <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+    </button>
+
+</div>
                                     </th>
                                 </tr>
                                 <!-- 第一層分類 -->
@@ -52390,54 +52504,133 @@ const buttonIds = [
     });
 
 /*
- * 評估日期原生圖示 Tooltip。
+ * =========================================================
+ * OSRAS｜評估日期 Tooltip
  *
- * 只有滑鼠靠近日期框右側
- * 日曆圖示區域時才顯示。
+ * 日曆圖示比照危害識別系統。
  *
- * 共用「儲存記錄」浮動 Tooltip，
- * 不變動日期欄位及表格樣式。
+ * 沿用矩陣現有的 body 浮動 Tooltip，
+ * 避免被矩陣表 overflow 裁切。
+ *
+ * 僅編輯模式可以開啟日期選擇器。
+ * =========================================================
  */
+
 const assessmentDateInput =
     document.getElementById(
         'meta-assessment-date'
     );
 
-if (assessmentDateInput) {
+const assessmentCalendarButton =
+    document.getElementById(
+        'risk-assessment-calendar-btn'
+    );
 
-    assessmentDateInput.addEventListener(
-        'mousemove',
-        event => {
+if (
+    assessmentDateInput &&
+    assessmentCalendarButton
+) {
 
-            const rect =
-                assessmentDateInput
-                    .getBoundingClientRect();
+    const dateWrap =
+        assessmentDateInput.closest(
+            '.risk-assessment-date-wrap'
+        );
+
+    const pickerSupported =
+        typeof assessmentDateInput.showPicker ===
+        'function';
+
+    if (dateWrap) {
+        dateWrap.classList.toggle(
+            'risk-picker-supported',
+            pickerSupported
+        );
+    }
+
+    /*
+     * 自訂日曆按鈕顯示 Tooltip。
+     * 使用既有矩陣浮動提示框。
+     */
+    assessmentCalendarButton.addEventListener(
+        'mouseenter',
+        () => {
 
             if (
-                !canEditRiskMatrixNow() ||
-                event.clientX <
-                    rect.right - 32
+                !pickerSupported ||
+                !canEditRiskMatrixNow()
             ) {
                 hideTooltip();
                 return;
             }
 
             showTooltip(
-                assessmentDateInput
+                assessmentCalendarButton
             );
 
+            if (
+                !tooltip.classList.contains(
+                    'is-visible'
+                )
+            ) {
+                return;
+            }
+
+            const rect =
+                assessmentCalendarButton
+                    .getBoundingClientRect();
+
+            const tooltipWidth =
+                tooltip.offsetWidth;
+
+            const tooltipHeight =
+                tooltip.offsetHeight;
+
+            /*
+             * 提示框右側比照日曆圖示對齊，
+             * 並避免超出瀏覽器畫面。
+             */
+            const idealCenter =
+                rect.right -
+                tooltipWidth / 2;
+
+            const centerX =
+                Math.max(
+                    tooltipWidth / 2 + 8,
+                    Math.min(
+                        window.innerWidth -
+                        tooltipWidth / 2 - 8,
+                        idealCenter
+                    )
+                );
+
             tooltip.style.left =
-                `${rect.right - 16}px`;
+                `${centerX}px`;
+
+            /*
+             * 優先顯示在圖示上方。
+             * 上方空間不足時自動顯示下方。
+             */
+            const aboveTop =
+                rect.top -
+                tooltipHeight - 6;
+
+            tooltip.style.top =
+                aboveTop >= 8
+                    ? `${aboveTop}px`
+                    : `${rect.bottom + 6}px`;
         }
     );
 
+    /*
+     * 離開、按下、點擊時收起提示。
+     */
     [
         'mouseleave',
         'mousedown',
         'click'
     ].forEach(type => {
 
-        assessmentDateInput.addEventListener(
+        assessmentCalendarButton.addEventListener(
             type,
             hideTooltip
         );
