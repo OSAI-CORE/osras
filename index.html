@@ -5045,19 +5045,138 @@ table.osra-table textarea::placeholder {
 
 
 /* =========================================================
-   桌機版：編輯雲端預覽有效期限
+   OSRAS｜編輯雲端預覽有效期限統一
+
+   管理者：管理雲端預覽
+   使用者：我的發布預覽
+
+   桌機：
+   - 統一日曆圖示與 Tooltip
+   - 日曆按鈕 30px
+   - Font Awesome 圖示 14px
+
+   手機：
+   - 保留原本日期時間選擇器
+   - 不變動直式及橫式排版
+
+   不修改任何有效期限及雲端更新邏輯。
 ========================================================= */
 
+/* 預設隱藏桌機自訂日曆按鈕 */
+.cloud-expiry-calendar-trigger {
+    display: none;
+}
+
+/* 桌機基本設定 */
 @media screen and (min-width: 951px) {
 
+    /* 隱藏手機專用日曆圖示 */
     #cloud-preview-edit-expiry-wrap
     > .fa-calendar-days {
         display: none !important;
     }
 
+    /* 不支援 showPicker 時保留原生操作 */
     #cloud-preview-edit-expiry {
         padding-right: 1rem !important;
         cursor: pointer;
+    }
+
+}
+
+/* 支援 showPicker 的桌機滑鼠環境 */
+@media screen and (min-width: 951px)
+and (hover: hover) and (pointer: fine) {
+
+    /* 允許 Tooltip 顯示於欄位外 */
+    #cloud-preview-edit-expiry-wrap.cloud-expiry-picker-supported {
+        overflow: visible !important;
+    }
+
+    /* 預留自訂日曆按鈕空間 */
+    #cloud-preview-edit-expiry-wrap.cloud-expiry-picker-supported
+    #cloud-preview-edit-expiry {
+        padding-right: 44px !important;
+    }
+
+    /* 隱藏 Chrome / Edge / Safari 原生日曆圖示 */
+    #cloud-preview-edit-expiry-wrap.cloud-expiry-picker-supported
+    #cloud-preview-edit-expiry::-webkit-calendar-picker-indicator {
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    /* 桌機自訂日曆按鈕 */
+    #cloud-preview-edit-expiry-wrap.cloud-expiry-picker-supported
+    > .cloud-expiry-calendar-trigger {
+        position: absolute;
+
+        right: 6px;
+        top: 50%;
+
+        transform: translateY(-50%);
+
+        width: 30px;
+        height: 30px;
+
+        padding: 0;
+
+        border: 0;
+        border-radius: 6px;
+
+        background: #f8fafc;
+        color: #64748b;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        cursor: pointer;
+        z-index: 2;
+    }
+
+    /* Font Awesome 日曆圖示 */
+    .cloud-expiry-calendar-trigger i {
+        font-size: 14px;
+        line-height: 1;
+        pointer-events: none;
+    }
+
+    /* 滑鼠移入變色 */
+    .cloud-expiry-calendar-trigger:hover {
+        color: #334155;
+    }
+
+    /* 輸入框取得焦點 */
+    #cloud-preview-edit-expiry-wrap:focus-within
+    .cloud-expiry-calendar-trigger {
+        background: #ffffff;
+    }
+
+    /* Tooltip 向上顯示並靠右對齊 */
+    #cloud-preview-edit-expiry-wrap
+    .cloud-expiry-calendar-trigger.system-tooltip-btn::after {
+        left: auto;
+        right: 0;
+
+        top: auto;
+        bottom: calc(100% + 6px);
+
+        transform: translateY(2px);
+    }
+
+    #cloud-preview-edit-expiry-wrap
+    .cloud-expiry-calendar-trigger.system-tooltip-btn:hover::after {
+        transform: translateY(0);
+    }
+
+}
+
+/* 列印時不顯示日曆按鈕 */
+@media print {
+
+    .cloud-expiry-calendar-trigger {
+        display: none !important;
     }
 
 }
@@ -10477,6 +10596,7 @@ scale-in-center">
                       outline-none
                       text-sm text-slate-700">
 
+        <!-- 手機版原有日曆圖示：保留 -->
         <i class="fa-solid fa-calendar-days
                   absolute
                   right-3 top-1/2
@@ -10485,6 +10605,19 @@ scale-in-center">
                   text-sm
                   pointer-events-none"
            aria-hidden="true"></i>
+
+        <!-- 桌機版統一日曆按鈕與 Tooltip -->
+        <button
+            id="cloud-preview-edit-calendar-btn"
+            type="button"
+            class="cloud-expiry-calendar-trigger system-tooltip-btn"
+            data-tooltip="選擇有效期限"
+            aria-label="選擇有效期限"
+            onclick="openCloudPreviewExpiryPicker()"
+        >
+            <i class="fa-solid fa-calendar-days"
+               aria-hidden="true"></i>
+        </button>
 
     </div>
 
@@ -25391,6 +25524,47 @@ function setCloudPreviewEditStatus(
 }
 
 
+/* =========================================================
+   OSRAS｜編輯雲端預覽有效期限
+
+   自訂日曆按鈕：
+   開啟瀏覽器原生日期時間選擇器。
+
+   不修改日期資料及雲端更新機制。
+========================================================= */
+
+function openCloudPreviewExpiryPicker() {
+
+    const input =
+        document.getElementById(
+            'cloud-preview-edit-expiry'
+        );
+
+    if (
+        !input ||
+        input.disabled ||
+        input.readOnly
+    ) {
+        return;
+    }
+
+    if (
+        typeof input.showPicker === 'function'
+    ) {
+
+        try {
+            input.showPicker();
+            return;
+        } catch (error) {
+            // 無法開啟時，保留輸入框操作
+        }
+
+    }
+
+    input.focus();
+}
+
+
 function openCloudPreviewEditModalFromButton(
     button
 ) {
@@ -25539,8 +25713,31 @@ if (
 
 
     if (expiryInput) {
+
         expiryInput.value =
             expiresLocal;
+
+        /*
+         * 瀏覽器支援 showPicker 時，
+         * 啟用桌機自訂日曆按鈕。
+         *
+         * 不支援時維持原生操作。
+         * 手機版由原有 CSS 接管。
+         */
+        const expiryWrap =
+            document.getElementById(
+                'cloud-preview-edit-expiry-wrap'
+            );
+
+        if (expiryWrap) {
+
+            expiryWrap.classList.toggle(
+                'cloud-expiry-picker-supported',
+                typeof expiryInput.showPicker === 'function'
+            );
+
+        }
+
     }
 
 
