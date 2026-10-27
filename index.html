@@ -30259,9 +30259,10 @@ return `
         class="
         rounded-xl
         border border-sky-100
-        ${isSameWorkspace && activeCloudWorkspaceTargetOnly ? 'bg-sky-100' : 'bg-sky-50'}
+        ${isSameWorkspace ? 'bg-sky-100' : 'bg-sky-50'}
         px-3.5 py-3
         shadow-sm
+        ${enabled ? 'cursor-pointer' : 'cursor-default'}
     ">
 
         <div class="min-w-0">
